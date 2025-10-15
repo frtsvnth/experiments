@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор праздничных открыток</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎉 Генератор праздничных открыток</h1>
+            <p>Создайте уникальную открытку с поздравлением!</p>
+        </header>
+
+        <main>
+            <!-- Форма ввода данных -->
+            <div class="form-section">
+                <h2>Заполните данные для открытки</h2>
+                <form id="postcardForm">
+                    <div class="form-group">
+                        <label for="recipient">Кому:</label>
+                        <input type="text" id="recipient" name="recipient" placeholder="Введите имя получателя" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sender">От кого:</label>
+                        <input type="text" id="sender" name="sender" placeholder="Введите ваше имя" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Текст поздравления:</label>
+                        <textarea id="message" name="message" placeholder="Напишите поздравление..." required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Сгенерировать фоны</button>
+                </form>
+            </div>
+
+            <!-- Настройки генерации фона -->
+            <div class="background-settings" id="backgroundSettings" style="display: none;">
+                <h2>🎨 Настройки фона</h2>
+                <div class="settings-grid">
+                    <div class="setting-group">
+                        <label for="colorScheme">Цветовая схема:</label>
+                        <select id="colorScheme">
+                            <option value="vibrant">Яркие цвета</option>
+                            <option value="pastel">Пастельные тона</option>
+                            <option value="monochrome">Монохром</option>
+                            <option value="rainbow">Радуга</option>
+                            <option value="autumn">Осенние</option>
+                            <option value="winter">Зимние</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label for="emojiStyle">Стиль эмодзи:</label>
+                        <select id="emojiStyle">
+                            <option value="celebration">Праздничные 🎉</option>
+                            <option value="nature">Природа 🌸</option>
+                            <option value="hearts">Сердечки ❤️</option>
+                            <option value="stars">Звезды ⭐</option>
+                            <option value="flowers">Цветы 🌺</option>
+                            <option value="animals">Животные 🐾</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label for="backgroundStyle">Стиль фона:</label>
+                        <select id="backgroundStyle">
+                            <option value="gradient">Градиент</option>
+                            <option value="geometric">Геометрический</option>
+                            <option value="organic">Органический</option>
+                            <option value="minimal">Минималистичный</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label for="borderStyle">Рамка:</label>
+                        <select id="borderStyle">
+                            <option value="none">Без рамки</option>
+                            <option value="simple">Простая</option>
+                            <option value="double">Двойная</option>
+                            <option value="decorative">Декоративная</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="preview-controls">
+                    <button id="previewBackgroundBtn" class="btn btn-secondary">👁️ Предварительный просмотр</button>
+                    <button id="generateCustomBackgroundsBtn" class="btn btn-primary">🎨 Сгенерировать фоны</button>
+                </div>
+                
+                <div class="background-preview" id="backgroundPreview" style="display: none;">
+                    <h3>Предварительный просмотр:</h3>
+                    <canvas id="previewCanvas" width="400" height="300"></canvas>
+                </div>
+            </div>
+
+            <!-- Секция выбора фона -->
+            <div class="backgrounds-section" id="backgroundsSection" style="display: none;">
+                <h2>Выберите фон для открытки</h2>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Генерируем красивые фоны...</p>
+                </div>
+                <div class="backgrounds-grid" id="backgroundsGrid"></div>
+            </div>
+
+            <!-- Секция предварительного просмотра -->
+            <div class="preview-section" id="previewSection" style="display: none;">
+                <h2>Предварительный просмотр открытки</h2>
+                <div class="preview-container">
+                    <canvas id="previewCanvas"></canvas>
+                    <div class="preview-controls">
+                        <button id="downloadBtn" class="btn btn-success">📥 Скачать открытку</button>
+                        <button id="newPostcardBtn" class="btn btn-secondary">🔄 Создать новую</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Генератор открыток. Сделано с ❤️</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
