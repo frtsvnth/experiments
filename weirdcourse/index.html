@@ -25,8 +25,10 @@
             <button id="menuBtn" class="icon-btn" aria-label="Меню" aria-haspopup="true" aria-controls="sidebar">☰</button>
             <h1 class="brand">Корпоративный лексикон</h1>
             <div class="header-actions">
+                <span id="progressText" class="progress-badge" aria-live="polite">0% пройдено</span>
                 <button id="themeToggle" class="icon-btn" aria-label="Переключить тему">🌓</button>
             </div>
+            <div class="top-progress" aria-hidden="true"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
         </header>
 
         <aside id="sidebar" class="sidebar" aria-label="Навигация по разделам">
@@ -36,7 +38,7 @@
         </aside>
 
         <main id="main" class="main" role="main" tabindex="-1">
-            <section id="loader" class="loader" aria-live="polite">
+            <section id="loader" class="loader" aria-live="polite" hidden>
                 <div class="spinner" aria-hidden="true"></div>
                 <p>Загрузка курса…</p>
             </section>
@@ -44,12 +46,7 @@
             <section id="view" hidden></section>
         </main>
 
-        <footer class="app-footer">
-            <div class="progress-wrap">
-                <div class="progress-bar" id="progressBar" style="width:0%"></div>
-            </div>
-            <span id="progressText">0% пройдено</span>
-        </footer>
+        <footer class="app-footer"></footer>
     </div>
 
     <script src="app.js" defer></script>

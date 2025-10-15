@@ -8,10 +8,12 @@ body{margin:0;font-family:-apple-system,system-ui,BlinkMacSystemFont,"SF Pro Tex
 .b1{left:-10%;top:-10%;width:50vw;height:50vw;background:radial-gradient(circle at 30% 30%,#38bdf8,transparent 60%)}
 .b2{right:-10%;top:20%;width:40vw;height:40vw;background:radial-gradient(circle at 60% 30%,#22c55e,transparent 60%)}
 .b3{left:30%;bottom:-10%;width:45vw;height:45vw;background:radial-gradient(circle at 50% 50%,#a78bfa,transparent 60%)}
-.app-header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:12px calc(16px + env(safe-area-inset-right)) 12px calc(16px + env(safe-area-inset-left));background:linear-gradient(180deg,rgba(15,23,42,.9),rgba(15,23,42,.6));backdrop-filter:saturate(1.2) blur(10px);border-bottom:1px solid rgba(148,163,184,.12)}
+.app-header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:8px calc(16px + env(safe-area-inset-right)) 8px calc(16px + env(safe-area-inset-left));background:linear-gradient(180deg,rgba(15,23,42,.9),rgba(15,23,42,.6));backdrop-filter:saturate(1.2) blur(10px);border-bottom:1px solid rgba(148,163,184,.12);flex-wrap:wrap}
 .brand{margin:0;font-size:18px;font-weight:700;letter-spacing:.2px}
 .icon-btn{appearance:none;border:0;background:transparent;color:var(--text);font-size:20px;cursor:pointer;padding:8px;border-radius:10px}
 .icon-btn:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.top-progress{position:relative;flex-basis:100%;height:6px;background:rgba(148,163,184,.15);border-radius:999px;overflow:hidden}
+.progress-badge{display:inline-block;margin-right:8px;padding:4px 8px;border-radius:999px;background:rgba(148,163,184,.12);border:1px solid rgba(148,163,184,.2);font-size:12px;color:var(--muted)}
 .sidebar{position:fixed;inset:56px auto calc(56px + env(safe-area-inset-bottom)) 0;width:300px;max-width:85vw;background:var(--card);border-right:1px solid rgba(148,163,184,.12);transform:translateX(-100%);transition:transform .25s ease;overflow:auto}
 .sidebar.open{transform:none}
 .nav-list{list-style:none;margin:0;padding:12px}
@@ -22,7 +24,7 @@ body{margin:0;font-family:-apple-system,system-ui,BlinkMacSystemFont,"SF Pro Tex
 @media(min-width:960px){.main{margin-left:300px;padding:24px 24px 96px}.sidebar{transform:none}}
 .card{background:var(--card);border:1px solid rgba(148,163,184,.12);border-radius:18px;padding:16px;box-shadow:0 8px 26px rgba(2,6,23,.28)}
 .card{background:linear-gradient(180deg,rgba(15,23,42,.72),rgba(15,23,42,.58)),var(--glass);backdrop-filter:saturate(1.15) blur(12px)}
-.loader{display:grid;place-items:center;min-height:40vh}
+.loader{display:grid;place-items:center;min-height:30vh}
 .spinner{width:36px;height:36px;border-radius:50%;border:3px solid rgba(148,163,184,.25);border-top-color:var(--brand);animation:spin .9s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .grid{display:grid;gap:12px}
@@ -39,7 +41,7 @@ body{margin:0;font-family:-apple-system,system-ui,BlinkMacSystemFont,"SF Pro Tex
 .choice:hover{transform:translateY(-1px);border-color:var(--brand)}
 .choice.correct{border-color:var(--good);background:rgba(34,197,94,.08)}
 .choice.wrong{border-color:var(--bad);background:rgba(239,68,68,.08)}
-.progress-wrap{position:fixed;left:0;right:0;bottom:56px;height:6px;background:rgba(148,163,184,.15)}
+.progress-wrap{display:none}
 .progress-bar{height:100%;background:linear-gradient(90deg,#22c55e,#38bdf8)}
 .app-footer{position:fixed;left:0;right:0;bottom:0;padding:10px calc(16px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));background:var(--card);border-top:1px solid rgba(148,163,184,.12);display:flex;align-items:center;gap:12px}
 .kbd{display:inline-block;padding:2px 6px;border:1px solid rgba(148,163,184,.3);border-radius:6px;background:rgba(148,163,184,.12);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
