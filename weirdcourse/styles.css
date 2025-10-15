@@ -58,6 +58,10 @@ body{margin:0;font-family:-apple-system,system-ui,BlinkMacSystemFont,"SF Pro Tex
 .course-body{padding:12px}
 .course-title{margin:0 0 4px;font-size:16px;font-weight:600}
 .course-summary{margin:0;color:var(--muted);font-size:14px}
+/* quiz feedback */
+.feedback{transition:opacity .2s ease, color .2s ease;opacity:.95}
+.feedback.ok{color:var(--good)}
+.feedback.no{color:var(--bad)}
 /* accessibility helpers */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
