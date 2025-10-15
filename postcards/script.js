@@ -592,18 +592,35 @@ class PostcardGenerator {
     downloadPostcard() {
         if (!this.selectedBackground) return;
         
-        // Создаем ссылку для скачивания из локального canvas
-        const link = document.createElement('a');
-        link.download = `открытка_${this.formData.recipient}_${new Date().toISOString().split('T')[0]}.jpg`;
-        link.href = this.previewCanvas.toDataURL('image/jpeg', 0.9);
+        // Создаем новый canvas для финальной открытки
+        const downloadCanvas = document.createElement('canvas');
+        downloadCanvas.width = 800;
+        downloadCanvas.height = 600;
+        const downloadCtx = downloadCanvas.getContext('2d');
         
-        // Запускаем скачивание
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Показываем уведомление об успешном скачивании
-        this.showSuccess('Открытка успешно скачана!');
+        // Создаем изображение из выбранного фона
+        const img = new Image();
+        img.onload = () => {
+            // Рисуем фоновое изображение
+            downloadCtx.drawImage(img, 0, 0, downloadCanvas.width, downloadCanvas.height);
+            
+            // Добавляем текст поздравления
+            this.addTextToCanvas(downloadCtx, downloadCanvas.width, downloadCanvas.height);
+            
+            // Создаем ссылку для скачивания
+            const link = document.createElement('a');
+            link.download = `открытка_${this.formData.recipient}_${new Date().toISOString().split('T')[0]}.jpg`;
+            link.href = downloadCanvas.toDataURL('image/jpeg', 0.9);
+            
+            // Запускаем скачивание
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Показываем уведомление об успешном скачивании
+            this.showSuccess('Открытка успешно скачана!');
+        };
+        img.src = this.selectedBackground.dataUrl;
     }
     
     resetForm() {
