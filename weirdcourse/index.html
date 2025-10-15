@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Корпоративный лексикон: курс</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="icons/icon-192.png">
+</head>
+<body>
+    <noscript>Для работы приложения нужен JavaScript.</noscript>
+    <div id="app">
+        <div class="bg" aria-hidden="true">
+            <span class="blob b1"></span>
+            <span class="blob b2"></span>
+            <span class="blob b3"></span>
+        </div>
+        <header class="app-header" role="banner">
+            <button id="menuBtn" class="icon-btn" aria-label="Меню" aria-haspopup="true" aria-controls="sidebar">☰</button>
+            <h1 class="brand">Корпоративный лексикон</h1>
+            <div class="header-actions">
+                <button id="themeToggle" class="icon-btn" aria-label="Переключить тему">🌓</button>
+            </div>
+        </header>
+
+        <aside id="sidebar" class="sidebar" aria-label="Навигация по разделам">
+            <nav>
+                <ul id="navList" class="nav-list"></ul>
+            </nav>
+        </aside>
+
+        <main id="main" class="main" role="main" tabindex="-1">
+            <section id="loader" class="loader" aria-live="polite">
+                <div class="spinner" aria-hidden="true"></div>
+                <p>Загрузка курса…</p>
+            </section>
+
+            <section id="view" hidden></section>
+        </main>
+
+        <footer class="app-footer">
+            <div class="progress-wrap">
+                <div class="progress-bar" id="progressBar" style="width:0%"></div>
+            </div>
+            <span id="progressText">0% пройдено</span>
+        </footer>
+    </div>
+
+    <script src="app.js" defer></script>
+</body>
+</html>
+
