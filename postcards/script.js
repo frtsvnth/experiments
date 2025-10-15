@@ -547,8 +547,8 @@ class PostcardGenerator {
         
         // Заголовок "Кому"
         ctx.font = 'bold 32px Arial';
-        ctx.strokeText(`Дорогому(ой) ${recipient}!`, canvas.width / 2, 100);
-        ctx.fillText(`Дорогому(ой) ${recipient}!`, canvas.width / 2, 100);
+        ctx.strokeText(`${recipient}!`, canvas.width / 2, 100);
+        ctx.fillText(`${recipient}!`, canvas.width / 2, 100);
         
         // Текст поздравления
         ctx.font = '24px Arial';
@@ -576,9 +576,9 @@ class PostcardGenerator {
         
         // Подпись "От кого"
         y += 80;
-        ctx.font = 'bold 28px Arial';
-        ctx.strokeText(`С любовью, ${sender}`, canvas.width / 2, y);
-        ctx.fillText(`С любовью, ${sender}`, canvas.width / 2, y);
+        ctx.font = 'bold 20px Arial';
+        ctx.strokeText(`С любовью и уважением, ${sender}`, canvas.width / 2, y);
+        ctx.fillText(`С любовью и уважением, ${sender}`, canvas.width / 2, y);
         
         // Декоративные элементы
         ctx.font = '60px Arial';
