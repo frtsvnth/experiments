@@ -299,10 +299,29 @@
           <button class="btn" id="continueBtn">Продолжить</button>
         </div>
       </div>
+
+      <div class="course-grid" id="coursesGrid"></div>
     `;
     const nextId = nextUnfinishedLessonId();
     const btn = qs('#continueBtn');
     btn.onclick = () => { location.hash = `#${nextId}`; };
+
+    // Рендер карточек курсов с изображениями (SVG data URI)
+    const grid = qs('#coursesGrid');
+    const items = lessons.filter(l => !l.exam).slice(0, 9); // ограничим список
+    grid.innerHTML = items.map((l, idx) => {
+      const svg = courseCoverSvg(idx);
+      const img = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+      return `
+        <a class="course-card" href="#${l.id}">
+          <img class="course-img" src="${img}" alt="Обложка: ${l.title}">
+          <div class="course-body">
+            <h3 class="course-title">${l.title}</h3>
+            <p class="course-summary">${l.summary || ''}</p>
+          </div>
+        </a>
+      `;
+    }).join('');
   }
 
   function nextUnfinishedLessonId() {
@@ -530,6 +549,18 @@
     qs('#themeToggle').onclick = toggleTheme;
     const savedTheme = localStorage.getItem(themeKey);
     if (savedTheme) setTheme(savedTheme);
+
+    // Улучшение навигации SPA для GitHub Pages: делегируем клики по ссылкам '#'
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a');
+      if (!a) return;
+      const href = a.getAttribute('href') || '';
+      if (href.startsWith('#')) {
+        e.preventDefault();
+        const id = href.slice(1);
+        if (location.hash.slice(1) !== id) location.hash = `#${id}`; else router();
+      }
+    });
   }
 
   // boot
@@ -537,6 +568,28 @@
   initUI();
   window.addEventListener('hashchange', router);
   window.addEventListener('load', router);
+
+  function courseCoverSvg(seed){
+    const palettes = [
+      ['#0ea5e9','#22c55e','#a78bfa'],
+      ['#f59e0b','#10b981','#3b82f6'],
+      ['#ef4444','#06b6d4','#84cc16']
+    ];
+    const p = palettes[seed % palettes.length];
+    return `<?xml version="1.0" encoding="UTF-8"?>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="${p[0]}"/>
+          <stop offset="100%" stop-color="${p[1]}"/>
+        </linearGradient>
+      </defs>
+      <rect width="1200" height="675" fill="url(#g)"/>
+      <circle cx="220" cy="160" r="140" fill="${p[2]}" opacity="0.35"/>
+      <circle cx="980" cy="520" r="180" fill="${p[2]}" opacity="0.25"/>
+      <text x="60" y="620" fill="rgba(255,255,255,.9)" font-family="-apple-system,Helvetica,Arial" font-size="54" font-weight="700">Курс</text>
+    </svg>`;
+  }
 })();
 
 
