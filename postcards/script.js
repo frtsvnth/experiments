@@ -528,7 +528,7 @@ class PostcardGenerator {
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
             
             // Добавляем текст поздравления
-            this.addTextToCanvas(ctx);
+            this.addTextToCanvas(ctx, canvas.width, canvas.height);
             
             // Прокручиваем к предварительному просмотру
             this.previewSection.scrollIntoView({ behavior: 'smooth' });
@@ -536,7 +536,7 @@ class PostcardGenerator {
         img.src = this.selectedBackground.dataUrl;
     }
     
-    addTextToCanvas(ctx) {
+    addTextToCanvas(ctx, width, height) {
         const { recipient, sender, message } = this.formData;
         
         // Настройки шрифта
@@ -547,15 +547,15 @@ class PostcardGenerator {
         
         // Заголовок "Кому"
         ctx.font = 'bold 32px Arial';
-        ctx.strokeText(`${recipient}!`, canvas.width / 2, 100);
-        ctx.fillText(`${recipient}!`, canvas.width / 2, 100);
+        ctx.strokeText(`${recipient}!`, width / 2, 100);
+        ctx.fillText(`${recipient}!`, width / 2, 100);
         
         // Текст поздравления
         ctx.font = '24px Arial';
         const words = message.split(' ');
         let line = '';
         let y = 200;
-        const maxWidth = canvas.width - 100;
+        const maxWidth = width - 100;
         
         for (let i = 0; i < words.length; i++) {
             const testLine = line + words[i] + ' ';
@@ -563,30 +563,30 @@ class PostcardGenerator {
             const testWidth = metrics.width;
             
             if (testWidth > maxWidth && i > 0) {
-                ctx.strokeText(line, canvas.width / 2, y);
-                ctx.fillText(line, canvas.width / 2, y);
+                ctx.strokeText(line, width / 2, y);
+                ctx.fillText(line, width / 2, y);
                 line = words[i] + ' ';
                 y += 35;
             } else {
                 line = testLine;
             }
         }
-        ctx.strokeText(line, canvas.width / 2, y);
-        ctx.fillText(line, canvas.width / 2, y);
+        ctx.strokeText(line, width / 2, y);
+        ctx.fillText(line, width / 2, y);
         
         // Подпись "От кого"
         y += 80;
-        ctx.font = 'bold 20px Arial';
-        ctx.strokeText(`С любовью и уважением, ${sender}`, canvas.width / 2, y);
-        ctx.fillText(`С любовью и уважением, ${sender}`, canvas.width / 2, y);
+        ctx.font = 'bold 28px Arial';
+        ctx.strokeText(`С любовью и уважением, ${sender}`, width / 2, y);
+        ctx.fillText(`С любовью и уважением, ${sender}`, width / 2, y);
         
         // Декоративные элементы
         ctx.font = '60px Arial';
-        ctx.strokeText('🎉', canvas.width / 2 - 100, y + 50);
-        ctx.fillText('🎉', canvas.width / 2 - 100, y + 50);
+        ctx.strokeText('🎉', width / 2 - 100, y + 50);
+        ctx.fillText('🎉', width / 2 - 100, y + 50);
         
-        ctx.strokeText('🎊', canvas.width / 2 + 100, y + 50);
-        ctx.fillText('🎊', canvas.width / 2 + 100, y + 50);
+        ctx.strokeText('🎊', width / 2 + 100, y + 50);
+        ctx.fillText('🎊', width / 2 + 100, y + 50);
     }
     
     downloadPostcard() {
