@@ -391,19 +391,41 @@
                 });
             });
             
-            // Функция открытия страницы во фрейме
-            function openInFrame(url) {
-                contentFrame.src = url;
-                frameContainer.classList.add('active');
-                body.classList.add('viewer-mode');
-            }
-            
-            // Обработка кнопки "Назад"
-            backButton.addEventListener('click', function() {
-                frameContainer.classList.remove('active');
-                body.classList.remove('viewer-mode');
-                contentFrame.src = '';
-            });
+// Функция открытия страницы во фрейме
+function openInFrame(url) {
+    contentFrame.src = url;
+    frameContainer.classList.add('active');
+    body.classList.add('viewer-mode');
+    
+    // Устанавливаем обработчик для фокусировки после загрузки фрейма
+    contentFrame.addEventListener('load', focusFrame);
+}
+
+// Функция для установки фокуса на фрейм
+function focusFrame() {
+    try {
+        // Пытаемся установить фокус на фрейм
+        contentFrame.focus();
+        
+        // Если фрейм загрузил контент с того же источника, 
+        // можно также попытаться установить фокус на его тело
+        if (contentFrame.contentWindow && contentFrame.contentWindow.document) {
+            contentFrame.contentWindow.focus();
+        }
+    } catch (e) {
+        // Игнорируем ошибки безопасности (кросс-доменные ограничения)
+        console.log("Не удалось установить фокус на фрейм из-за политики безопасности");
+    }
+}
+
+// Обработка кнопки "Назад" - удаляем обработчик фокуса
+backButton.addEventListener('click', function() {
+    frameContainer.classList.remove('active');
+    body.classList.remove('viewer-mode');
+    contentFrame.src = '';
+    // Удаляем обработчик, чтобы он не накапливался
+    contentFrame.removeEventListener('load', focusFrame);
+});
             
             // Закрытие по ESC
             document.addEventListener('keydown', function(e) {
