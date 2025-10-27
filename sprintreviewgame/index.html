@@ -379,7 +379,7 @@
 		<!-- Игровой экран -->
 		<div id="game-screen">
 			<div class="game-area">
-				<div class="timer" id="timer">20.00</div>
+				<div class="timer" id="timer">15.00</div>
 
 				<div class="slide-area" id="slide-area">
 					<!-- Слайд будет здесь -->
@@ -401,6 +401,7 @@
 
 				<div class="draggable image" id="element3">
 					Интерфейс v2.0
+					<p><img src="/interface.png"></p>
 				</div>
 
 				<div class="draggable chart" id="element4">
@@ -417,6 +418,7 @@
 
 				<div class="draggable meme" id="element7">
 					Фото моей собаки
+					<p><img src="/dog-photo.png"></p>
 				</div>
 
 				<div class="draggable icon" id="element8">
@@ -574,7 +576,7 @@
                     } else if (elementId === 'element8') {
                         return {
                             success: false,
-                            message: 'Вы добавили неподходящий элемент! Презентация провалена.'
+                            message: 'Вы оставили на слайде неподходящее послание! Презентация провалена.'
                         };
                     }
                 }
