@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Retro Flight — бесконечный полёт</title>
+<style>
+  :root{
+    --bg:#05060b;
+    --panel:#081225cc;
+    --accent:#00ffd7;
+    --muted:#99a3bf;
+  }
+  html,body{height:100%;margin:0;background:var(--bg);font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+  canvas{display:block;width:100vw;height:100vh}
+
+  .ui {
+    position:fixed;right:18px;top:18px;width:300px;background:linear-gradient(180deg, rgba(10,14,26,0.9), rgba(6,8,16,0.75));border:1px solid rgba(255,255,255,0.04);backdrop-filter:blur(6px);padding:12px;border-radius:12px;color:var(--muted);box-shadow:0 8px 30px rgba(2,6,23,0.6);
+  }
+  .ui h3{margin:0 0 8px 0;color:var(--accent);font-weight:600}
+  .row{display:flex;align-items:center;gap:8px;margin:8px 0}
+  .row label{flex:1;font-size:13px}
+  .row input[type=range]{flex:2}
+  .color{width:40px;height:28px;border-radius:6px;border:1px solid rgba(255,255,255,0.06)}
+  .toggle{display:inline-block;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,0.02);cursor:pointer;font-size:13px}
+  .footer{font-size:12px;color:#6f7ba6;margin-top:8px}
+  .big-toggle{display:flex;gap:8px}
+  button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:8px;color:var(--muted);cursor:pointer}
+
+  /* retro grid overlay (subtle) */
+  .grid{position:fixed;left:0;top:0;right:0;bottom:0;pointer-events:none;mix-blend-mode:screen}
+
+  /* small responsive */
+  @media (max-width:420px){.ui{width:92%;left:4%;right:4%;top:12px}}
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+<div class="ui" id="ui">
+  <h3>Retro Flight — настройки</h3>
+  <div class="row"><label>Скорость</label><input id="speed" type="range" min="0" max="2" step="0.01" value="0.6"></div>
+  <div class="row"><label>Высота пиков</label><input id="peak" type="range" min="10" max="220" step="1" value="80"></div>
+  <div class="row"><label>Кол-во слоёв</label><input id="layers" type="range" min="3" max="22" step="1" value="10"></div>
+  <div class="row"><label>Ширина линий</label><input id="lineWidth" type="range" min="0.2" max="3" step="0.1" value="1"></div>
+  <div class="row"><label>Цвет линий</label><input id="color" class="color" type="color" value="#00ffd7"></div>
+  <div class="row"><label>Глубина перспективы</label><input id="fov" type="range" min="400" max="1600" step="10" value="900"></div>
+  <div class="row"><label>Шум (развед.)</label><input id="rough" type="range" min="0" max="1" step="0.01" value="0.6"></div>
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <button id="pause">Пауза</button>
+    <button id="reset">Сброс</button>
+    <button id="download">Сохранить .html</button>
+  </div>
+  <div class="footer">Стиль: авиасим 80–90х — все полигоны линиями. Холсты масштабируются автоматически.</div>
+</div>
+<div class="grid" aria-hidden="true">
+  <svg width="100%" height="100%">
+    <defs>
+      <linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#001021" stop-opacity="0.06"/><stop offset="1" stop-color="#000" stop-opacity="0.08"/></linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#g)"/>
+  </svg>
+</div>
+
+<script>
+// ------------------ utility: seeded 1D value noise ------------------
+function makeSeededRandom(seed){
+  let s = typeof seed === 'number' ? seed : Date.now();
+  return function(){
+    s = Math.imul(48271, s) | 0;
+    s = (s + 0x7fffffff) >>> 0;
+    return (s % 100000) / 100000;
+  }
+}
+function valueNoise1D(x, rnd){
+  const xi = Math.floor(x);
+  const t = x - xi;
+  const a = rnd(xi);
+  const b = rnd(xi+1);
+  // smoothstep
+  const u = t * t * (3 - 2 * t);
+  return a*(1-u) + b*u;
+}
+
+// ------------------ app ------------------
+const canvas = document.getElementById('scene');
+const ctx = canvas.getContext('2d');
+let W=0,H=0, last=0;
+function resize(){
+  const dpr = window.devicePixelRatio || 1;
+  W = canvas.width = Math.floor(innerWidth * dpr);
+  H = canvas.height = Math.floor(innerHeight * dpr);
+  canvas.style.width = innerWidth + 'px';
+  canvas.style.height = innerHeight + 'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener('resize',resize);
+resize();
+
+// settings
+const S = {
+  speed:0.6, peak:80, layers:10, lineWidth:1, color:'#00ffd7', fov:900, rough:0.6
+};
+
+// connect UI
+['speed','peak','layers','lineWidth','color','fov','rough'].forEach(id=>{
+  const el=document.getElementById(id);
+  el.addEventListener('input',()=>{
+    const v = el.type==='range' ? parseFloat(el.value) : el.value;
+    S[id] = v;
+    if(id==='layers') regenerateLayers();
+  });
+});
+let paused=false;
+document.getElementById('pause').addEventListener('click',()=>{paused=!paused;document.getElementById('pause').textContent = paused? 'Возобновить' : 'Пауза';});
+document.getElementById('reset').addEventListener('click',()=>{regenerateLayers();});
+// download html
+const dlBtn = document.getElementById('download');
+dlBtn.addEventListener('click',()=>{
+  const blob = new Blob([document.documentElement.outerHTML],{type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='retro-flight.html'; a.click(); URL.revokeObjectURL(url);
+});
+
+// layers: each layer is a ridge polygon (wireframe)
+let layers = [];
+let seedRnd = makeSeededRandom(1337);
+function regenRidge(widthSegments, amplitude, z){
+  // create points across normalized -1..1
+  const points=[];
+  const rnd = (i)=>{
+    // deterministic pseudo-random based on index and seed
+    const base = (Math.sin(i*12.9898 + z*5.123 + seedRnd()) * 43758.5453) % 1;
+    return (base + 1) % 1;
+  };
+  for(let i=0;i<=widthSegments;i++){
+    const x = i/widthSegments;
+    const nx = x*10; // scale for noise frequency
+    const h = valueNoise1D(nx * S.rough * 6 + z*3, n=>{ return seedRnd(); }) ;
+    const y = h*amplitude;
+    points.push({x: x*2-1, y});
+  }
+  return points;
+}
+
+function generateLayer(i,total){
+  const z = i/total; // 0..1, 0 far, 1 near
+  const widthSegments = Math.floor(24 + (1-z)*40);
+  const amplitude = S.peak * (0.25 + (1 - z) * 1.8);
+  const pts = regenRidge(widthSegments, amplitude, z);
+  return {
+    z, pts, offset: Math.random()*2000, speed: 0.3 + (1-z)*1.8, baseY: 0.15 + z*0.6
+  }
+}
+
+function regenerateLayers(){
+  layers = [];
+  const n = Math.max(3, Math.floor(S.layers));
+  for(let i=0;i<n;i++) layers.push(generateLayer(i,n));
+}
+regenerateLayers();
+
+// projection & draw
+function project(px,py,z){
+  // simple perspective: x * scale, y scaled and moved toward horizon
+  const fov = S.fov;
+  const scale = fov / (fov + z * 1000);
+  const x = (px) * (innerWidth/2) * scale + innerWidth/2;
+  const horizon = innerHeight * 0.35;
+  const y = horizon + (py) * scale + z * innerHeight * 0.15;
+  return {x,y,scale};
+}
+
+function drawShip(){
+  // simple wireframe ship in center bottom
+  const cx = innerWidth/2, cy = innerHeight*0.72;
+  ctx.save(); ctx.lineWidth = Math.max(0.6, S.lineWidth); ctx.strokeStyle = S.color; ctx.beginPath();
+  // fuselage
+  ctx.moveTo(cx-26, cy);
+  ctx.lineTo(cx+26, cy);
+  ctx.moveTo(cx-18, cy-6);
+  ctx.lineTo(cx+18, cy-6);
+  // wings
+  ctx.moveTo(cx-28, cy+6);
+  ctx.lineTo(cx-6, cy-4);
+  ctx.moveTo(cx+6, cy-4);
+  ctx.lineTo(cx+28, cy+6);
+  // tail
+  ctx.moveTo(cx-6, cy-10);
+  ctx.lineTo(cx-6, cy-24);
+  ctx.moveTo(cx+6, cy-10);
+  ctx.lineTo(cx+6, cy-24);
+  ctx.stroke();
+  ctx.restore();
+}
+
+function draw(timestamp){
+  if(!last) last = timestamp; const dt = Math.min(50, timestamp - last)/16.666; last = timestamp;
+  if(!paused){
+    // advance offsets
+    for(let i=0;i<layers.length;i++){
+      const L = layers[i];
+      L.offset += dt * S.speed * (0.6 + (1 - L.z) * 2.2) * L.speed;
+      if(L.offset > 1000){
+        // recycle: shift layer to far end and regenerate points
+        const idx = layers.indexOf(L);
+        layers.splice(idx,1);
+        layers.unshift(generateLayer(0,layers.length+1));
+        // ensure count
+        while(layers.length < S.layers) layers.unshift(generateLayer(0,Math.floor(S.layers)));
+      }
+    }
+  }
+
+  // clear
+  ctx.clearRect(0,0,innerWidth,innerHeight);
+  // subtle glow background gradient
+  const g = ctx.createLinearGradient(0,0,0,innerHeight);
+  g.addColorStop(0,'#060712'); g.addColorStop(1,'#000007');
+  ctx.fillStyle = g; ctx.fillRect(0,0,innerWidth,innerHeight);
+
+  // stars — static but slight parallax based on time
+  drawStars(timestamp);
+
+  // draw layers from far to near
+  const sorted = layers.slice().sort((a,b)=> a.z - b.z);
+  for(let L of sorted){
+    ctx.lineWidth = Math.max(0.3, S.lineWidth * (0.8 + (1-L.z)));
+    ctx.strokeStyle = S.color;
+    ctx.beginPath();
+    const pts = L.pts;
+    for(let i=0;i<pts.length;i++){
+      // shift x by offset to create motion
+      const px = (pts[i].x + ((L.offset/120) % 1) * 2);
+      const py = pts[i].y;
+      const proj = project(px, py, L.z*100 + L.offset*0.02);
+      if(i===0) ctx.moveTo(proj.x,proj.y);
+      else ctx.lineTo(proj.x,proj.y);
+    }
+    ctx.stroke();
+
+    // draw grid lines downwards to emphasise perspective
+    ctx.beginPath();
+    for(let i=0;i<pts.length;i+=Math.max(1,Math.floor(pts.length/14))){
+      const px = pts[i].x + ((L.offset/120) % 1) * 2;
+      const py = pts[i].y;
+      const p = project(px,py,L.z*100 + L.offset*0.02);
+      ctx.moveTo(p.x,p.y);
+      // to bottom
+      ctx.lineTo(innerWidth/2, innerHeight*0.9 - L.z*innerHeight*0.05);
+    }
+    ctx.stroke();
+  }
+
+  drawShip();
+  requestAnimationFrame(draw);
+}
+
+// stars
+const stars = [];
+for(let i=0;i<150;i++) stars.push({x:Math.random(), y:Math.random()*0.6, s:Math.random()*1.6});
+function drawStars(t){
+  ctx.save();
+  for(let s of stars){
+    const x = s.x*innerWidth + (t*0.00002 * (s.s*20));
+    const y = s.y*innerHeight;
+    const r = Math.max(0.4, s.s*0.9);
+    ctx.globalAlpha = 0.7 + Math.sin(t*0.002 + s.x*10)*0.3;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(x%innerWidth, y, r, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+// kick off
+requestAnimationFrame(draw);
+
+// ensure UI updates values to match S after generating layers
+function syncUI(){
+  document.getElementById('speed').value = S.speed;
+  document.getElementById('peak').value = S.peak;
+  document.getElementById('layers').value = S.layers;
+  document.getElementById('lineWidth').value = S.lineWidth;
+  document.getElementById('color').value = S.color;
+  document.getElementById('fov').value = S.fov;
+  document.getElementById('rough').value = S.rough;
+}
+syncUI();
+
+// small animation loop to keep canvas sized to css pixels correctly on resize
+let lastResize = 0; setInterval(()=>{ if(Date.now() - lastResize > 200){ resize(); lastResize = Date.now(); } },250);
+
+</script>
+</body>
+</html>
