@@ -25,7 +25,7 @@
 
     async function fetchMessages() {
       // Пример: Google Sheets API JSON
-      const res = await fetch('https://opensheet.elk.sh/<sheet_id>/<sheet_name>');
+      const res = await fetch('https://opensheet.elk.sh/1N1tiu9YJmmFBrVAgPKwUF2YaFvx6PMMGb-Or-eorme8/Focus');
       const data = await res.json();
       const latest = data[data.length - 1];
       const ts = new Date(latest.timestamp).getTime();
