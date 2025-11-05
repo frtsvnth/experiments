@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Party Wall</title>
+  <style>
+    body { margin:0; overflow:hidden; font-family:sans-serif; }
+    video.bg { position:fixed; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:-1; }
+    .message { position:absolute; bottom:10%; left:50%; transform:translateX(-50%);
+      background:rgba(0,0,0,0.6); color:white; padding:20px; border-radius:10px; max-width:80%;
+      text-align:center; font-size:1.2em; display:none; }
+    img.photo { max-width:300px; border-radius:10px; display:block; margin:0 auto 10px; }
+  </style>
+</head>
+<body>
+  <video class="bg" autoplay loop muted playsinline>
+    <source src="party-background.mp4" type="video/mp4">
+  </video>
+
+  <div class="message" id="messageBox"></div>
+
+  <script>
+    const box = document.getElementById('messageBox');
+    let lastTimestamp = 0;
+
+    async function fetchMessages() {
+      // Пример: Google Sheets API JSON
+      const res = await fetch('https://opensheet.elk.sh/<sheet_id>/<sheet_name>');
+      const data = await res.json();
+      const latest = data[data.length - 1];
+      const ts = new Date(latest.timestamp).getTime();
+      if (ts > lastTimestamp) {
+        lastTimestamp = ts;
+        showMessage(latest);
+      }
+    }
+
+    function showMessage(msg) {
+      box.innerHTML = `<img class="photo" src="${msg.image_url}"><div>${msg.text}</div>`;
+      box.style.display = 'block';
+      box.style.opacity = 0;
+      box.animate([{opacity:0}, {opacity:1}], {duration:1000, fill:'forwards'});
+      setTimeout(()=>box.animate([{opacity:1}, {opacity:0}], {duration:1000, fill:'forwards'}), 8000);
+    }
+
+    setInterval(fetchMessages, 10000); // каждые 10 секунд проверяем новые
+  </script>
+</body>
+</html>
