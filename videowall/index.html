@@ -694,7 +694,7 @@ function startMarquee(item) {
     
     // РАССЧИТАННАЯ СКОРОСТЬ С УЧЕТОМ ГЛОБАЛЬНОГО КОЭФФИЦИЕНТА
     const spd = TIMINGS.marqueePixelsPerSec;
-    const dur = Math.max(TIMINGS.marqueeMinDuration, (cw + vw * 4) / spd);
+    const dur = Math.max(TIMINGS.marqueeMinDuration, (cw + vw * 2) / spd);
     
     const st = document.getElementById('marqStyle') || (() => {
       let s = document.createElement('style');
