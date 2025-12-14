@@ -1,0 +1,249 @@
+:root {
+    --dark-bg: #0a0a0a;
+    --darker-bg: #050505;
+    --accent: #c5a47e;
+    --accent-glow: rgba(197, 164, 126, 0.3);
+    --text: #e6e6e6;
+    --control-bg: #1a1a1a;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--dark-bg);
+    color: var(--text);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin: 20px 0;
+    text-shadow: 0 0 10px var(--accent-glow);
+    letter-spacing: 1px;
+}
+
+.player {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.play-btn {
+    background: radial-gradient(circle, var(--accent) 0%, #a68a64 70%);
+    border: none;
+    border-radius: 50%;
+    width: 150px;
+    height: 150px;
+    cursor: pointer;
+    box-shadow: 0 0 25px var(--accent-glow),
+                inset 0 0 15px rgba(0,0,0,0.5);
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.play-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 35px var(--accent-glow);
+}
+
+.play-btn:active {
+    transform: scale(0.95);
+}
+
+.play-icon, .pause-icon {
+    width: 50px;
+    height: 50px;
+    fill: var(--darker-bg);
+}
+
+.play-icon {
+    display: block;
+}
+
+.pause-icon {
+    display: none;
+}
+
+.playing .play-icon {
+    display: none;
+}
+
+.playing .pause-icon {
+    display: block;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.progress {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+}
+
+#progressSlider {
+    width: 80%;
+    height: 4px;
+    -webkit-appearance: none;
+    background: var(--accent);
+    border-radius: 2px;
+    outline: none;
+}
+
+#progressSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--darker-bg);
+    cursor: pointer;
+    box-shadow: 0 0 5px var(--accent-glow);
+}
+
+.time-info {
+    font-size: 0.9rem;
+    color: var(--text);
+    margin-top: 5px;
+}
+
+.control-btn {
+    background: var(--control-bg);
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.control-btn:hover {
+    background: var(--accent);
+}
+
+.control-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: var(--text);
+}
+
+#volumeSlider {
+    width: 150px;
+    height: 4px;
+    -webkit-appearance: none;
+    background: var(--control-bg);
+    border-radius: 2px;
+    outline: none;
+    margin-top: 5px;
+}
+
+#volumeSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+footer {
+    margin-top: 40px;
+    padding: 20px;
+    font-size: 0.9rem;
+    color: #aaa;
+    border-top: 1px solid #222;
+}
+
+.install-prompt {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 15px;
+    max-width: 90%;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+    display: none;
+}
+
+.install-prompt p {
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+#closePrompt {
+    background: var(--control-bg);
+    color: var(--text);
+    border: 1px solid var(--accent);
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+#closePrompt:hover {
+    background: var(--accent);
+}
+
+@media (max-height: 700px) {
+    .play-btn {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .play-icon, .pause-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .controls {
+        margin-top: 20px;
+    }
+}
+
+@media (max-height: 500px) {
+    header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .play-btn {
+        width: 100px;
+        height: 100px;
+    }
+}s
