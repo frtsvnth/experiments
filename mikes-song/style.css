@@ -101,6 +101,108 @@ header h1 {
     gap: 20px;
     margin-top: 30px;
 }
+/* iOS style toggle */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+    margin-top: 20px;
+    margin-left: 10px;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: #2196F3;
+}
+input:checked + .slider:before {
+    transform: translateX(22px);
+}
+.switch-label {
+    font-size: 0.9rem;
+    margin-left: 8px;
+    vertical-align: middle;
+    color: var(--text);
+}
+
+/* iOS style switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+    margin-left: 10px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+}
+
+.switch-label {
+    font-size: 0.9rem;
+    color: var(--text);
+    margin-left: 8px;
+    vertical-align: middle;
+}
 
 .progress {
     display: flex;
@@ -110,7 +212,7 @@ header h1 {
 }
 
 #progressSlider {
-    width: 80%;
+    width: 100%;
     height: 4px;
     -webkit-appearance: none;
     background: var(--accent);
@@ -129,9 +231,9 @@ header h1 {
 }
 
 .time-info {
-    font-size: 0.9rem;
+    font-size: 0.5rem;
     color: var(--text);
-    margin-top: 5px;
+    margin-top: 15px;
 }
 
 .control-btn {
@@ -157,25 +259,6 @@ header h1 {
     fill: var(--text);
 }
 
-#volumeSlider {
-    width: 150px;
-    height: 4px;
-    -webkit-appearance: none;
-    background: var(--control-bg);
-    border-radius: 2px;
-    outline: none;
-    margin-top: 5px;
-}
-
-#volumeSlider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--accent);
-    cursor: pointer;
-    box-shadow: 0 0 10px var(--accent-glow);
-}
 
 footer {
     margin-top: 40px;
@@ -246,4 +329,4 @@ footer {
         width: 100px;
         height: 100px;
     }
-}s
+}

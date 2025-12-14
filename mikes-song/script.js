@@ -2,12 +2,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const audio = document.getElementById('audio');
     const playBtn = document.getElementById('playBtn');
     const rewindBtn = document.getElementById('rewindBtn');
-    const volumeSlider = document.getElementById('volumeSlider');
     const progressSlider = document.getElementById('progressSlider');
-    const currentTimeSpan = document.getElementById('currentTime');
-    const durationSpan = document.getElementById('duration');
+    const timeDisplay = document.getElementById('timeDisplay');
     const installPrompt = document.getElementById('installPrompt');
     const closePromptBtn = document.getElementById('closePrompt');
+    const noWordsToggle = document.getElementById('noWordsToggle');
 
     // Helper to format seconds into mm:ss
     function formatTime(seconds) {
@@ -16,20 +15,31 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
-    // Initialize volume
-    audio.volume = volumeSlider.value;
+    // Set default volume
+    audio.volume = 0.7;
 
     // Update duration when metadata is loaded
     audio.addEventListener('loadedmetadata', () => {
         progressSlider.max = audio.duration;
-        durationSpan.textContent = formatTime(audio.duration);
+        // Initialize time display
+        updateTimeDisplay(0, audio.duration);
     });
 
     // Update progress and time during playback
     audio.addEventListener('timeupdate', () => {
         progressSlider.value = audio.currentTime;
-        currentTimeSpan.textContent = formatTime(audio.currentTime);
+        updateTimeDisplay(audio.currentTime, audio.duration);
     });
+
+    // Helper to update time display
+    function updateTimeDisplay(current, duration) {
+        const format = (sec) => {
+            const mins = Math.floor(sec / 60);
+            const secs = Math.floor(sec % 60);
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        };
+        timeDisplay.textContent = `${format(current)} / ${format(duration)}`;
+    }
 
     // Seek when user moves the progress slider
     progressSlider.addEventListener('input', () => {
@@ -56,9 +66,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Volume control
-    volumeSlider.addEventListener('input', () => {
-        audio.volume = volumeSlider.value;
+    // Switch version without lyrics
+    noWordsToggle.addEventListener('change', () => {
+        const currentTime = audio.currentTime;
+        const wasPlaying = !audio.paused;
+        audio.src = noWordsToggle.checked ? 'song2.mp3' : 'song.mp3';
+        audio.currentTime = currentTime;
+        if (wasPlaying) {
+            audio.play();
+        }
     });
 
     // Reset play button when track ends
