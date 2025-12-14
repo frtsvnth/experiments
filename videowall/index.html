@@ -236,7 +236,7 @@ video.bg{
 }
 
 /* DEBUG PANEL - можно удалить в продакшене */
-.debug-panel {
+/* .debug-panel {
   position: fixed;
   bottom: 1%;
   right: 1%;
@@ -248,7 +248,7 @@ video.bg{
   z-index: 1000;
   font-size: 14px;
   pointer-events: none;
-}
+} */
 </style>
 </head>
 <body>
@@ -285,11 +285,11 @@ video.bg{
 </div>
 
 <!-- DEBUG PANEL - можно удалить в продакшене -->
-<div class="debug-panel" id="debugPanel">
+<!-- <div class="debug-panel" id="debugPanel">
   ⚡ ANIMATION_SPEED: 1.0<br>
   📝 Marquee duration: 0s<br>
   🖼️ Photo show: 10s
-</div>
+</div> -->
 
 <script type="module">
 console.log('🚀 Запуск приложения Party Wall TV');
@@ -694,7 +694,7 @@ function startMarquee(item) {
     
     // РАССЧИТАННАЯ СКОРОСТЬ С УЧЕТОМ ГЛОБАЛЬНОГО КОЭФФИЦИЕНТА
     const spd = TIMINGS.marqueePixelsPerSec;
-    const dur = Math.max(TIMINGS.marqueeMinDuration, (cw + vw * 2) / spd);
+    const dur = Math.max(TIMINGS.marqueeMinDuration, (cw + vw * 4) / spd);
     
     const st = document.getElementById('marqStyle') || (() => {
       let s = document.createElement('style');
