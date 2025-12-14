@@ -484,6 +484,25 @@ video.bg{
   background: rgba(77, 193, 255, 0.15) !important;
   border-left-color: #4dc1ff !important;
 }
+.connection-info {
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 107, 150, 0.5);
+}
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.info-label {
+  color: #ccc;
+}
+.info-value {
+  font-weight: bold;
+  color: #ff6b96;
+}
 </style>
 </head>
 <body>
@@ -520,7 +539,7 @@ video.bg{
 </div>
 
 <div id="statusIndicator" class="status-indicator">Подключение к базе данных...</div>
-<div id="connectionStatus" class="connection-status">Offline</div>
+<div id="connectionStatus" class="connection-status">Подключение</div>
 
 <!-- Settings Modal -->
 <div class="settings-modal" id="settingsModal">
@@ -542,10 +561,6 @@ video.bg{
             <input type="radio" id="mode-polling" name="connection-mode" value="polling">
             <label for="mode-polling">Только поллинг</label>
           </div>
-          <div class="radio-option">
-            <input type="radio" id="mode-test" name="connection-mode" value="test">
-            <label for="mode-test">Тестовые данные</label>
-          </div>
         </div>
       </div>
       <div class="control-group">
@@ -553,6 +568,21 @@ video.bg{
         <input type="number" class="control-input" id="pollingInterval" value="30" min="5" max="300">
       </div>
       <button class="action-button reload" id="reloadData">🔄 Перезагрузить данные</button>
+      
+      <div class="connection-info">
+        <div class="info-row">
+          <span class="info-label">Supabase URL:</span>
+          <span class="info-value" id="supabaseUrlInfo"></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Состояние:</span>
+          <span class="info-value" id="connectionStateInfo">Не подключено</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Последнее обновление:</span>
+          <span class="info-value" id="lastUpdateInfo">-</span>
+        </div>
+      </div>
     </div>
     
     <div class="settings-section">
@@ -571,27 +601,30 @@ video.bg{
       </div>
       <div class="control-group">
         <div class="control-label">Текущий режим:</div>
-        <div id="currentMode" style="font-size: 18px; color: #4dc1ff;">Realtime (авто)</div>
+        <div id="currentMode" style="font-size: 18px; color: #ff6b96;">Realtime</div>
       </div>
       <div class="control-group">
-        <div class="control-label">Состояние подключения:</div>
-        <div id="connectionState" style="font-size: 18px; color: #ff4d4d;">Offline</div>
+        <div class="control-label">Текущее сообщение:</div>
+        <div id="currentMessageInfo" style="font-size: 16px; color: #ccc; min-height: 24px;">-</div>
       </div>
       <div class="control-group">
-        <div class="control-label">Время последнего обновления:</div>
-        <div id="lastUpdate" style="font-size: 16px; color: #ccc;">-</div>
+        <div class="control-label">Ошибки подключения:</div>
+        <div id="errorCount" style="font-size: 18px; color: #ff4d4d;">0</div>
       </div>
+      
+      <button class="action-button" id="clearQueue">🗑️ Очистить очередь</button>
+      <button class="action-button reload" id="testConnection">🔍 Проверить подключение</button>
     </div>
   </div>
 </div>
 
 <script type="module">
-console.log('🚀 Запуск приложения Party Wall TV');
+console.log('🚀 Запуск приложения Party Wall TV. Версия 2.1');
 
 // 🔑 КЛЮЧЕВАЯ ПЕРЕМЕННАЯ: КОЭФФИЦИЕНТ СКОРОСТИ ВСЕХ АНИМАЦИЙ
 const ANIMATION_SPEED = 1.2;
 
-// 1. ИСПРАВЛЕННЫЕ КОНСТАНТЫ - УДАЛИЛИ ЛИШНИЕ ПРОБЕЛЫ
+// 1. ИСПРАВЛЕННЫЕ КОНСТАНТЫ БЕЗ ЛИШНИХ ПРОБЕЛОВ
 const SUPABASE_URL = 'https://luqsmllrhasibqellhqo.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1cXNtbGxyaGFzaWJxZWxsaHFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzNjE2MDksImV4cCI6MjA3NzkzNzYwOX0.00e-UFmmjosbJhWq3sFNhDCQdYEzO0ZHVrW3k4Cid7U';
 
@@ -628,16 +661,20 @@ const closeSettings = document.getElementById('closeSettings');
 const queueList = document.getElementById('queueList');
 const queueCount = document.getElementById('queueCount');
 const currentMode = document.getElementById('currentMode');
-const connectionState = document.getElementById('connectionState');
-const lastUpdate = document.getElementById('lastUpdate');
+const currentMessageInfo = document.getElementById('currentMessageInfo');
+const errorCount = document.getElementById('errorCount');
 const skipCurrentBtn = document.getElementById('skipCurrent');
 const reloadDataBtn = document.getElementById('reloadData');
+const clearQueueBtn = document.getElementById('clearQueue');
+const testConnectionBtn = document.getElementById('testConnection');
 
 // DOM элементы для настроек
 const modeRealtime = document.getElementById('mode-realtime');
 const modePolling = document.getElementById('mode-polling');
-const modeTest = document.getElementById('mode-test');
 const pollingIntervalInput = document.getElementById('pollingInterval');
+const supabaseUrlInfo = document.getElementById('supabaseUrlInfo');
+const connectionStateInfo = document.getElementById('connectionStateInfo');
+const lastUpdateInfo = document.getElementById('lastUpdateInfo');
 
 let queue = [];
 let showing = false;
@@ -650,46 +687,11 @@ let isOnline = navigator.onLine;
 let lastConnectionCheck = Date.now();
 let pollingInterval = null;
 let currentMessage = null;
-let manualMode = false;
-let lastDataUpdate = new Date().toISOString();
+let connectionErrors = 0;
+let lastDataUpdate = new Date();
+let lastSupabaseCheck = 0;
 
-// 4. ТЕСТОВЫЕ ДАННЫЕ НА СЛУЧАЙ ОТСУТСТВИЯ ПОДКЛЮЧЕНИЯ
-const TEST_MESSAGES = [
-  {
-    id: 'test1',
-    text: 'Добро пожаловать на Party Wall TV! Это тестовое сообщение для демонстрации работы экрана.',
-    author: 'Система',
-    image_url: '',
-    timestamp: new Date().toISOString(),
-    approved: true
-  },
-  {
-    id: 'test2',
-    text: 'Если вы видите это сообщение, значит основное подключение к базе данных не работает. Проверьте настройки сети и Supabase.',
-    author: 'Администратор',
-    image_url: '',
-    timestamp: new Date().toISOString(),
-    approved: true
-  },
-  {
-    id: 'test3',
-    text: 'Для полноценной работы приложения убедитесь, что указаны правильные URL и API-ключ Supabase в коде.',
-    author: 'Техподдержка',
-    image_url: '',
-    timestamp: new Date().toISOString(),
-    approved: true
-  },
-  {
-    id: 'test4',
-    text: 'Вы можете настроить тип подключения и другие параметры, нажав на логотип MAIS TV в левом верхнем углу экрана.',
-    author: 'Помощь',
-    image_url: '',
-    timestamp: new Date().toISOString(),
-    approved: true
-  }
-];
-
-// 5. ФУНКЦИИ ЭКРАНИРОВАНИЯ
+// 4. ФУНКЦИИ ЭКРАНИРОВАНИЯ
 function esc(s){
   return s ? String(s).replace(/[&<>"']/g, m => ({
     '&': '&amp;',
@@ -700,7 +702,7 @@ function esc(s){
   }[m])) : '';
 }
 
-// 6. ОТОБРАЖЕНИЕ СТАТУСА
+// 5. ОТОБРАЖЕНИЕ СТАТУСА
 function showStatus(message, type = 'warning', duration = 5000) {
   statusIndicator.textContent = message;
   statusIndicator.className = 'status-indicator';
@@ -716,166 +718,56 @@ function showStatus(message, type = 'warning', duration = 5000) {
   console.log(`[${type.toUpperCase()}] ${message}`);
 }
 
-// 7. ОБНОВЛЕНИЕ СТАТУСА ПОДКЛЮЧЕНИЯ
-function updateConnectionStatus() {
-  const now = Date.now();
-  if (now - lastConnectionCheck < 1000) return;
-  
-  lastConnectionCheck = now;
-  isOnline = navigator.onLine;
-  
-  connectionStatus.textContent = isOnline ? 'Online' : 'Offline';
-  connectionStatus.className = isOnline ? 'connection-status online' : 'connection-status';
-  
-  if (!isOnline) {
-    showStatus('Нет подключения к интернету!', 'error', 3000);
-  }
-  
-  updateSettingsUI();
-  return isOnline;
-}
-
-// 8. ПРОВЕРКА ДОСТУПНОСТИ SUPABASE
-async function checkSupabaseConnection() {
-  try {
-    if (!isOnline) return false;
-    
-    // Проверяем, доступен ли URL Supabase
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/`, {
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-      },
-      method: 'GET',
-      mode: 'cors'
-    });
-    
-    return response.ok;
-  } catch (error) {
-    console.error('Ошибка проверки подключения к Supabase:', error);
-    return false;
-  }
-}
-
-// 9. ЗАГРУЗКА SUPABASE С ЛОКАЛЬНЫМ РЕЗЕРВНЫМ ВАРИАНТОМ
-async function loadSupabase() {
-  try {
-    // Сначала пробуем загрузить из CDN
-    console.log('📦 Загружаем Supabase из основного CDN...');
-    
-    try {
-      const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.0/+esm');
-      console.log('✅ Supabase загружен через jsdelivr');
-      return { createClient };
-    } catch (err1) {
-      console.warn('⚠️ Основной CDN не сработал:', err1.message);
-    }
-    
-    try {
-      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.43.0');
-      console.log('✅ Supabase загружен через esm.sh');
-      return { createClient };
-    } catch (err2) {
-      console.warn('⚠️ ESM CDN не сработал:', err2.message);
-    }
-    
-    // Если CDN недоступны, пытаемся использовать глобальную переменную (если скрипт загружен напрямую)
-    if (window.supabase) {
-      console.log('✅ Используем глобальный экземпляр Supabase');
-      return { createClient: () => window.supabase };
-    }
-    
-    throw new Error('Все CDN недоступны');
-  } catch (error) {
-    console.error('🔥 Критическая ошибка загрузки Supabase:', error);
-    showStatus('Ошибка загрузки библиотеки Supabase!', 'error', 8000);
-    return null;
-  }
-}
-
-// 10. ИНИЦИАЛИЗАЦИЯ SUPABASE С ПРОВЕРКАМИ
+// 6. ПРОСТОЙ ПОДКЛЮЧЕНИЕ К SUPABASE
 async function initSupabase() {
-  if (supabase) {
-    console.log('🔌 Supabase уже инициализирован');
-    return supabase;
-  }
-
-  // Проверяем подключение к интернету
-  if (!updateConnectionStatus()) {
-    console.warn('⚠️ Нет подключения к интернету, пропускаем инициализацию Supabase');
-    return null;
-  }
-
-  // Проверяем доступность Supabase
-  const supabaseAvailable = await checkSupabaseConnection();
-  if (!supabaseAvailable) {
-    console.warn('⚠️ Supabase недоступен, используем тестовые данные');
-    showStatus('Supabase недоступен. Используются тестовые данные.', 'warning', 5000);
-    return null;
-  }
-
-  console.log('🔧 Инициализация клиента Supabase...');
-  
-  const supabaseModule = await loadSupabase();
-  if (!supabaseModule) {
-    console.warn('⚠️ Не удалось загрузить модуль Supabase');
-    return null;
-  }
-
   try {
-    supabase = supabaseModule.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    console.log('🔧 Прямая инициализация Supabase...');
+    
+    // Импорт библиотеки напрямую из CDN
+    const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.0/+esm');
+    
+    // Создание клиента с правильными параметрами
+    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
-        persistSession: false
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false
       },
       global: {
         headers: {
-          'X-Client-Info': 'party-wall-tv/1.0'
-        }
-      },
-      realtime: {
-        params: {
-          eventsPerSecond: 10
+          'X-Client-Info': 'party-wall-tv/2.1'
         }
       }
     });
     
     console.log('✅ Клиент Supabase успешно создан');
-    showStatus('Подключение к Supabase установлено!', 'online', 3000);
+    supabaseUrlInfo.textContent = SUPABASE_URL.replace('https://', '').substring(0, 30) + '...';
+    connectionStateInfo.textContent = 'Подключено';
+    connectionStateInfo.style.color = '#4dff4d';
+    connectionStatus.textContent = 'Online';
+    connectionStatus.className = 'connection-status online';
+    
     return supabase;
   } catch (err) {
-    console.error('💥 Ошибка создания клиента Supabase:', err);
+    console.error('💥 Ошибка прямой инициализации Supabase:', err);
+    connectionErrors++;
+    errorCount.textContent = connectionErrors;
+    connectionStateInfo.textContent = 'Ошибка подключения';
+    connectionStateInfo.style.color = '#ff4d4d';
     showStatus('Ошибка подключения к Supabase!', 'error', 8000);
     return null;
   }
 }
 
-// 11. ПОЛУЧЕНИЕ СООБЩЕНИЙ С АВТОМАТИЧЕСКИМ РЕЗЕРВНЫМ ВАРИАНТОМ
+// 7. ПОЛУЧЕНИЕ СООБЩЕНИЙ ИЗ ИСТОЧНИКА
 async function fetchMessages() {
   try {
-    lastDataUpdate = new Date().toISOString();
-    lastUpdate.textContent = new Date().toLocaleTimeString();
-    
-    // Проверяем подключение
-    if (!updateConnectionStatus()) {
-      console.warn('⚠️ Нет интернета, используем тестовые данные');
-      return [...TEST_MESSAGES];
-    }
-    
-    // Проверяем режим работы
-    if (modeTest.checked) {
-      console.log('🔧 Используется режим тестовых данных');
-      return [...TEST_MESSAGES];
-    }
-    
-    // Инициализируем Supabase если нужно
+    // Проверяем, инициализирован ли Supabase
     if (!supabase) {
       supabase = await initSupabase();
-    }
-    
-    // Если Supabase не доступен, используем тестовые данные
-    if (!supabase) {
-      console.warn('⚠️ Supabase не инициализирован, используем тестовые данные');
-      return [...TEST_MESSAGES];
+      if (!supabase) {
+        throw new Error('Supabase не инициализирован');
+      }
     }
     
     console.log('📥 Загрузка сообщений из Supabase...');
@@ -884,27 +776,32 @@ async function fetchMessages() {
       .select('*')
       .eq('approved', true)
       .order('timestamp', { ascending: false })
-      .limit(20);
+      .limit(50);
     
     if (error) {
       throw error;
     }
     
     if (!data || data.length === 0) {
-      console.log('📭 Нет сообщений в базе данных');
-      return [...TEST_MESSAGES];
+      console.log('📭 Нет одобренных сообщений в базе данных');
+      tickerEl.classList.add('fade-out');
+      return [];
     }
     
     console.log(`✅ Загружено ${data.length} сообщений`);
+    lastDataUpdate = new Date();
+    lastUpdateInfo.textContent = lastDataUpdate.toLocaleTimeString();
     return data;
   } catch (error) {
     console.error('❌ Ошибка загрузки сообщений:', error);
-    showStatus('Ошибка загрузки сообщений. Используются тестовые данные.', 'error', 5000);
-    return [...TEST_MESSAGES];
+    connectionErrors++;
+    errorCount.textContent = connectionErrors;
+    showStatus('Ошибка загрузки сообщений из базы данных', 'error', 5000);
+    return [];
   }
 }
 
-// 12. УСТАНОВКА REALTIME ПОДПИСКИ С ЗАЩИТОЙ
+// 8. УСТАНОВКА REALTIME ПОДПИСКИ
 function setupRealtime() {
   // Отключаем предыдущую подписку если есть
   if (realtimeChannel && supabase) {
@@ -916,9 +813,8 @@ function setupRealtime() {
     realtimeChannel = null;
   }
   
-  // Проверяем, можем ли мы установить подписку
-  if (!supabase || !isOnline || modePolling.checked || modeTest.checked) {
-    console.warn('⚠️ Невозможно установить realtime-подписку: условия не выполнены');
+  if (!supabase) {
+    console.warn('⚠️ Supabase не инициализирован для realtime');
     return;
   }
   
@@ -928,7 +824,13 @@ function setupRealtime() {
     realtimeChannel = supabase
       .channel('messages-channel')
       .on('postgres_changes', {
-        event: '*',
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: 'approved=eq.true'
+      }, handleRealtimeMessage)
+      .on('postgres_changes', {
+        event: 'UPDATE',
         schema: 'public',
         table: 'messages',
         filter: 'approved=eq.true'
@@ -938,28 +840,42 @@ function setupRealtime() {
     console.log('✅ Realtime-подписка установлена');
     connectionStatus.textContent = 'Realtime';
     connectionStatus.className = 'connection-status realtime';
-    connectionState.textContent = 'Realtime подключение';
-    connectionState.style.color = '#4dc1ff';
+    connectionStateInfo.textContent = 'Realtime активен';
+    connectionStateInfo.style.color = '#4dc1ff';
   } catch (error) {
     console.error('❌ Ошибка установки realtime-подписки:', error);
+    connectionErrors++;
+    errorCount.textContent = connectionErrors;
+    connectionStateInfo.textContent = 'Ошибка realtime';
+    connectionStateInfo.style.color = '#ff4d4d';
     showStatus('Ошибка установки realtime-подписки', 'error', 3000);
-    connectionState.textContent = 'Ошибка realtime';
   }
 }
 
-// 13. ОБРАБОТЧИКИ REALTIME СОБЫТИЙ
+// 9. ОБРАБОТЧИКИ REALTIME СОБЫТИЙ
 function handleRealtimeMessage(payload) {
   console.log('🔔 Realtime событие получено:', payload);
   
   const newRecord = payload.new || payload.record;
-  if (!newRecord || !newRecord.approved) return;
+  if (!newRecord || !newRecord.approved) {
+    console.log('ℹ️ Получено неодобренное сообщение, пропускаем');
+    return;
+  }
   
   // Проверяем, нет ли уже этого сообщения в очереди
   const exists = queue.some(msg => msg.id === newRecord.id);
-  if (exists) return;
+  if (exists) {
+    console.log('ℹ️ Сообщение уже в очереди, пропускаем');
+    return;
+  }
   
-  queue.unshift(newRecord); // Добавляем в начало очереди
+  // Добавляем новое сообщение в начало очереди
+  queue.unshift(newRecord);
   tickerEl.classList.remove('fade-out');
+  lastDataUpdate = new Date();
+  lastUpdateInfo.textContent = lastDataUpdate.toLocaleTimeString();
+  
+  console.log(`✅ Добавлено новое сообщение: ${newRecord.id}, очередь: ${queue.length}`);
   
   // Если сейчас ничего не показывается, показываем новое сообщение
   if (!showing) {
@@ -977,24 +893,27 @@ function handleSubscriptionStatus(status) {
     console.log('✅ Успешная подписка на обновления realtime');
     connectionStatus.textContent = 'Realtime';
     connectionStatus.className = 'connection-status realtime';
-    connectionState.textContent = 'Realtime активен';
-    connectionState.style.color = '#4dc1ff';
+    connectionStateInfo.textContent = 'Realtime активен';
+    connectionStateInfo.style.color = '#4dc1ff';
   } else if (['TIMED_OUT', 'CHANNEL_ERROR', 'CLOSED'].includes(status)) {
     console.warn(`⚠️ Проблема с подпиской: ${status}, пробуем переподключиться...`);
-    connectionState.textContent = `Ошибка: ${status}`;
-    connectionState.style.color = '#ff4d4d';
+    connectionStateInfo.textContent = `Ошибка: ${status}`;
+    connectionStateInfo.style.color = '#ff4d4d';
     setTimeout(reconnectRealtime, Math.min(10000, TIMINGS.reconnectDelay * (1 + reconnectAttempts)));
+  } else if (status === 'JOINING') {
+    connectionStateInfo.textContent = 'Подключение...';
+    connectionStateInfo.style.color = '#ffb86b';
   }
 }
 
 function reconnectRealtime() {
-  if (!isOnline || !supabase || modePolling.checked || modeTest.checked) return;
+  if (!supabase) return;
   
   reconnectAttempts++;
-  console.log(`🔄 Попытка переподключения #${reconnectAttempts}...`);
+  console.log(`🔄 Попытка переподключения realtime #${reconnectAttempts}...`);
   
   if (reconnectAttempts >= maxReconnectAttempts) {
-    console.error('❌ Достигнуто максимальное количество попыток переподключения');
+    console.error('❌ Достигнуто максимальное количество попыток переподключения realtime');
     setupPollingFallback();
     return;
   }
@@ -1002,7 +921,7 @@ function reconnectRealtime() {
   setupRealtime();
 }
 
-// 14. РЕЗЕРВНЫЙ ПОЛЛИНГ
+// 10. РЕЗЕРВНЫЙ ПОЛЛИНГ
 function setupPollingFallback() {
   console.log('⏱️ Запускаем резервный поллинг');
   
@@ -1014,40 +933,37 @@ function setupPollingFallback() {
   TIMINGS.defaultPollingInterval = interval * 1000;
   
   pollingInterval = setInterval(async () => {
-    if (!isOnline || modeTest.checked) return;
+    console.log('🔍 Проверка новых сообщений через поллинг...');
+    const newMessages = await fetchMessages();
     
-    try {
-      console.log('🔍 Проверка новых сообщений через поллинг...');
-      const newMessages = await fetchMessages();
+    if (newMessages.length > 0) {
+      // Объединяем новые сообщения с очереди, избегая дубликатов
+      const currentIds = new Set(queue.map(msg => msg.id));
+      const filteredNew = newMessages.filter(msg => !currentIds.has(msg.id));
       
-      if (newMessages.length > 0) {
-        // Объединяем новые сообщения с очереди, избегая дубликатов
-        const currentIds = new Set(queue.map(msg => msg.id));
-        const filteredNew = newMessages.filter(msg => !currentIds.has(msg.id));
+      if (filteredNew.length > 0) {
+        // Добавляем новые сообщения в начало очереди
+        queue = [...filteredNew, ...queue].slice(0, 50);
+        console.log(`✅ Добавлено ${filteredNew.length} новых сообщений через поллинг`);
         
-        if (filteredNew.length > 0) {
-          queue = [...filteredNew, ...queue].slice(0, 50); // Ограничиваем размер очереди
-          console.log(`✅ Добавлено ${filteredNew.length} новых сообщений через поллинг`);
-          
-          if (!showing) {
-            nextMessage();
-          }
-          
-          updateQueueUI();
+        if (!showing) {
+          nextMessage();
         }
+        
+        updateQueueUI();
       }
-    } catch (error) {
-      console.error('❌ Ошибка в поллинге:', error);
     }
+    lastDataUpdate = new Date();
+    lastUpdateInfo.textContent = lastDataUpdate.toLocaleTimeString();
   }, TIMINGS.defaultPollingInterval);
   
   connectionStatus.textContent = 'Polling';
   connectionStatus.className = 'connection-status online';
-  connectionState.textContent = `Поллинг (${interval} сек)`;
-  connectionState.style.color = '#ffb86b';
+  connectionStateInfo.textContent = `Поллинг (${interval} сек)`;
+  connectionStateInfo.style.color = '#ffb86b';
 }
 
-// 15. ФУНКЦИИ ОТОБРАЖЕНИЯ СООБЩЕНИЙ
+// 11. ФУНКЦИИ ОТОБРАЖЕНИЯ СООБЩЕНИЙ
 function startMarquee(item) {
   console.log('🗞️ Запуск бегущей строки');
   
@@ -1093,11 +1009,15 @@ function startMarquee(item) {
 
 function showMessage(item, textOnly = false) {
   currentMessage = item;
+  currentMessageInfo.textContent = `${item.author || 'Аноним'}: ${(item.text || '').substring(0, 50)}...`;
   
   const rawText = (item.text || '').trim();
   if (rawText.length < 6) {
     console.warn('✉️ Пропущено короткое сообщение:', rawText);
-    nextMessage(); // Переходим к следующему сообщению
+    showing = false;
+    currentMessage = null;
+    currentMessageInfo.textContent = '-';
+    nextMessage();
     return;
   }
 
@@ -1138,6 +1058,7 @@ function showMessage(item, textOnly = false) {
         marquee.innerHTML = '&nbsp;';
         showing = false;
         currentMessage = null;
+        currentMessageInfo.textContent = '-';
         nextMessage();
       }, 300);
     }, textDisplayTime);
@@ -1222,6 +1143,7 @@ function showMessage(item, textOnly = false) {
           mainPhoto.src = '';
           showing = false;
           currentMessage = null;
+          currentMessageInfo.textContent = '-';
           nextMessage();
         }, TIMINGS.slideOutDuration * 1000);
       }, TIMINGS.photoDisplayTime);
@@ -1257,10 +1179,10 @@ function nextMessage() {
   
   if (showing) return;
   if (queue.length === 0) {
-    console.log('⏹️ Очередь пуста, используем тестовые данные');
-    queue = [...TEST_MESSAGES];
-    tickerEl.classList.remove('fade-out');
+    console.log('⏹️ Очередь пуста');
+    tickerEl.classList.add('fade-out');
     updateQueueUI();
+    return;
   }
 
   const item = queue.shift();
@@ -1283,7 +1205,7 @@ function nextMessage() {
   showMessage(item, !hasImage);
 }
 
-// 16. ФУНКЦИИ ДЛЯ НАСТРОЕК
+// 12. ФУНКЦИИ ДЛЯ НАСТРОЕК
 function updateQueueUI() {
   queueCount.textContent = queue.length;
   
@@ -1345,19 +1267,12 @@ function updateQueueUI() {
 }
 
 function updateSettingsUI() {
-  // Обновляем статус подключения
-  connectionState.textContent = isOnline ? 'Онлайн' : 'Офлайн';
-  connectionState.style.color = isOnline ? '#4dff4d' : '#ff4d4d';
-  
   // Обновляем текущий режим
-  if (modeTest.checked) {
-    currentMode.textContent = 'Тестовые данные';
-    currentMode.style.color = '#ffb86b';
-  } else if (modePolling.checked) {
+  if (modePolling.checked) {
     currentMode.textContent = 'Только поллинг';
     currentMode.style.color = '#4dc1ff';
   } else {
-    currentMode.textContent = 'Realtime (авто)';
+    currentMode.textContent = 'Realtime';
     currentMode.style.color = '#ff6b96';
   }
   
@@ -1381,6 +1296,7 @@ function skipCurrentMessage() {
   
   showing = false;
   currentMessage = null;
+  currentMessageInfo.textContent = '-';
   nextMessage();
 }
 
@@ -1401,11 +1317,7 @@ function applyConnectionMode() {
   }
   
   // Применяем новый режим
-  if (modeTest.checked) {
-    console.log('🔧 Активирован режим тестовых данных');
-    queue = [...TEST_MESSAGES];
-    if (!showing) nextMessage();
-  } else if (modePolling.checked) {
+  if (modePolling.checked) {
     console.log('🔧 Активирован режим поллинга');
     setupPollingFallback();
   } else {
@@ -1414,6 +1326,8 @@ function applyConnectionMode() {
     // Перезагружаем данные
     fetchMessages().then(data => {
       queue = data;
+      lastDataUpdate = new Date();
+      lastUpdateInfo.textContent = lastDataUpdate.toLocaleTimeString();
       if (!showing && queue.length > 0) {
         nextMessage();
       }
@@ -1434,8 +1348,8 @@ function reloadData() {
   
   fetchMessages().then(data => {
     queue = data;
-    lastDataUpdate = new Date().toISOString();
-    lastUpdate.textContent = new Date().toLocaleTimeString();
+    lastDataUpdate = new Date();
+    lastUpdateInfo.textContent = lastDataUpdate.toLocaleTimeString();
     showStatus('Данные успешно перезагружены!', 'online', 3000);
     
     if (!showing && queue.length > 0) {
@@ -1449,26 +1363,55 @@ function reloadData() {
   });
 }
 
-// 17. ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ
+function testConnection() {
+  showStatus('Проверка подключения к Supabase...', 'warning', 0);
+  
+  if (!supabase) {
+    initSupabase().then(supabaseClient => {
+      if (supabaseClient) {
+        showStatus('✅ Подключение к Supabase установлено!', 'online', 3000);
+        setupRealtime();
+      } else {
+        showStatus('❌ Не удалось подключиться к Supabase', 'error', 5000);
+      }
+    });
+  } else {
+    // Проверяем активное подключение
+    fetchMessages().then(data => {
+      if (data.length > 0) {
+        showStatus(`✅ Подключение работает! Загружено ${data.length} сообщений`, 'online', 3000);
+      } else {
+        showStatus('✅ Подключение работает, но нет одобренных сообщений', 'warning', 3000);
+      }
+    }).catch(error => {
+      console.error('❌ Ошибка при проверке подключения:', error);
+      showStatus('❌ Ошибка подключения к Supabase', 'error', 5000);
+      // Пытаемся переподключиться
+      supabase = null;
+      initSupabase();
+    });
+  }
+}
+
+// 13. ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ
 async function initializeApp() {
   console.log('✅ Инициализация приложения');
-  showStatus('Загрузка данных...', 'warning', 0);
+  showStatus('Подключение к базе данных...', 'warning', 0);
   
   try {
-    // Проверяем подключение к интернету
-    updateConnectionStatus();
+    // Прямая инициализация Supabase
+    supabase = await initSupabase();
+    
+    if (!supabase) {
+      throw new Error('Не удалось инициализировать Supabase');
+    }
     
     // Загружаем сообщения
     queue = await fetchMessages();
     
-    // Инициализируем Supabase для realtime
-    supabase = await initSupabase();
-    
-    // Устанавливаем realtime-подписку или резервный поллинг
-    if (supabase && !modePolling.checked && !modeTest.checked) {
+    // Устанавливаем realtime-подписку
+    if (!modePolling.checked) {
       setupRealtime();
-    } else {
-      setupPollingFallback();
     }
     
     // Показываем первое сообщение
@@ -1478,10 +1421,15 @@ async function initializeApp() {
         nextMessage();
       } else {
         tickerEl.classList.add('fade-out');
-        showStatus('Нет сообщений для отображения', 'warning', 3000);
+        showStatus('Нет одобренных сообщений для отображения', 'warning', 3000);
       }
       updateSettingsUI();
-    }, 1500);
+      
+      // Настраиваем поллинг как резервный вариант
+      if (modePolling.checked) {
+        setupPollingFallback();
+      }
+    }, 1000);
     
     // Защита от зависания очереди
     setInterval(() => {
@@ -1497,18 +1445,15 @@ async function initializeApp() {
       }
     }, TIMINGS.nextMessageDelay);
     
-    // Настраиваем поллинг по умолчанию
-    if (modePolling.checked || !supabase) {
-      setupPollingFallback();
-    }
-    
   } catch (error) {
     console.error('🔥 Критическая ошибка инициализации:', error);
     showStatus('Критическая ошибка приложения!', 'error', 0);
+    connectionErrors++;
+    errorCount.textContent = connectionErrors;
   }
 }
 
-// 18. ОБРАБОТКА СОБЫТИЙ СТРАНИЦЫ И СЕТИ
+// 14. ОБРАБОТКА СОБЫТИЙ СТРАНИЦЫ
 document.addEventListener('DOMContentLoaded', () => {
   console.log('✅ DOM загружен');
   
@@ -1532,7 +1477,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Обработчики изменения режима подключения
   modeRealtime.addEventListener('change', applyConnectionMode);
   modePolling.addEventListener('change', applyConnectionMode);
-  modeTest.addEventListener('change', applyConnectionMode);
   
   pollingIntervalInput.addEventListener('change', () => {
     if (modePolling.checked) {
@@ -1543,25 +1487,30 @@ document.addEventListener('DOMContentLoaded', () => {
   // Кнопки управления
   skipCurrentBtn.addEventListener('click', skipCurrentMessage);
   reloadDataBtn.addEventListener('click', reloadData);
+  clearQueueBtn.addEventListener('click', () => {
+    queue = [];
+    updateQueueUI();
+    if (!showing) {
+      tickerEl.classList.add('fade-out');
+    }
+  });
+  testConnectionBtn.addEventListener('click', testConnection);
   
   // Инициализация приложения
   initializeApp();
 });
 
-window.addEventListener('online', () => {
-  console.log('🌐 Сетевое соединение восстановлено');
-  updateConnectionStatus();
-  setTimeout(initializeApp, 2000);
-});
-
-window.addEventListener('offline', () => {
-  console.warn('⚠️ Сетевое соединение потеряно');
-  updateConnectionStatus();
-  showStatus('Нет подключения к интернету!', 'error', 5000);
-});
-
 // Периодическая проверка состояния подключения
-setInterval(updateConnectionStatus, 5000);
+setInterval(() => {
+  const now = Date.now();
+  if (now - lastSupabaseCheck > 60000) { // Проверяем раз в минуту
+    lastSupabaseCheck = now;
+    if (supabase && realtimeChannel && realtimeChannel.state !== 'SUBSCRIBED') {
+      console.log('🔍 Проверка состояния realtime-подписки');
+      reconnectRealtime();
+    }
+  }
+}, 30000);
 </script>
 </body>
 </html>
