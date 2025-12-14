@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>Mike’s song</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Mike’s song</h1>
+        </header>
+        
+        <main>
+            <div class="player">
+                <button id="playBtn" class="play-btn">
+                    <svg class="play-icon" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <svg class="pause-icon" viewBox="0 0 24 24">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                    </svg>
+                </button>
+                
+                <div class="progress">
+                    <input type="range" id="progressSlider" min="0" max="100" step="0.1" value="0">
+                    <div class="time-info">
+                        <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button id="rewindBtn" class="control-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/>
+                        </svg>
+                    </button>
+                    
+                    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.7">
+                </div>
+            </div>
+        </main>
+        
+        <div id="installPrompt" class="install-prompt">
+            <p>Откройте в Safari и нажмите «Поделиться» → «На экран «Домой»», чтобы добавить приложение</p>
+            <button id="closePrompt">Закрыть</button>
+        </div>
+        
+        <footer>
+            <p>Сделано для лучших моментов в вашей жизни</p>
+        </footer>
+    </div>
+
+    <audio id="audio" src="song.mp3"></audio>
+    <script src="script.js"></script>
+</body>
+</html>
