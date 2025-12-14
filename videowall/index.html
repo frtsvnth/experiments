@@ -636,7 +636,7 @@ function startMarquee(item) {
     const vw = marqueeWrap.clientWidth;
     
     // ВЕЛИЧЕСТВЕННО МЕДЛЕННАЯ СКОРОСТЬ (было 160, теперь 35)
-    const spd = 35; // Пикселей в секунду
+    const spd = 100; // Пикселей в секунду
     const dur = Math.max(20, (cw + vw * 2) / spd); // Минимум 20 секунд
     
     const st = document.getElementById('marqStyle') || (() => {
