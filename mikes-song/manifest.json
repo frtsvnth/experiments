@@ -1,8 +1,8 @@
 {
   "name": "Mike’s song",
-  "short_name": "MikeSong",
+  "short_name": "MikesSong",
   "description": "Аудиоприложение для воспроизведения музыки",
-  "start_url": "/",
+  "start_url": "https://frtsvnth.github.io/experiments/mikes-song/",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#0a0a0a",
