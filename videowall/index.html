@@ -208,6 +208,12 @@ video.bg{
   color:#fff;font-weight:800;text-transform:uppercase;
   background:linear-gradient(90deg,#ff6b96,#ffb86b);
   padding:8px 12px;border-radius:6px;box-shadow:0 6px 20px rgba(0,0,0,0.5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.channel:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 30px rgba(255, 107, 150, 0.7);
 }
 
 /* === QR КОД — НОВОЕ === */
@@ -276,10 +282,207 @@ video.bg{
   font-size: 12px;
   z-index: 1000;
   border: 1px solid #ff4d4d;
+  cursor: pointer;
 }
 .connection-status.online {
   color: #4dff4d;
   border-color: #4dff4d;
+}
+.connection-status.realtime {
+  color: #4dffff;
+  border-color: #4dffff;
+}
+
+/* Settings Modal */
+.settings-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  z-index: 1000;
+  display: none;
+  flex-direction: column;
+  padding: 20px;
+  overflow: hidden;
+}
+.settings-modal.active {
+  display: flex;
+}
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 107, 150, 0.5);
+  margin-bottom: 20px;
+}
+.settings-title {
+  font-size: 28px;
+  font-weight: bold;
+  background: linear-gradient(90deg, #ff6b96, #ffb86b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.close-settings {
+  background: rgba(255, 107, 150, 0.2);
+  border: 1px solid #ff6b96;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.close-settings:hover {
+  background: rgba(255, 107, 150, 0.4);
+  transform: rotate(90deg);
+}
+.settings-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+.settings-section {
+  flex: 1;
+  min-width: 300px;
+  background: rgba(20, 20, 30, 0.7);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 107, 150, 0.3);
+}
+.section-title {
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: #ff6b96;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-title i {
+  font-size: 24px;
+}
+.control-group {
+  margin-bottom: 15px;
+}
+.control-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #ccc;
+}
+.control-input {
+  width: 100%;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 107, 150, 0.5);
+  color: white;
+  border-radius: 6px;
+  font-size: 16px;
+}
+.control-input:focus {
+  outline: none;
+  border-color: #ff6b96;
+  box-shadow: 0 0 10px rgba(255, 107, 150, 0.3);
+}
+.radio-group {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.radio-option input {
+  cursor: pointer;
+}
+.radio-option label {
+  cursor: pointer;
+  color: #ccc;
+}
+.radio-option input:checked + label {
+  color: #ff6b96;
+  font-weight: bold;
+}
+.queue-item {
+  background: rgba(30, 30, 40, 0.7);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-left: 3px solid #ff6b96;
+  position: relative;
+}
+.queue-item:hover {
+  background: rgba(40, 40, 50, 0.8);
+}
+.queue-author {
+  font-weight: bold;
+  color: #ff6b96;
+  margin-bottom: 3px;
+}
+.queue-text {
+  color: #ddd;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.queue-controls {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 8px;
+}
+.queue-btn {
+  background: rgba(255, 107, 150, 0.2);
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+.queue-btn:hover {
+  opacity: 1;
+  background: rgba(255, 107, 150, 0.4);
+}
+.action-button {
+  background: linear-gradient(90deg, rgba(255,107,150,0.8), rgba(255,184,107,0.8));
+  border: none;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  margin-top: 10px;
+}
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 107, 150, 0.5);
+}
+.action-button.skip {
+  background: linear-gradient(90deg, rgba(255,77,77,0.8), rgba(255,150,107,0.8));
+}
+.action-button.reload {
+  background: linear-gradient(90deg, rgba(77,193,255,0.8), rgba(107,150,255,0.8));
+}
+.current-item {
+  background: rgba(77, 193, 255, 0.15) !important;
+  border-left-color: #4dc1ff !important;
 }
 </style>
 </head>
@@ -301,7 +504,7 @@ video.bg{
 <div class="crt"></div>
 <div class="vignette"></div>
 
-<div class="channel">MAIS TV</div>
+<div class="channel" id="channelLogo">MAIS TV</div>
 
 <div class="qr-container">
   <div class="qr-code">
@@ -318,6 +521,69 @@ video.bg{
 
 <div id="statusIndicator" class="status-indicator">Подключение к базе данных...</div>
 <div id="connectionStatus" class="connection-status">Offline</div>
+
+<!-- Settings Modal -->
+<div class="settings-modal" id="settingsModal">
+  <div class="settings-header">
+    <div class="settings-title">📺 Настройки MAIS TV</div>
+    <button class="close-settings" id="closeSettings">✕</button>
+  </div>
+  <div class="settings-content">
+    <div class="settings-section">
+      <div class="section-title">⚙️ Подключение</div>
+      <div class="control-group">
+        <div class="control-label">Тип подключения:</div>
+        <div class="radio-group">
+          <div class="radio-option">
+            <input type="radio" id="mode-realtime" name="connection-mode" value="realtime" checked>
+            <label for="mode-realtime">Realtime (авто)</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="mode-polling" name="connection-mode" value="polling">
+            <label for="mode-polling">Только поллинг</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="mode-test" name="connection-mode" value="test">
+            <label for="mode-test">Тестовые данные</label>
+          </div>
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="control-label">Интервал поллинга (сек):</div>
+        <input type="number" class="control-input" id="pollingInterval" value="30" min="5" max="300">
+      </div>
+      <button class="action-button reload" id="reloadData">🔄 Перезагрузить данные</button>
+    </div>
+    
+    <div class="settings-section">
+      <div class="section-title">📋 Очередь сообщений</div>
+      <div id="queueList" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;">
+        <!-- Очередь будет динамически заполняться здесь -->
+      </div>
+      <button class="action-button skip" id="skipCurrent">⏭️ Пропустить текущее сообщение</button>
+    </div>
+    
+    <div class="settings-section">
+      <div class="section-title">📊 Статистика</div>
+      <div class="control-group">
+        <div class="control-label">Всего сообщений в очереди:</div>
+        <div id="queueCount" style="font-size: 24px; font-weight: bold; color: #ff6b96;">0</div>
+      </div>
+      <div class="control-group">
+        <div class="control-label">Текущий режим:</div>
+        <div id="currentMode" style="font-size: 18px; color: #4dc1ff;">Realtime (авто)</div>
+      </div>
+      <div class="control-group">
+        <div class="control-label">Состояние подключения:</div>
+        <div id="connectionState" style="font-size: 18px; color: #ff4d4d;">Offline</div>
+      </div>
+      <div class="control-group">
+        <div class="control-label">Время последнего обновления:</div>
+        <div id="lastUpdate" style="font-size: 16px; color: #ccc;">-</div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script type="module">
 console.log('🚀 Запуск приложения Party Wall TV');
@@ -345,6 +611,7 @@ const TIMINGS = {
   startMarqueeDelay: 150 / ANIMATION_SPEED,
   nextMessageDelay: 30000 / ANIMATION_SPEED,
   reconnectDelay: 3000 / ANIMATION_SPEED,
+  defaultPollingInterval: 30000, // 30 секунд
 };
 
 // 3. ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
@@ -355,6 +622,22 @@ const marqueeWrap = document.getElementById('marqueeWrap');
 const tickerEl = document.querySelector('.ticker');
 const statusIndicator = document.getElementById('statusIndicator');
 const connectionStatus = document.getElementById('connectionStatus');
+const channelLogo = document.getElementById('channelLogo');
+const settingsModal = document.getElementById('settingsModal');
+const closeSettings = document.getElementById('closeSettings');
+const queueList = document.getElementById('queueList');
+const queueCount = document.getElementById('queueCount');
+const currentMode = document.getElementById('currentMode');
+const connectionState = document.getElementById('connectionState');
+const lastUpdate = document.getElementById('lastUpdate');
+const skipCurrentBtn = document.getElementById('skipCurrent');
+const reloadDataBtn = document.getElementById('reloadData');
+
+// DOM элементы для настроек
+const modeRealtime = document.getElementById('mode-realtime');
+const modePolling = document.getElementById('mode-polling');
+const modeTest = document.getElementById('mode-test');
+const pollingIntervalInput = document.getElementById('pollingInterval');
 
 let queue = [];
 let showing = false;
@@ -366,6 +649,9 @@ let maxReconnectAttempts = 10;
 let isOnline = navigator.onLine;
 let lastConnectionCheck = Date.now();
 let pollingInterval = null;
+let currentMessage = null;
+let manualMode = false;
+let lastDataUpdate = new Date().toISOString();
 
 // 4. ТЕСТОВЫЕ ДАННЫЕ НА СЛУЧАЙ ОТСУТСТВИЯ ПОДКЛЮЧЕНИЯ
 const TEST_MESSAGES = [
@@ -389,6 +675,14 @@ const TEST_MESSAGES = [
     id: 'test3',
     text: 'Для полноценной работы приложения убедитесь, что указаны правильные URL и API-ключ Supabase в коде.',
     author: 'Техподдержка',
+    image_url: '',
+    timestamp: new Date().toISOString(),
+    approved: true
+  },
+  {
+    id: 'test4',
+    text: 'Вы можете настроить тип подключения и другие параметры, нажав на логотип MAIS TV в левом верхнем углу экрана.',
+    author: 'Помощь',
     image_url: '',
     timestamp: new Date().toISOString(),
     approved: true
@@ -437,6 +731,7 @@ function updateConnectionStatus() {
     showStatus('Нет подключения к интернету!', 'error', 3000);
   }
   
+  updateSettingsUI();
   return isOnline;
 }
 
@@ -557,9 +852,18 @@ async function initSupabase() {
 // 11. ПОЛУЧЕНИЕ СООБЩЕНИЙ С АВТОМАТИЧЕСКИМ РЕЗЕРВНЫМ ВАРИАНТОМ
 async function fetchMessages() {
   try {
+    lastDataUpdate = new Date().toISOString();
+    lastUpdate.textContent = new Date().toLocaleTimeString();
+    
     // Проверяем подключение
     if (!updateConnectionStatus()) {
       console.warn('⚠️ Нет интернета, используем тестовые данные');
+      return [...TEST_MESSAGES];
+    }
+    
+    // Проверяем режим работы
+    if (modeTest.checked) {
+      console.log('🔧 Используется режим тестовых данных');
       return [...TEST_MESSAGES];
     }
     
@@ -613,8 +917,8 @@ function setupRealtime() {
   }
   
   // Проверяем, можем ли мы установить подписку
-  if (!supabase || !isOnline) {
-    console.warn('⚠️ Невозможно установить realtime-подписку: нет подключения');
+  if (!supabase || !isOnline || modePolling.checked || modeTest.checked) {
+    console.warn('⚠️ Невозможно установить realtime-подписку: условия не выполнены');
     return;
   }
   
@@ -632,9 +936,14 @@ function setupRealtime() {
       .subscribe(handleSubscriptionStatus);
       
     console.log('✅ Realtime-подписка установлена');
+    connectionStatus.textContent = 'Realtime';
+    connectionStatus.className = 'connection-status realtime';
+    connectionState.textContent = 'Realtime подключение';
+    connectionState.style.color = '#4dc1ff';
   } catch (error) {
     console.error('❌ Ошибка установки realtime-подписки:', error);
     showStatus('Ошибка установки realtime-подписки', 'error', 3000);
+    connectionState.textContent = 'Ошибка realtime';
   }
 }
 
@@ -656,6 +965,8 @@ function handleRealtimeMessage(payload) {
   if (!showing) {
     nextMessage();
   }
+  
+  updateQueueUI();
 }
 
 function handleSubscriptionStatus(status) {
@@ -665,15 +976,19 @@ function handleSubscriptionStatus(status) {
     reconnectAttempts = 0;
     console.log('✅ Успешная подписка на обновления realtime');
     connectionStatus.textContent = 'Realtime';
-    connectionStatus.className = 'connection-status online';
+    connectionStatus.className = 'connection-status realtime';
+    connectionState.textContent = 'Realtime активен';
+    connectionState.style.color = '#4dc1ff';
   } else if (['TIMED_OUT', 'CHANNEL_ERROR', 'CLOSED'].includes(status)) {
     console.warn(`⚠️ Проблема с подпиской: ${status}, пробуем переподключиться...`);
+    connectionState.textContent = `Ошибка: ${status}`;
+    connectionState.style.color = '#ff4d4d';
     setTimeout(reconnectRealtime, Math.min(10000, TIMINGS.reconnectDelay * (1 + reconnectAttempts)));
   }
 }
 
 function reconnectRealtime() {
-  if (!isOnline || !supabase) return;
+  if (!isOnline || !supabase || modePolling.checked || modeTest.checked) return;
   
   reconnectAttempts++;
   console.log(`🔄 Попытка переподключения #${reconnectAttempts}...`);
@@ -689,17 +1004,24 @@ function reconnectRealtime() {
 
 // 14. РЕЗЕРВНЫЙ ПОЛЛИНГ
 function setupPollingFallback() {
-  console.log('⏱️ Запускаем резервный поллинг (опрос каждые 30 секунд)');
+  console.log('⏱️ Запускаем резервный поллинг');
   
+  // Очищаем предыдущий интервал
   if (pollingInterval) clearInterval(pollingInterval);
   
+  // Получаем интервал из настроек
+  const interval = parseInt(pollingIntervalInput.value) || 30;
+  TIMINGS.defaultPollingInterval = interval * 1000;
+  
   pollingInterval = setInterval(async () => {
-    if (!isOnline) return;
+    if (!isOnline || modeTest.checked) return;
     
     try {
+      console.log('🔍 Проверка новых сообщений через поллинг...');
       const newMessages = await fetchMessages();
+      
       if (newMessages.length > 0) {
-        // Объединяем новые сообщения с очередью, избегая дубликатов
+        // Объединяем новые сообщения с очереди, избегая дубликатов
         const currentIds = new Set(queue.map(msg => msg.id));
         const filteredNew = newMessages.filter(msg => !currentIds.has(msg.id));
         
@@ -710,12 +1032,19 @@ function setupPollingFallback() {
           if (!showing) {
             nextMessage();
           }
+          
+          updateQueueUI();
         }
       }
     } catch (error) {
       console.error('❌ Ошибка в поллинге:', error);
     }
-  }, 30000);
+  }, TIMINGS.defaultPollingInterval);
+  
+  connectionStatus.textContent = 'Polling';
+  connectionStatus.className = 'connection-status online';
+  connectionState.textContent = `Поллинг (${interval} сек)`;
+  connectionState.style.color = '#ffb86b';
 }
 
 // 15. ФУНКЦИИ ОТОБРАЖЕНИЯ СООБЩЕНИЙ
@@ -763,6 +1092,8 @@ function startMarquee(item) {
 }
 
 function showMessage(item, textOnly = false) {
+  currentMessage = item;
+  
   const rawText = (item.text || '').trim();
   if (rawText.length < 6) {
     console.warn('✉️ Пропущено короткое сообщение:', rawText);
@@ -806,11 +1137,13 @@ function showMessage(item, textOnly = false) {
       setTimeout(() => {
         marquee.innerHTML = '&nbsp;';
         showing = false;
+        currentMessage = null;
         nextMessage();
       }, 300);
     }, textDisplayTime);
     
     showing = true;
+    updateQueueUI();
     return;
   }
 
@@ -888,6 +1221,7 @@ function showMessage(item, textOnly = false) {
           photoCard.classList.add('hidden');
           mainPhoto.src = '';
           showing = false;
+          currentMessage = null;
           nextMessage();
         }, TIMINGS.slideOutDuration * 1000);
       }, TIMINGS.photoDisplayTime);
@@ -915,6 +1249,7 @@ function showMessage(item, textOnly = false) {
   }
 
   showing = true;
+  updateQueueUI();
 }
 
 function nextMessage() {
@@ -925,11 +1260,13 @@ function nextMessage() {
     console.log('⏹️ Очередь пуста, используем тестовые данные');
     queue = [...TEST_MESSAGES];
     tickerEl.classList.remove('fade-out');
+    updateQueueUI();
   }
 
   const item = queue.shift();
   if (!item) {
     tickerEl.classList.add('fade-out');
+    updateQueueUI();
     return;
   }
 
@@ -946,7 +1283,173 @@ function nextMessage() {
   showMessage(item, !hasImage);
 }
 
-// 16. ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ
+// 16. ФУНКЦИИ ДЛЯ НАСТРОЕК
+function updateQueueUI() {
+  queueCount.textContent = queue.length;
+  
+  queueList.innerHTML = '';
+  
+  if (currentMessage) {
+    const currentItem = document.createElement('div');
+    currentItem.className = 'queue-item current-item';
+    currentItem.innerHTML = `
+      <div class="queue-author">🔥 ТЕКУЩЕЕ СООБЩЕНИЕ</div>
+      <div class="queue-text">${esc(currentMessage.author || 'Аноним')}: ${esc((currentMessage.text || '').substring(0, 80))}...</div>
+    `;
+    queueList.appendChild(currentItem);
+  }
+  
+  queue.forEach((item, index) => {
+    const queueItem = document.createElement('div');
+    queueItem.className = 'queue-item';
+    queueItem.innerHTML = `
+      <div class="queue-author">${esc(item.author || 'Аноним')}</div>
+      <div class="queue-text">${esc((item.text || '').substring(0, 80))}...</div>
+      <div class="queue-controls">
+        <button class="queue-btn skip-btn" data-index="${index}">⏭️</button>
+        <button class="queue-btn delete-btn" data-index="${index}">❌</button>
+      </div>
+    `;
+    queueList.appendChild(queueItem);
+  });
+  
+  // Добавляем обработчики событий для кнопок
+  document.querySelectorAll('.skip-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const index = parseInt(btn.getAttribute('data-index'));
+      if (index === 0 && showing) {
+        // Пропускаем текущее сообщение
+        skipCurrentMessage();
+      } else if (index === 0) {
+        // Пропускаем следующее сообщение в очереди
+        queue.shift();
+        nextMessage();
+      } else {
+        // Перемещаем сообщение в конец очереди
+        const item = queue.splice(index, 1)[0];
+        queue.push(item);
+      }
+      updateQueueUI();
+    });
+  });
+  
+  document.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const index = parseInt(btn.getAttribute('data-index'));
+      queue.splice(index, 1);
+      updateQueueUI();
+    });
+  });
+}
+
+function updateSettingsUI() {
+  // Обновляем статус подключения
+  connectionState.textContent = isOnline ? 'Онлайн' : 'Офлайн';
+  connectionState.style.color = isOnline ? '#4dff4d' : '#ff4d4d';
+  
+  // Обновляем текущий режим
+  if (modeTest.checked) {
+    currentMode.textContent = 'Тестовые данные';
+    currentMode.style.color = '#ffb86b';
+  } else if (modePolling.checked) {
+    currentMode.textContent = 'Только поллинг';
+    currentMode.style.color = '#4dc1ff';
+  } else {
+    currentMode.textContent = 'Realtime (авто)';
+    currentMode.style.color = '#ff6b96';
+  }
+  
+  // Обновляем очередь
+  updateQueueUI();
+}
+
+function skipCurrentMessage() {
+  console.log('⏭️ Принудительный пропуск текущего сообщения');
+  
+  // Останавливаем текущую анимацию
+  marquee.style.animation = 'none';
+  marquee.innerHTML = '&nbsp;';
+  
+  if (photoCard.classList.contains('animating') || !photoCard.classList.contains('hidden')) {
+    photoCard.style.animation = '';
+    photoCard.classList.remove('animating');
+    photoCard.classList.add('hidden');
+    mainPhoto.src = '';
+  }
+  
+  showing = false;
+  currentMessage = null;
+  nextMessage();
+}
+
+function applyConnectionMode() {
+  // Отключаем все существующие соединения
+  if (realtimeChannel && supabase) {
+    try {
+      supabase.removeChannel(realtimeChannel);
+    } catch (e) {
+      console.warn('⚠️ Ошибка при удалении канала:', e);
+    }
+    realtimeChannel = null;
+  }
+  
+  if (pollingInterval) {
+    clearInterval(pollingInterval);
+    pollingInterval = null;
+  }
+  
+  // Применяем новый режим
+  if (modeTest.checked) {
+    console.log('🔧 Активирован режим тестовых данных');
+    queue = [...TEST_MESSAGES];
+    if (!showing) nextMessage();
+  } else if (modePolling.checked) {
+    console.log('🔧 Активирован режим поллинга');
+    setupPollingFallback();
+  } else {
+    console.log('🔧 Активирован режим realtime');
+    
+    // Перезагружаем данные
+    fetchMessages().then(data => {
+      queue = data;
+      if (!showing && queue.length > 0) {
+        nextMessage();
+      }
+      updateQueueUI();
+    });
+    
+    // Устанавливаем realtime
+    if (supabase) {
+      setupRealtime();
+    }
+  }
+  
+  updateSettingsUI();
+}
+
+function reloadData() {
+  showStatus('Перезагрузка данных...', 'warning', 0);
+  
+  fetchMessages().then(data => {
+    queue = data;
+    lastDataUpdate = new Date().toISOString();
+    lastUpdate.textContent = new Date().toLocaleTimeString();
+    showStatus('Данные успешно перезагружены!', 'online', 3000);
+    
+    if (!showing && queue.length > 0) {
+      nextMessage();
+    }
+    
+    updateQueueUI();
+  }).catch(error => {
+    console.error('❌ Ошибка перезагрузки данных:', error);
+    showStatus('Ошибка перезагрузки данных!', 'error', 5000);
+  });
+}
+
+// 17. ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ
 async function initializeApp() {
   console.log('✅ Инициализация приложения');
   showStatus('Загрузка данных...', 'warning', 0);
@@ -962,7 +1465,7 @@ async function initializeApp() {
     supabase = await initSupabase();
     
     // Устанавливаем realtime-подписку или резервный поллинг
-    if (supabase) {
+    if (supabase && !modePolling.checked && !modeTest.checked) {
       setupRealtime();
     } else {
       setupPollingFallback();
@@ -977,6 +1480,7 @@ async function initializeApp() {
         tickerEl.classList.add('fade-out');
         showStatus('Нет сообщений для отображения', 'warning', 3000);
       }
+      updateSettingsUI();
     }, 1500);
     
     // Защита от зависания очереди
@@ -987,10 +1491,16 @@ async function initializeApp() {
           if (newMessages.length > 0) {
             queue = newMessages;
             nextMessage();
+            updateQueueUI();
           }
         });
       }
     }, TIMINGS.nextMessageDelay);
+    
+    // Настраиваем поллинг по умолчанию
+    if (modePolling.checked || !supabase) {
+      setupPollingFallback();
+    }
     
   } catch (error) {
     console.error('🔥 Критическая ошибка инициализации:', error);
@@ -998,8 +1508,45 @@ async function initializeApp() {
   }
 }
 
-// 17. ОБРАБОТКА СОБЫТИЙ СТРАНИЦЫ И СЕТИ
-document.addEventListener('DOMContentLoaded', initializeApp);
+// 18. ОБРАБОТКА СОБЫТИЙ СТРАНИЦЫ И СЕТИ
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('✅ DOM загружен');
+  
+  // Обработчики для настроек
+  channelLogo.addEventListener('click', () => {
+    settingsModal.classList.add('active');
+    updateSettingsUI();
+  });
+  
+  closeSettings.addEventListener('click', () => {
+    settingsModal.classList.remove('active');
+  });
+  
+  // Закрытие окна настроек по клику вне его
+  settingsModal.addEventListener('click', (e) => {
+    if (e.target === settingsModal) {
+      settingsModal.classList.remove('active');
+    }
+  });
+  
+  // Обработчики изменения режима подключения
+  modeRealtime.addEventListener('change', applyConnectionMode);
+  modePolling.addEventListener('change', applyConnectionMode);
+  modeTest.addEventListener('change', applyConnectionMode);
+  
+  pollingIntervalInput.addEventListener('change', () => {
+    if (modePolling.checked) {
+      setupPollingFallback();
+    }
+  });
+  
+  // Кнопки управления
+  skipCurrentBtn.addEventListener('click', skipCurrentMessage);
+  reloadDataBtn.addEventListener('click', reloadData);
+  
+  // Инициализация приложения
+  initializeApp();
+});
 
 window.addEventListener('online', () => {
   console.log('🌐 Сетевое соединение восстановлено');
