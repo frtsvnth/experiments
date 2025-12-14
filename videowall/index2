@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Party Wall — Retro TV</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:black;color:white;font-family:"Arial","Helvetica",sans-serif;overflow:hidden}
+
+/* background video */
+video.bg{
+  position:fixed;inset:0;width:100%;height:100%;
+  object-fit:cover;z-index:0;filter:saturate(1.1) contrast(1.1) brightness(0.9);
+}
+
+/* crt overlay */
+.crt{pointer-events:none;position:fixed;inset:0;z-index:2;
+  background-image:linear-gradient(rgba(0,0,0,0.06)50%,rgba(0,0,0,0.03)50%);
+  background-size:100% 4px;mix-blend-mode:overlay;
+}
+.vignette{position:fixed;inset:0;z-index:3;
+  background:radial-gradient(ellipse at center,rgba(0,0,0,0)40%,rgba(0,0,0,0.45)100%);
+  pointer-events:none;
+}
+
+/* main container */
+.stage{
+  position:fixed;inset:0;z-index:1;
+  display:flex;align-items:center;justify-content:center;
+  padding:64px 5% 96px 5%;
+}
+
+/* photo card */
+.photo-card{
+  position:relative;
+  width:90vw;max-width:1400px;
+  height:auto;
+  max-height:calc(100vh - 64px - 96px);
+  display:flex;align-items:center;justify-content:center;
+  border-radius:24px;overflow:visible;
+  background:transparent;
+  box-shadow:0 20px 80px rgba(0,0,0,0.8);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: none;
+}
+
+.photo-card.preload{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  box-shadow:none !important;
+  transition:none !important;
+}
+
+/* CRT & vignette */
+.photo-crt, .photo-vignette{
+  pointer-events:none;
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  z-index:4;
+}
+.photo-crt{
+  background-image:linear-gradient(rgba(0,0,0,0.06) 50%, rgba(0,0,0,0.03) 50%);
+  background-size:100% 4px;
+  mix-blend-mode:overlay;
+  opacity:0.9;
+  z-index:4;
+}
+.photo-vignette{
+  background:radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.45) 100%);
+  z-index:5;
+}
+
+/* photo frame — УМЕНЬШЕНО и с парением */
+.photo-frame{
+  position:relative;
+  display:inline-flex;
+  align-items:center;justify-content:center;
+  padding:10px;
+  background:rgba(0,0,0,0.35);
+  border:8px solid rgba(255,0,80,0.95);
+  border-radius:16px;
+  box-shadow:0 8px 30px rgba(255,0,80,0.08);
+  max-width:100%;
+  max-height:100%;
+  z-index:6;
+  overflow:hidden;
+  min-width:220px;
+  min-height:140px;
+  transform: scale(0.94);
+  transform-origin: center;
+  transition: width .28s ease, height .28s ease, box-shadow .28s ease;
+}
+
+/* === ЯВНОЕ ПАРЕНИЕ === */
+.photo-frame.drifting {
+  animation: drift 14s ease-in-out infinite alternate;
+}
+
+.photo-frame img{
+  display:block;
+  visibility:hidden;
+  opacity:0;
+  transition:opacity .22s ease;
+  max-width:100%;
+  max-height:calc(100vh - 64px - 96px - 40px);
+  width:auto;
+  height:auto;
+  object-fit:contain;
+  border-radius:8px;
+  opacity: 0.98 !important;
+}
+
+.photo-card.preload .photo-frame,
+.photo-card.preload .photo-crt,
+.photo-card.preload .photo-vignette {
+  opacity:0;
+  visibility:hidden;
+  transition: none !important;
+}
+
+/* Анимации движения */
+@keyframes slideInLeft {
+  from { transform: translateX(-100vw) scale(0.94); opacity: 0; }
+  to   { transform: translateX(0) scale(0.94); opacity: 1; }
+}
+@keyframes slideInRight {
+  from { transform: translateX(100vw) scale(0.94); opacity: 0; }
+  to   { transform: translateX(0) scale(0.94); opacity: 1; }
+}
+@keyframes slideOutLeft {
+  from { transform: translateX(0) scale(0.94); opacity: 1; }
+  to   { transform: translateX(-100vw) scale(0.94); opacity: 0; }
+}
+@keyframes slideOutRight {
+  from { transform: translateX(0) scale(0.94); opacity: 1; }
+  to   { transform: translateX(100vw) scale(0.94); opacity: 0; }
+}
+
+/* CRT мерцание */
+@keyframes crt-flicker {
+  0%, 100% { opacity: 0; filter: brightness(0) contrast(1); }
+  10%      { opacity: 0.2; filter: brightness(0.3) contrast(1.2); }
+  20%      { opacity: 0; }
+  30%      { opacity: 0.4; filter: brightness(0.6) contrast(1.3); }
+  40%      { opacity: 0.1; }
+  50%      { opacity: 0.7; filter: brightness(0.9) contrast(1.4); }
+  60%      { opacity: 0.3; }
+  70%      { opacity: 0.9; filter: brightness(1.1) contrast(1.5); }
+  80%      { opacity: 0.5; }
+  90%      { opacity: 1; filter: brightness(1) contrast(1); }
+}
+
+/* === УСИЛЕННОЕ ПАРЕНИЕ === */
+@keyframes drift {
+  0%   { transform: scale(0.9) translateX(-100px); }
+  100% { transform: scale(0.9) translateX(100px); }
+}
+
+.photo-card.animating {
+  animation-fill-mode: forwards;
+  animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ticker */
+.ticker{
+  position:fixed;left:5%;right:5%;bottom:3%;
+  z-index:6;height:72px;border-radius:8px;overflow:hidden;
+  display:flex;align-items:center;
+  background:linear-gradient(90deg,rgba(255,0,64,0.8),rgba(255,140,0,0.5));
+  border:2px solid rgba(255,80,120,0.25);
+  box-shadow:0 0 24px rgba(255,0,64,0.15);
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+.ticker.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.label{
+  min-width:120px;text-align:center;font-weight:800;
+  color:#fff;text-transform:uppercase;font-size:18px;
+  border-right:2px solid rgba(255,255,255,0.1);padding-right:10px;margin-right:10px;
+}
+.marquee-wrap{flex:1;overflow:hidden;position:relative;}
+.marquee{
+  white-space:nowrap;display:inline-block;
+  font-size:28px;font-weight:700;color:#ffdcdc;
+  text-shadow:0 2px 8px rgba(0,0,0,0.8),0 0 18px rgba(255,34,85,0.5);
+  padding-right:40px;
+}
+.marquee.initial {
+  visibility: hidden;
+}
+.channel{
+  position:fixed;left:5%;top:5%;z-index:6;
+  color:#fff;font-weight:800;text-transform:uppercase;
+  background:linear-gradient(90deg,#ff6b96,#ffb86b);
+  padding:8px 12px;border-radius:6px;box-shadow:0 6px 20px rgba(0,0,0,0.5);
+}
+
+/* === QR КОД — НОВОЕ === */
+.qr-container {
+  position: fixed;
+  right: 5%;
+  top: 5%;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.qr-code {
+  width: 150px;
+  height: 150px;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  image-rendering: pixelated; /* для чёткости QR */
+}
+.qr-code img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+</style>
+</head>
+<body>
+<video class="bg" autoplay loop muted playsinline>
+  <source src="party-bg6.mp4" type="video/mp4">
+</video>
+
+<div class="stage">
+  <div id="photoCard" class="photo-card hidden">
+    <div class="photo-crt" aria-hidden="true"></div>
+    <div class="photo-vignette" aria-hidden="true"></div>
+    <div class="photo-frame">
+      <img id="mainPhoto" src="" alt="">
+    </div>
+  </div>
+</div>
+
+<div class="crt"></div>
+<div class="vignette"></div>
+
+<div class="channel">MAIS TV</div>
+
+<div class="qr-container">
+  <div class="qr-code">
+    <img id="qrCode" src="qr-code.png" alt="QR код для Telegram">
+  </div>
+</div>
+
+<div class="ticker">
+  <div class="label">SMS-Чат</div>
+  <div class="marquee-wrap" id="marqueeWrap">
+    <div id="marquee" class="marquee">&nbsp;</div>
+  </div>
+</div>
+
+<script type="module">
+console.log('🚀 Запуск приложения Party Wall TV');
+
+// 1. ИСПРАВЛЕННЫЕ КОНСТАНТЫ БЕЗ ЛИШНИХ ПРОБЕЛОВ
+const SUPABASE_URL = 'https://luqsmllrhasibqellhqo.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1cXNtbGxyaGFzaWJxZWxsaHFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzNjE2MDksImV4cCI6MjA3NzkzNzYwOX0.00e-UFmmjosbJhWq3sFNhDCQdYEzO0ZHVrW3k4Cid7U';
+
+// 2. ИНИЦИАЛИЗАЦИЯ ГЛОБАЛЬНЫХ ПЕРЕМЕННЫХ
+const photoCard = document.getElementById('photoCard');
+const mainPhoto = document.getElementById('mainPhoto');
+const marquee = document.getElementById('marquee');
+const marqueeWrap = document.getElementById('marqueeWrap');
+const tickerEl = document.querySelector('.ticker');
+
+let queue = [];
+let showing = false;
+let messageCounter = 0;
+
+// 3. ФУНКЦИИ ЭКРАНИРОВАНИЯ
+function esc(s){
+  return s ? String(s).replace(/[&<>"']/g, m => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[m])) : '';
+}
+
+// 4. ОТОБРАЖЕНИЕ СООБЩЕНИЙ
+function showMessage(item, textOnly = false){
+  const rawText = (item.text || '').trim();
+  if (rawText.length < 4) {
+    console.warn('✉️ Пропущено короткое сообщение:', rawText);
+    return;
+  }
+
+  const text = `${esc(item.author || 'Аноним')}: ${esc(rawText)}`;
+  
+  // Подготовка бегущей строки
+  marquee.classList.add('initial');
+  marquee.innerHTML = `${text} &nbsp;     •.     &nbsp; ${text}`;
+  tickerEl.classList.remove('fade-out');
+
+  if (textOnly) {
+    console.log('💬 Показываем текстовое сообщение:', text);
+    startMarquee(item);
+    
+    setTimeout(() => {
+      marquee.innerHTML = '&nbsp;';
+      marquee.style.animation = 'none';
+      showing = false;
+      nextMessage();
+    }, 10000);
+    
+    showing = true;
+    return;
+  }
+
+  // ПОДГОТОВКА ФОТОКАРТЫ
+  photoCard.classList.remove('hidden');
+  photoCard.classList.add('preload');
+
+  const frame = document.querySelector('.photo-frame');
+  frame.style.width = '';
+  frame.style.height = '';
+  frame.classList.remove('drifting');
+
+  mainPhoto.style.visibility = 'hidden';
+  mainPhoto.style.opacity = '0';
+  mainPhoto.src = item.image_url;
+
+  const onLoaded = () => {
+    console.log('🖼️ Изображение загружено:', item.image_url);
+    
+    const style = getComputedStyle(frame);
+    const paddingX = parseFloat(style.paddingLeft || 0) + parseFloat(style.paddingRight || 0);
+    const paddingY = parseFloat(style.paddingTop || 0) + parseFloat(style.paddingBottom || 0);
+    const borderX = parseFloat(style.borderLeftWidth || 0) + parseFloat(style.borderRightWidth || 0);
+    const borderY = parseFloat(style.borderTopWidth || 0) + parseFloat(style.borderBottomWidth || 0);
+
+    const availableW = Math.max(40, photoCard.clientWidth - (paddingX + borderX));
+    const availableH = Math.max(40, photoCard.clientHeight - (paddingY + borderY));
+
+    const natW = mainPhoto.naturalWidth || availableW;
+    const natH = mainPhoto.naturalHeight || availableH;
+    const ratio = natW / natH || 1;
+
+    let imgW = availableW;
+    let imgH = Math.round(imgW / ratio);
+    if (imgH > availableH) {
+      imgH = availableH;
+      imgW = Math.round(imgH * ratio);
+    }
+
+    const frameW = imgW + paddingX + borderX;
+    const frameH = imgH + paddingY + borderY;
+
+    frame.style.width = Math.max(frameW, parseFloat(getComputedStyle(frame).minWidth) || 0) + 'px';
+    frame.style.height = Math.max(frameH, parseFloat(getComputedStyle(frame).minHeight) || 0) + 'px';
+
+    photoCard.classList.remove('preload');
+
+    // CRT эффект
+    frame.style.animation = 'crt-flicker 1.8s steps(1) forwards';
+    mainPhoto.style.visibility = 'visible';
+
+    setTimeout(() => {
+      mainPhoto.style.opacity = '0.9';
+      frame.style.animation = '';
+      frame.classList.add('drifting');
+
+      messageCounter++;
+      const isEven = messageCounter % 2 === 0;
+      const inAnim = isEven ? 'slideInRight' : 'slideInLeft';
+      const outAnim = isEven ? 'slideOutLeft' : 'slideOutRight';
+
+      photoCard.style.animation = `${inAnim} 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) forwards`;
+      photoCard.classList.add('animating');
+
+      setTimeout(() => {
+        startMarquee(item);
+      }, 150);
+
+      setTimeout(() => {
+        photoCard.style.animation = `${outAnim} 0.5s cubic-bezier(0.55, 0.09, 0.68, 0.53) forwards`;
+        setTimeout(() => {
+          photoCard.classList.remove('animating');
+          photoCard.classList.add('hidden');
+          mainPhoto.src = '';
+          showing = false;
+          nextMessage();
+        }, 500);
+      }, 10000);
+    }, 1800);
+
+    cleanup();
+  };
+
+  const onError = (e) => {
+    console.error('🔥 Ошибка загрузки изображения:', e);
+    cleanup();
+    showMessage(item, true);
+  };
+
+  const cleanup = () => {
+    mainPhoto.removeEventListener('load', onLoaded);
+    mainPhoto.removeEventListener('error', onError);
+  };
+
+  mainPhoto.addEventListener('load', onLoaded);
+  mainPhoto.addEventListener('error', onError);
+
+  if (mainPhoto.complete && mainPhoto.naturalWidth) {
+    setTimeout(onLoaded, 0);
+  }
+
+  showing = true;
+}
+
+// 5. ЗАПУСК БЕГУЩЕЙ СТРОКИ
+function startMarquee(item){
+  console.log('🗞️ Запуск бегущей строки');
+  
+  marquee.style.animation = 'none';
+  marquee.style.transform = '';
+
+  requestAnimationFrame(() => {
+    const cw = marquee.scrollWidth;
+    const vw = marqueeWrap.clientWidth;
+    const spd = 160;
+    const dur = Math.max(6, (cw + vw) / spd);
+    
+    const st = document.getElementById('marqStyle') || (() => {
+      let s = document.createElement('style');
+      s.id = 'marqStyle';
+      document.head.appendChild(s);
+      return s;
+    })();
+
+    st.textContent = `
+      @keyframes move {
+        0%   { transform: translateX(${vw}px); }
+        100% { transform: translateX(-${cw}px); }
+      }
+    `;
+    
+    marquee.style.animation = `move ${dur}s linear infinite`;
+    marquee.classList.remove('initial');
+  });
+}
+
+// 6. СЛЕДУЮЩЕЕ СООБЩЕНИЕ
+function nextMessage(){
+  console.log(`⏭️ Следующее сообщение. Очередь: ${queue.length}, Показывается: ${showing}`);
+  
+  if (showing || queue.length === 0) {
+    tickerEl.classList.add('fade-out');
+    return;
+  }
+
+  let item;
+  let rawText;
+
+  while (queue.length > 0) {
+    item = queue.shift();
+    if (!item) continue;
+    
+    rawText = (item.text || '').trim();
+    if (rawText.length >= 4) {
+      break;
+    }
+    item = null;
+  }
+
+  if (!item || rawText.length < 4) {
+    console.log('⏹️ Очередь пуста');
+    showing = false;
+    tickerEl.classList.add('fade-out');
+    return;
+  }
+
+  console.log('➡️ Обработка сообщения:', item.id || 'без ID');
+  showing = true;
+  const hasImage = !!(item.image_url && item.image_url.trim());
+  
+  if (hasImage) {
+    showMessage(item, false);
+  } else {
+    showMessage(item, true);
+  }
+}
+
+// 7. НАДЕЖНАЯ ЗАГРУЗКА SUPABASE
+async function loadSupabase() {
+  // Попытка 1: Основной CDN
+  try {
+    console.log('📦 Загружаем Supabase из основного CDN...');
+    const module = await import('https://esm.sh/@supabase/supabase-js@2.43.0');
+    console.log('✅ Supabase загружен через esm.sh');
+    return module;
+  } catch (err1) {
+    console.warn('⚠️ Основной CDN не сработал:', err1.message);
+    
+    // Попытка 2: Резервный CDN
+    try {
+      console.log('📦 Пробуем резервный CDN...');
+      const module = await import('https://cdn.skypack.dev/@supabase/supabase-js@2.43.0');
+      console.log('✅ Supabase загружен через Skypack');
+      return module;
+    } catch (err2) {
+      console.error('🔥 Все CDN недоступны:', err2);
+      throw new Error('Не удалось загрузить Supabase');
+    }
+  }
+}
+
+// 8. НАСТРОЙКА REALTIME ПОДКЛЮЧЕНИЯ
+async function setupRealtime() {
+  try {
+    console.log('🔧 Инициализация Supabase');
+    
+    // Проверка конфигурации
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      throw new Error('❌ Отсутствуют учетные данные Supabase');
+    }
+
+    // Загрузка библиотеки
+    const { createClient } = await loadSupabase();
+    
+    // Создание клиента
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('🔌 Подключено к Supabase');
+
+    // Загрузка истории сообщений
+    console.log('📥 Загрузка истории сообщений...');
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('approved', true)
+      .order('timestamp', { ascending: true });
+    
+    if (error) throw error;
+    
+    if (data?.length) {
+      console.log(`✅ Загружено ${data.length} сообщений`);
+      queue.push(...data.reverse()); // Новые сообщения в начало очереди
+      nextMessage();
+    } else {
+      console.log('📭 История сообщений пуста');
+      tickerEl.classList.add('fade-out');
+    }
+
+    // Настройка realtime-подписки
+    console.log('📡 Подписка на новые сообщения...');
+    const channel = supabase
+      .channel('custom-all-channel')
+      .on(
+        'postgres_changes',
+        { 
+          event: 'INSERT', 
+          schema: 'public',
+          table: 'messages'
+        },
+        (payload) => {
+          console.log('🔔 Новое сообщение получено:', payload.new);
+          if (payload.new?.approved) {
+            queue.push(payload.new);
+            tickerEl.classList.remove('fade-out');
+            if (!showing) nextMessage();
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log(`📶 Статус подписки: ${status}`);
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Успешная подписка на обновления');
+        }
+      });
+
+  } catch (err) {
+    console.error('💥 Критическая ошибка:', err);
+    // Автоматическая повторная попытка
+    setTimeout(() => {
+      console.log('🔄 Повторная попытка подключения...');
+      setupRealtime();
+    }, 10000);
+  }
+}
+
+// 9. ГАРАНТИРОВАННАЯ ИНИЦИАЛИЗАЦИЯ
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('✅ DOM полностью загружен');
+  setupRealtime();
+  
+  // Защита от зависания
+  setInterval(() => {
+    if (!showing && queue.length > 0) {
+      console.log('♻️ Автоматический запуск очереди');
+      nextMessage();
+    }
+  }, 60000);
+});
+</script>
+</body>
+</html>
