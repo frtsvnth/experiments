@@ -299,7 +299,7 @@ console.log('🚀 Запуск приложения Party Wall TV');
 const ANIMATION_SPEED = 1.2; // Оптимальное значение для синхронизации
 
 // 1. ИСПРАВЛЕННЫЕ КОНСТАНТЫ
-const SUPABASE_URL = 'https://luqsmllrhasibqellhqo.supabase.co';
+const SUPABASE_URL = 'https://luqsmllrhasibqellhqo.supabase.co  ';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1cXNtbGxyaGFzaWJxZWxsaHFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzNjE2MDksImV4cCI6MjA3NzkzNzYwOX0.00e-UFmmjosbJhWq3sFNhDCQdYEzO0ZHVrW3k4Cid7U';
 
 // 2. РАССЧИТАННЫЕ ВРЕМЕННЫЕ ПАРАМЕТРЫ (ЗАВИСЯТ ОТ ANIMATION_SPEED)
@@ -363,7 +363,7 @@ updateDebugPanel();
 async function loadSupabase() {
   try {
     console.log('📦 Загружаем Supabase из основного CDN...');
-    const module = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.0/+esm');
+    const module = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.43.0/+esm  ');
     console.log('✅ Supabase загружен через jsdelivr');
     return module;
   } catch (err1) {
@@ -371,7 +371,7 @@ async function loadSupabase() {
     
     try {
       console.log('📦 Пробуем резервный CDN (esm.sh)...');
-      const module = await import('https://esm.sh/@supabase/supabase-js@2.43.0');
+      const module = await import('https://esm.sh/@supabase/supabase-js@2.43.0  ');
       console.log('✅ Supabase загружен через esm.sh');
       return module;
     } catch (err2) {
@@ -379,7 +379,7 @@ async function loadSupabase() {
       
       try {
         console.log('📦 Пробуем третий CDN (skypack)...');
-        const module = await import('https://cdn.skypack.dev/@supabase/supabase-js@2.43.0');
+        const module = await import('https://cdn.skypack.dev/@supabase/supabase-js@2.43.0  ');
         console.log('✅ Supabase загружен через Skypack');
         return module;
       } catch (err3) {
@@ -674,7 +674,7 @@ function startMarquee(item) {
   console.log('🗞️ Запуск бегущей строки (синхронизировано со скоростью)');
   
   const rawText = (item.text || '').trim();
-  if (rawText.length < 4) {
+  if (rawText.length < 6) {
     console.warn('✉️ Пропущено короткое сообщение в бегущей строке:', rawText);
     return;
   }
@@ -692,9 +692,15 @@ function startMarquee(item) {
     const cw = marquee.scrollWidth;
     const vw = marqueeWrap.clientWidth;
     
-    // РАССЧИТАННАЯ СКОРОСТЬ С УЧЕТОМ ГЛОБАЛЬНОГО КОЭФФИЦИЕНТА
+    // УЛУЧШЕННЫЙ РАСЧЕТ СКОРОСТИ С УЧЕТОМ ДЛИНЫ ТЕКСТА
     const spd = TIMINGS.marqueePixelsPerSec;
-    const dur = Math.max(TIMINGS.marqueeMinDuration, (cw + vw * 2) / spd);
+    // Минимальное время прохождения = время прохождения видимой области + запас
+    const minDuration = (vw * 2) / spd;
+    // Полное время прохождения всего текста
+    const fullDuration = (cw + vw * 2) / spd;
+    
+    // Выбираем между минимальным временем и временем для полного прохождения
+    const dur = Math.max(TIMINGS.marqueeMinDuration, minDuration * 1.5, fullDuration * 0.8);
     
     const st = document.getElementById('marqStyle') || (() => {
       let s = document.createElement('style');
@@ -725,7 +731,7 @@ function startMarquee(item) {
 // 16. ОСНОВНЫЕ ФУНКЦИИ ОТОБРАЖЕНИЯ (С СИНХРОНИЗАЦИЕЙ)
 function showMessage(item, textOnly = false) {
   const rawText = (item.text || '').trim();
-  if (rawText.length < 4) {
+  if (rawText.length < 6) {
     console.warn('✉️ Пропущено короткое сообщение:', rawText);
     return;
   }
@@ -739,14 +745,46 @@ function showMessage(item, textOnly = false) {
 
   if (textOnly) {
     console.log('💬 Показываем ТОЛЬКО текстовое сообщение:', text);
+    
+    // РАСЧЕТ МИНИМАЛЬНОГО ВРЕМЕНИ ПОКАЗА ТЕКСТА
+    const getTextDisplayDuration = () => {
+      // Создаем временный элемент для точного измерения ширины текста
+      const tempEl = document.createElement('div');
+      tempEl.style.position = 'absolute';
+      tempEl.style.visibility = 'hidden';
+      tempEl.style.whiteSpace = 'nowrap';
+      tempEl.style.fontSize = '28px';
+      tempEl.style.fontWeight = '700';
+      tempEl.style.padding = '0 40px'; // Учитываем padding из стилей
+      tempEl.innerHTML = text;
+      document.body.appendChild(tempEl);
+      
+      const textWidth = tempEl.scrollWidth;
+      const containerWidth = marqueeWrap.clientWidth;
+      document.body.removeChild(tempEl);
+      
+      // Рассчитываем время прохождения текста + запас для плавности
+      const calculatedTime = (textWidth + containerWidth * 2) / TIMINGS.marqueePixelsPerSec * 1000;
+      
+      // Устанавливаем границы: минимум 5 сек, максимум 15 сек
+      return Math.min(15000, Math.max(5000, calculatedTime));
+    };
+
     startMarquee(item);
     
+    // Используем рассчитанное время вместо фиксированного
+    const textDisplayTime = getTextDisplayDuration();
+    console.log(`⏱️ Время показа текста: ${textDisplayTime}ms`);
+    
     setTimeout(() => {
-      marquee.innerHTML = '&nbsp;';
+      // Плавное завершение перед очисткой
       marquee.style.animation = 'none';
-      showing = false;
-      nextMessage();
-    }, TIMINGS.photoDisplayTime / 1.5); // Текст показывается чуть быстрее фото
+      setTimeout(() => {
+        marquee.innerHTML = '&nbsp;';
+        showing = false;
+        nextMessage();
+      }, 300);
+    }, textDisplayTime);
     
     showing = true;
     return;
@@ -870,13 +908,13 @@ function nextMessage() {
     if (!item) continue;
     
     rawText = (item.text || '').trim();
-    if (rawText.length >= 4) {
+    if (rawText.length >= 6) {
       break;
     }
     item = null;
   }
 
-  if (!item || rawText.length < 4) {
+  if (!item || rawText.length < 6) {
     console.log('⏹️ Очередь пуста');
     showing = false;
     tickerEl.classList.add('fade-out');
