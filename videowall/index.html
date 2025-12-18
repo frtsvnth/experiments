@@ -631,17 +631,17 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // 2. РАССЧИТАННЫЕ ВРЕМЕННЫЕ ПАРАМЕТРЫ
 const TIMINGS = {
   // Бегущая строка
-  marqueeMinDuration: 15 / ANIMATION_SPEED,
+  marqueeMinDuration: 13 / ANIMATION_SPEED,
   marqueePixelsPerSec: 150 * ANIMATION_SPEED,
   
   // Анимации фото
   crtFlickerDuration: 1.8 / ANIMATION_SPEED,
   slideInDuration: 0.6 / ANIMATION_SPEED,
   slideOutDuration: 0.5 / ANIMATION_SPEED,
-  photoDisplayTime: 10000 / ANIMATION_SPEED,
+  photoDisplayTime: 15000 / ANIMATION_SPEED,
   
   // Общие задержки
-  startMarqueeDelay: 150 / ANIMATION_SPEED,
+  startMarqueeDelay: 350 / ANIMATION_SPEED,
   nextMessageDelay: 30000 / ANIMATION_SPEED,
   reconnectDelay: 3000 / ANIMATION_SPEED,
   defaultPollingInterval: 30000, // 30 секунд
