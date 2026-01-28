@@ -6,7 +6,8 @@
     <meta name="theme-color" content="#1a1a1a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Timer">
+    <meta name="apple-mobile-web-app-title" content="Таймер">
+    <meta name="format-detection" content="telephone=no">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>Обратный таймер</title>
@@ -261,6 +262,27 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
+        .pwa-hint {
+            background: rgba(255, 149, 0, 0.15);
+            border-left: 4px solid #FF9500;
+            padding: 12px 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 15px auto;
+            max-width: 500px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .pwa-hint.visible {
+            display: block;
+            animation: slide-down 0.4s ease-out;
+        }
+
+        @keyframes slide-down {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .instructions {
             margin-top: 25px;
             color: #666;
@@ -318,6 +340,11 @@
                 padding: 4px 10px;
                 font-size: 0.8rem;
             }
+            
+            .pwa-hint {
+                font-size: 0.85rem;
+                padding: 10px 12px;
+            }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -329,12 +356,19 @@
     </style>
 </head>
 <body>
+    <!-- КРИТИЧЕСКИ ВАЖНО: аудио-элемент должен быть в DOM изначально для iOS PWA -->
+    <audio id="mainAudio" src="timer.mp3" preload="auto" style="display:none;" playsinline webkit-playsinline></audio>
+    
     <div class="audio-unlocked" id="audioUnlocked">🔊 Аудио разблокировано</div>
     
     <div class="container">
         <h1 style="font-size: 2rem; margin-bottom: 10px; color: #888;">Обратный таймер</h1>
         
         <div class="timer-display" id="timer">00:00:00</div>
+        
+        <div class="pwa-hint" id="pwaHint">
+            📱 <strong>Важно для iOS:</strong> При первом запуске нажмите любую кнопку для активации звука
+        </div>
         
         <div class="mode-toggle">
             <button class="mode-btn active" id="modeMinutes">⏱️ Минуты и секунды</button>
@@ -363,7 +397,7 @@
         </div>
         
         <div class="audio-warning" id="audioWarning">
-            ⚠️ Для работы звука нажмите кнопку "Тест звука" или "Старт" один раз
+            ⚠️ Для работы звука нажмите кнопку "Тест звука" или "Старт"
         </div>
         
         <div class="status" id="status"></div>
@@ -385,6 +419,7 @@
     <script>
         // DOM элементы
         const timerDisplay = document.getElementById('timer');
+        const mainAudio = document.getElementById('mainAudio'); // Ключевой элемент для iOS PWA
         const hoursInput = document.getElementById('hoursInput');
         const minutesInput = document.getElementById('minutesInput');
         const secondsInput = document.getElementById('secondsInput');
@@ -401,47 +436,164 @@
         const audioTestBtn = document.getElementById('audioTestBtn');
         const audioUnlockedEl = document.getElementById('audioUnlocked');
         const audioWarningEl = document.getElementById('audioWarning');
+        const pwaHintEl = document.getElementById('pwaHint');
 
         // Переменные состояния
         let countdown;
         let remainingTime = 0;
         let totalTime = 0;
         let isRunning = false;
-        let audioContext = null;
-        let audioBuffer = null;
         let currentMode = 'minutes';
-        let audioSource = null;
         let isMusicPlaying = false;
         let musicStartTime = 10;
         let isAudioUnlocked = false;
-        let htmlAudioElement = null;
+        let isIosPwa = false;
+
+        // Определяем, запущено ли приложение в режиме PWA на iOS
+        function detectIosPwa() {
+            const isStandalone = window.navigator.standalone || 
+                                 (window.matchMedia('(display-mode: standalone)').matches);
+            const isIos = /iPhone|iPad|iPod/.test(navigator.userAgent) && 
+                         !window.MSStream;
+            return isIos && isStandalone;
+        }
 
         // Инициализация
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', () => {
+            isIosPwa = detectIosPwa();
+            
+            // Показываем подсказку для iOS PWA
+            if (isIosPwa) {
+                pwaHintEl.classList.add('visible');
+                setTimeout(() => {
+                    if (isAudioUnlocked) pwaHintEl.classList.remove('visible');
+                }, 10000);
+            }
+            
+            init();
+        });
 
         function init() {
-            // Проверяем поддержку аудио
-            checkAudioSupport();
+            // Настраиваем основной аудио-элемент
+            if (mainAudio) {
+                mainAudio.volume = 0.8;
+                mainAudio.loop = true;
+                
+                mainAudio.addEventListener('canplaythrough', () => {
+                    console.log('Audio file loaded and ready');
+                });
+                
+                mainAudio.addEventListener('error', (e) => {
+                    console.error('Audio error:', e);
+                    if (isAudioUnlocked) {
+                        statusEl.innerHTML = '<span class="status-icon">⚠️</span> Ошибка загрузки звука';
+                        statusEl.classList.add('error');
+                    }
+                });
+                
+                // Проверяем, загрузился ли файл
+                if (mainAudio.readyState >= 3) { // HAVE_FUTURE_DATA
+                    console.log('Audio already loaded');
+                }
+            } else {
+                console.error('Main audio element not found!');
+                statusEl.innerHTML = '<span class="status-icon">⚠️</span> Аудио не инициализировано';
+                statusEl.classList.add('error');
+            }
+            
+            // Функция разблокировки аудио
+            const unlockAudioHandler = () => {
+                if (isAudioUnlocked) return;
+                
+                if (mainAudio) {
+                    // Устанавливаем низкую громкость для разблокировки
+                    const originalVolume = mainAudio.volume;
+                    mainAudio.volume = 0.01;
+                    
+                    // Пробуем воспроизвести
+                    mainAudio.play()
+                        .then(() => {
+                            // Успешно! Останавливаем и возвращаем громкость
+                            mainAudio.pause();
+                            mainAudio.currentTime = 0;
+                            mainAudio.volume = originalVolume;
+                            isAudioUnlocked = true;
+                            showAudioUnlocked();
+                            
+                            // Скрываем предупреждения
+                            audioWarningEl.style.display = 'none';
+                            if (isIosPwa) pwaHintEl.classList.remove('visible');
+                            
+                            // Убираем обработчики
+                            cleanupUnlockHandlers();
+                        })
+                        .catch(err => {
+                            console.warn('Audio unlock failed with main audio:', err);
+                            // Пробуем резервный метод
+                            unlockWithSilentSound().then(unlocked => {
+                                if (unlocked) {
+                                    isAudioUnlocked = true;
+                                    showAudioUnlocked();
+                                    audioWarningEl.style.display = 'none';
+                                    if (isIosPwa) pwaHintEl.classList.remove('visible');
+                                    cleanupUnlockHandlers();
+                                }
+                            });
+                        });
+                } else {
+                    // Резервный метод
+                    unlockWithSilentSound().then(unlocked => {
+                        if (unlocked) {
+                            isAudioUnlocked = true;
+                            showAudioUnlocked();
+                            audioWarningEl.style.display = 'none';
+                            cleanupUnlockHandlers();
+                        }
+                    });
+                }
+            };
+            
+            // Резервный метод разблокировки через тихий звук
+            function unlockWithSilentSound() {
+                return new Promise((resolve) => {
+                    const silentSound = new Audio();
+                    // Очень короткий тихий звук (1 секунда тишины в base64)
+                    silentSound.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+                    silentSound.volume = 0.01;
+                    
+                    silentSound.play()
+                        .then(() => {
+                            resolve(true);
+                        })
+                        .catch(err => {
+                            console.warn('Silent sound unlock failed:', err);
+                            resolve(false);
+                        });
+                });
+            }
+            
+            // Убираем обработчики после разблокировки
+            function cleanupUnlockHandlers() {
+                document.body.removeEventListener('touchstart', unlockAudioHandler, { once: true });
+                document.body.removeEventListener('click', unlockAudioHandler, { once: true });
+                startBtn.removeEventListener('click', unlockAudioHandler);
+                audioTestBtn.removeEventListener('click', unlockAudioHandler);
+            }
+            
+            // Добавляем обработчики для разблокировки
+            document.body.addEventListener('touchstart', unlockAudioHandler, { once: true });
+            document.body.addEventListener('click', unlockAudioHandler, { once: true });
+            startBtn.addEventListener('click', unlockAudioHandler);
+            audioTestBtn.addEventListener('click', unlockAudioHandler);
             
             // Загрузка сохраненного времени и режима
             loadSavedState();
             
-            // Обработчики событий для разблокировки аудио
-            document.body.addEventListener('click', unlockAudio, { once: true });
-            document.body.addEventListener('touchstart', unlockAudio, { once: true });
-            
             // Обработчики кнопок
-            startBtn.addEventListener('click', () => {
-                unlockAudio();
-                startTimer();
-            });
-            
+            startBtn.addEventListener('click', startTimer);
             pauseBtn.addEventListener('click', pauseTimer);
             resetBtn.addEventListener('click', resetTimer);
-            audioTestBtn.addEventListener('click', () => {
-                unlockAudio();
-                testAudio();
-            });
+            audioTestBtn.addEventListener('click', testAudio);
             
             // Обработчики ввода
             hoursInput.addEventListener('input', validateAndSaveTime);
@@ -460,93 +612,11 @@
             }
         }
 
-        function checkAudioSupport() {
-            // Проверяем, заблокировано ли аудио
-            if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // Если контекст уже запущен - аудио разблокировано
-                if (audioContext.state === 'running') {
-                    isAudioUnlocked = true;
-                    audioUnlockedEl.style.display = 'block';
-                    setTimeout(() => {
-                        audioUnlockedEl.style.display = 'none';
-                    }, 2000);
-                } else {
-                    audioWarningEl.style.display = 'block';
-                }
-            } else {
-                statusEl.innerHTML = '<span class="status-icon">⚠️</span> Аудио не поддерживается';
-                statusEl.classList.add('error');
-            }
-        }
-
-        function unlockAudio() {
-            if (isAudioUnlocked) return;
-            
-            try {
-                // Для Web Audio API
-                if (audioContext && audioContext.state === 'suspended') {
-                    audioContext.resume().then(() => {
-                        isAudioUnlocked = true;
-                        showAudioUnlocked();
-                    });
-                }
-                
-                // Создаем скрытый аудио элемент для разблокировки
-                if (!htmlAudioElement) {
-                    htmlAudioElement = new Audio();
-                    htmlAudioElement.volume = 0.1;
-                    htmlAudioElement.play().then(() => {
-                        htmlAudioElement.pause();
-                        if (!isAudioUnlocked) {
-                            isAudioUnlocked = true;
-                            showAudioUnlocked();
-                        }
-                    }).catch(e => {
-                        console.log('Audio unlock failed:', e);
-                    });
-                }
-                
-                // Скрываем предупреждение
-                audioWarningEl.style.display = 'none';
-            } catch (e) {
-                console.log('Audio unlock error:', e);
-            }
-        }
-
         function showAudioUnlocked() {
             audioUnlockedEl.style.display = 'block';
             setTimeout(() => {
                 audioUnlockedEl.style.display = 'none';
             }, 2000);
-        }
-
-        function preloadAudio() {
-            if (!isAudioUnlocked) {
-                console.log('Audio not unlocked yet, skipping preload');
-                return;
-            }
-            
-            if (audioBuffer) return; // Уже загружено
-            
-            if (audioContext) {
-                fetch('timer.mp3')
-                    .then(response => {
-                        if (!response.ok) throw new Error('Audio file not found');
-                        return response.arrayBuffer();
-                    })
-                    .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
-                    .then(buffer => {
-                        audioBuffer = buffer;
-                        console.log('Audio loaded successfully');
-                    })
-                    .catch(error => {
-                        console.error('Error loading audio:', error);
-                        statusEl.innerHTML = '<span class="status-icon">⚠️</span> Файл timer.mp3 не найден';
-                        statusEl.classList.add('error');
-                    });
-            }
         }
 
         function switchMode(mode) {
@@ -638,11 +708,6 @@
                 totalTime = inputValue;
             }
             
-            // Загружаем аудио при первом запуске
-            if (!audioBuffer) {
-                preloadAudio();
-            }
-            
             isRunning = true;
             statusEl.innerHTML = '<span class="status-icon">⏱️</span> Таймер запущен';
             statusEl.style.color = '#007AFF';
@@ -659,16 +724,16 @@
                 
                 // Запускаем музыку за 10 секунд до окончания
                 if (remainingTime === musicStartTime && !isMusicPlaying) {
-                    if (isAudioUnlocked) {
+                    if (isAudioUnlocked && mainAudio) {
                         playAlarmSound();
                         statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка включена!';
                         statusEl.style.color = '#FF9500';
                         statusEl.classList.add('warning');
                         timerDisplay.classList.add('warning');
                     } else {
-                        statusEl.innerHTML = '<span class="status-icon">⚠️</span> Аудио заблокировано браузером';
+                        statusEl.innerHTML = '<span class="status-icon">⚠️</span> Аудио не разблокировано';
                         statusEl.classList.add('error');
-                        audioWarningEl.style.display = 'block';
+                        if (!isAudioUnlocked) audioWarningEl.style.display = 'block';
                     }
                 }
                 
@@ -761,87 +826,53 @@
 
         function playAlarmSound() {
             if (isMusicPlaying) return;
-            if (!isAudioUnlocked) {
-                unlockAudio();
-                setTimeout(() => {
-                    if (isAudioUnlocked) playAlarmSound();
-                }, 100);
+            if (!isAudioUnlocked || !mainAudio) {
+                statusEl.innerHTML = '<span class="status-icon">⚠️</span> Сначала разблокируйте звук';
+                statusEl.classList.add('error');
                 return;
             }
             
-            stopAlarmSound(); // Останавливаем предыдущий источник если есть
+            stopAlarmSound();
             
-            try {
-                // Используем Web Audio API если доступен и разблокирован
-                if (audioContext && audioBuffer) {
-                    if (audioContext.state === 'suspended') {
-                        audioContext.resume();
-                    }
-                    
-                    audioSource = audioContext.createBufferSource();
-                    audioSource.buffer = audioBuffer;
-                    audioSource.connect(audioContext.destination);
-                    audioSource.loop = true;
-                    audioSource.start(0);
-                    
+            // Используем основной аудио-элемент
+            mainAudio.currentTime = 0;
+            mainAudio.volume = 0.8;
+            mainAudio.loop = true;
+            
+            mainAudio.play()
+                .then(() => {
                     isMusicPlaying = true;
                     resetBtn.innerHTML = '⏹️ Стоп (музыка)';
                     resetBtn.classList.add('music-playing');
-                    return;
-                }
-            } catch (e) {
-                console.error('Web Audio API error:', e);
-            }
-            
-            // Fallback на HTML5 Audio
-            try {
-                audioSource = new Audio('timer.mp3');
-                audioSource.loop = true;
-                audioSource.volume = 0.8;
-                
-                audioSource.play().then(() => {
-                    isMusicPlaying = true;
-                    resetBtn.innerHTML = '⏹️ Стоп (музыка)';
-                    resetBtn.classList.add('music-playing');
-                }).catch(e => {
-                    console.error('HTML5 Audio play error:', e);
-                    statusEl.innerHTML = '<span class="status-icon">⚠️</span> Ошибка воспроизведения звука';
+                })
+                .catch(err => {
+                    console.error('Playback failed:', err);
+                    statusEl.innerHTML = '<span class="status-icon">⚠️</span> Ошибка воспроизведения';
                     statusEl.classList.add('error');
+                    
+                    // Попытка восстановления для iOS
+                    if (isIosPwa) {
+                        mainAudio.load();
+                        setTimeout(() => {
+                            mainAudio.play().catch(e => console.error('Retry failed:', e));
+                        }, 300);
+                    }
                 });
-            } catch (e) {
-                console.error('HTML5 Audio init error:', e);
-                statusEl.innerHTML = '<span class="status-icon">⚠️</span> Аудио не поддерживается';
-                statusEl.classList.add('error');
-            }
         }
 
         function stopAlarmSound() {
-            if (!isMusicPlaying) return;
-            
-            try {
-                if (audioSource) {
-                    if (audioSource instanceof AudioBufferSourceNode) {
-                        try { audioSource.stop(); } catch (e) {}
-                        audioSource = null;
-                    } else if (audioSource instanceof Audio) {
-                        audioSource.pause();
-                        audioSource.currentTime = 0;
-                        audioSource = null;
-                    }
-                }
-            } catch (e) {
-                console.error('Error stopping sound:', e);
+            if (mainAudio && !mainAudio.paused) {
+                mainAudio.pause();
+                mainAudio.currentTime = 0;
+                isMusicPlaying = false;
+                resetBtn.innerHTML = '⏹️ Стоп';
+                resetBtn.classList.remove('music-playing');
             }
-            
-            isMusicPlaying = false;
-            resetBtn.innerHTML = '⏹️ Стоп';
-            resetBtn.classList.remove('music-playing');
         }
 
         function testAudio() {
             if (!isAudioUnlocked) {
-                unlockAudio();
-                setTimeout(testAudio, 200);
+                statusEl.innerHTML = '<span class="status-icon">🔊</span> Разблокировка звука...';
                 return;
             }
             
@@ -947,8 +978,7 @@
                         // Если нужно включить музыку
                         if (remainingTime <= musicStartTime) {
                             setTimeout(() => {
-                                unlockAudio();
-                                if (isAudioUnlocked) {
+                                if (isAudioUnlocked && mainAudio) {
                                     playAlarmSound();
                                     statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка включена!';
                                     statusEl.style.color = '#FF9500';
@@ -968,7 +998,7 @@
                             }
                             
                             if (remainingTime === musicStartTime && !isMusicPlaying) {
-                                if (isAudioUnlocked) {
+                                if (isAudioUnlocked && mainAudio) {
                                     playAlarmSound();
                                     statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка включена!';
                                     statusEl.style.color = '#FF9500';
@@ -989,6 +1019,15 @@
                         timerComplete();
                     }
                 }
+            }
+            
+            // Проверяем статус аудио после загрузки состояния
+            if (isIosPwa && !isAudioUnlocked) {
+                setTimeout(() => {
+                    if (!isAudioUnlocked) {
+                        pwaHintEl.classList.add('visible');
+                    }
+                }, 1000);
             }
         }
 
