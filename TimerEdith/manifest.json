@@ -2,7 +2,7 @@
   "name": "Edith Timer",
   "short_name": "Edith Timer",
   "description": "Простой обратный таймер с уведомлением и звуком",
-  "start_url": "/",
+  "start_url": "https://frtsvnth.github.io/experiments/TimerEdith/",
   "display": "standalone",
   "background_color": "#121212",
   "theme_color": "#121212",
