@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#121212">
+    <meta name="theme-color" content="#1a1a1a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Timer">
@@ -101,6 +101,15 @@
             background: linear-gradient(135deg, #e62e26 0%, #b31f1f 100%);
         }
 
+        .btn-audio-test {
+            background: linear-gradient(135deg, #FF9500 0%, #e67e22 100%);
+            border-color: #FF9500;
+            margin-top: 15px;
+            font-size: 0.95rem;
+            padding: 10px 20px;
+            min-width: 140px;
+        }
+
         .time-input-container {
             display: flex;
             gap: 15px;
@@ -144,14 +153,6 @@
             font-weight: 500;
         }
 
-        .input-separator {
-            font-size: 2rem;
-            align-self: center;
-            color: #444;
-            margin: 25px 0;
-            font-weight: 300;
-        }
-
         .status {
             margin: 15px 0;
             padding: 12px 20px;
@@ -169,6 +170,11 @@
 
         .status-icon {
             font-size: 1.2rem;
+        }
+
+        .status.error {
+            background: rgba(255, 59, 48, 0.15);
+            color: #FF3B30 !important;
         }
 
         .mode-toggle {
@@ -227,22 +233,32 @@
 
         .music-playing {
             animation: music-pulse 0.5s infinite alternate;
+            background: linear-gradient(135deg, #FF9500 0%, #e67e22 100%) !important;
+            border-color: #FF9500 !important;
         }
 
         @keyframes music-pulse {
             from { transform: scale(1); }
-            to { transform: scale(1.05); }
+            to { transform: scale(1.03); }
         }
 
-        .music-icon {
-            font-size: 1.5rem;
-            margin-right: 8px;
-            animation: music-bounce 0.5s infinite alternate;
+        .audio-unlocked {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: rgba(52, 199, 89, 0.15);
+            color: #34C759;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            z-index: 1000;
+            display: none;
+            animation: slide-in 0.3s ease-out;
         }
 
-        @keyframes music-bounce {
-            from { transform: translateY(0); }
-            to { transform: translateY(-3px); }
+        @keyframes slide-in {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
         .instructions {
@@ -250,6 +266,16 @@
             color: #666;
             font-size: 0.95rem;
             line-height: 1.6;
+        }
+
+        .audio-warning {
+            background: rgba(255, 149, 0, 0.1);
+            border: 1px solid rgba(255, 149, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 0.9rem;
+            display: none;
         }
 
         @media (max-width: 480px) {
@@ -285,6 +311,13 @@
                 width: 100%;
                 max-width: 200px;
             }
+            
+            .audio-unlocked {
+                top: 10px;
+                right: 10px;
+                padding: 4px 10px;
+                font-size: 0.8rem;
+            }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -296,6 +329,8 @@
     </style>
 </head>
 <body>
+    <div class="audio-unlocked" id="audioUnlocked">🔊 Аудио разблокировано</div>
+    
     <div class="container">
         <h1 style="font-size: 2rem; margin-bottom: 10px; color: #888;">Обратный таймер</h1>
         
@@ -327,6 +362,10 @@
             <input type="number" id="timeInput" class="time-input" placeholder="Секунды" min="1" max="86400">
         </div>
         
+        <div class="audio-warning" id="audioWarning">
+            ⚠️ Для работы звука нажмите кнопку "Тест звука" или "Старт" один раз
+        </div>
+        
         <div class="status" id="status"></div>
         
         <div class="controls">
@@ -334,6 +373,8 @@
             <button class="btn" id="pauseBtn">⏸️ Пауза</button>
             <button class="btn btn-danger" id="resetBtn">⏹️ Стоп</button>
         </div>
+        
+        <button class="btn btn-audio-test" id="audioTestBtn">🔊 Тест звука</button>
         
         <div class="instructions">
             <p id="instructionsText">Установите время и нажмите "Старт"</p>
@@ -357,30 +398,50 @@
         const minutesSecondsMode = document.getElementById('minutesSecondsMode');
         const secondsOnlyMode = document.getElementById('secondsOnlyMode');
         const instructionsText = document.getElementById('instructionsText');
+        const audioTestBtn = document.getElementById('audioTestBtn');
+        const audioUnlockedEl = document.getElementById('audioUnlocked');
+        const audioWarningEl = document.getElementById('audioWarning');
 
         // Переменные состояния
         let countdown;
         let remainingTime = 0;
-        let totalTime = 0; // Полное время таймера
+        let totalTime = 0;
         let isRunning = false;
         let audioContext = null;
         let audioBuffer = null;
-        let currentMode = 'minutes'; // 'minutes' or 'seconds'
-        let audioSource = null; // Для хранения источника звука
-        let isMusicPlaying = false; // Флаг воспроизведения музыки
-        let musicStartTime = 10; // За сколько секунд начинать музыку
+        let currentMode = 'minutes';
+        let audioSource = null;
+        let isMusicPlaying = false;
+        let musicStartTime = 10;
+        let isAudioUnlocked = false;
+        let htmlAudioElement = null;
 
         // Инициализация
         document.addEventListener('DOMContentLoaded', init);
 
         function init() {
+            // Проверяем поддержку аудио
+            checkAudioSupport();
+            
             // Загрузка сохраненного времени и режима
             loadSavedState();
             
-            // Обработчики событий
-            startBtn.addEventListener('click', startTimer);
+            // Обработчики событий для разблокировки аудио
+            document.body.addEventListener('click', unlockAudio, { once: true });
+            document.body.addEventListener('touchstart', unlockAudio, { once: true });
+            
+            // Обработчики кнопок
+            startBtn.addEventListener('click', () => {
+                unlockAudio();
+                startTimer();
+            });
+            
             pauseBtn.addEventListener('click', pauseTimer);
             resetBtn.addEventListener('click', resetTimer);
+            audioTestBtn.addEventListener('click', () => {
+                unlockAudio();
+                testAudio();
+            });
             
             // Обработчики ввода
             hoursInput.addEventListener('input', validateAndSaveTime);
@@ -392,26 +453,100 @@
             modeMinutesBtn.addEventListener('click', () => switchMode('minutes'));
             modeSecondsBtn.addEventListener('click', () => switchMode('seconds'));
             
-            // PWA installation prompt
-            let deferredPrompt;
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-            });
-
-            // Register service worker
+            // Service Worker
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('service-worker.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registered:', registration.scope);
+                    .catch(error => console.log('SW registration failed:', error));
+            }
+        }
+
+        function checkAudioSupport() {
+            // Проверяем, заблокировано ли аудио
+            if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Если контекст уже запущен - аудио разблокировано
+                if (audioContext.state === 'running') {
+                    isAudioUnlocked = true;
+                    audioUnlockedEl.style.display = 'block';
+                    setTimeout(() => {
+                        audioUnlockedEl.style.display = 'none';
+                    }, 2000);
+                } else {
+                    audioWarningEl.style.display = 'block';
+                }
+            } else {
+                statusEl.innerHTML = '<span class="status-icon">⚠️</span> Аудио не поддерживается';
+                statusEl.classList.add('error');
+            }
+        }
+
+        function unlockAudio() {
+            if (isAudioUnlocked) return;
+            
+            try {
+                // Для Web Audio API
+                if (audioContext && audioContext.state === 'suspended') {
+                    audioContext.resume().then(() => {
+                        isAudioUnlocked = true;
+                        showAudioUnlocked();
+                    });
+                }
+                
+                // Создаем скрытый аудио элемент для разблокировки
+                if (!htmlAudioElement) {
+                    htmlAudioElement = new Audio();
+                    htmlAudioElement.volume = 0.1;
+                    htmlAudioElement.play().then(() => {
+                        htmlAudioElement.pause();
+                        if (!isAudioUnlocked) {
+                            isAudioUnlocked = true;
+                            showAudioUnlocked();
+                        }
+                    }).catch(e => {
+                        console.log('Audio unlock failed:', e);
+                    });
+                }
+                
+                // Скрываем предупреждение
+                audioWarningEl.style.display = 'none';
+            } catch (e) {
+                console.log('Audio unlock error:', e);
+            }
+        }
+
+        function showAudioUnlocked() {
+            audioUnlockedEl.style.display = 'block';
+            setTimeout(() => {
+                audioUnlockedEl.style.display = 'none';
+            }, 2000);
+        }
+
+        function preloadAudio() {
+            if (!isAudioUnlocked) {
+                console.log('Audio not unlocked yet, skipping preload');
+                return;
+            }
+            
+            if (audioBuffer) return; // Уже загружено
+            
+            if (audioContext) {
+                fetch('timer.mp3')
+                    .then(response => {
+                        if (!response.ok) throw new Error('Audio file not found');
+                        return response.arrayBuffer();
+                    })
+                    .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
+                    .then(buffer => {
+                        audioBuffer = buffer;
+                        console.log('Audio loaded successfully');
                     })
                     .catch(error => {
-                        console.log('ServiceWorker registration failed:', error);
+                        console.error('Error loading audio:', error);
+                        statusEl.innerHTML = '<span class="status-icon">⚠️</span> Файл timer.mp3 не найден';
+                        statusEl.classList.add('error');
                     });
             }
-
-            // Preload audio
-            preloadAudio();
         }
 
         function switchMode(mode) {
@@ -434,48 +569,19 @@
             saveMode();
         }
 
-        function preloadAudio() {
-            // Используем Web Audio API для лучшей совместимости с iOS
-            if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                
-                fetch('timer.mp3')
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Audio file not found');
-                        }
-                        return response.arrayBuffer();
-                    })
-                    .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
-                    .then(buffer => {
-                        audioBuffer = buffer;
-                        console.log('Audio loaded successfully');
-                    })
-                    .catch(error => {
-                        console.error('Error loading audio:', error);
-                        statusEl.innerHTML = '<span class="status-icon">⚠️</span> Звуковой файл не найден';
-                        statusEl.style.color = '#FF3B30';
-                    });
-            }
-        }
-
         function validateAndSaveTime() {
-            // Валидация часов
             let hours = parseInt(hoursInput.value) || 0;
             hours = Math.max(0, Math.min(24, hours));
             hoursInput.value = hours;
             
-            // Валидация минут
             let minutes = parseInt(minutesInput.value) || 0;
             minutes = Math.max(0, Math.min(59, minutes));
             minutesInput.value = minutes;
             
-            // Валидация секунд
             let seconds = parseInt(secondsInput.value) || 0;
             seconds = Math.max(0, Math.min(59, seconds));
             secondsInput.value = seconds;
             
-            // Обновляем отображение таймера
             remainingTime = hours * 3600 + minutes * 60 + seconds;
             totalTime = remainingTime;
             updateDisplay(remainingTime);
@@ -506,7 +612,7 @@
         function startTimer() {
             if (isRunning) return;
             
-            // Получаем время в зависимости от режима
+            // Получаем время
             if (currentMode === 'minutes') {
                 const hours = parseInt(hoursInput.value) || 0;
                 const minutes = parseInt(minutesInput.value) || 0;
@@ -517,14 +623,14 @@
                 
                 if (remainingTime <= 0) {
                     statusEl.innerHTML = '<span class="status-icon">⚠️</span> Установите время больше 0';
-                    statusEl.style.color = '#FF3B30';
+                    statusEl.classList.add('error');
                     return;
                 }
             } else {
                 const inputValue = parseInt(timeInput.value);
                 if (isNaN(inputValue) || inputValue < 1) {
                     statusEl.innerHTML = '<span class="status-icon">⚠️</span> Введите время в секундах';
-                    statusEl.style.color = '#FF3B30';
+                    statusEl.classList.add('error');
                     timeInput.focus();
                     return;
                 }
@@ -532,37 +638,46 @@
                 totalTime = inputValue;
             }
             
+            // Загружаем аудио при первом запуске
+            if (!audioBuffer) {
+                preloadAudio();
+            }
+            
             isRunning = true;
             statusEl.innerHTML = '<span class="status-icon">⏱️</span> Таймер запущен';
             statusEl.style.color = '#007AFF';
-            statusEl.classList.remove('warning', 'completed');
+            statusEl.classList.remove('warning', 'completed', 'error');
+            timerDisplay.classList.remove('warning');
             
             countdown = setInterval(() => {
                 remainingTime--;
                 updateDisplay(remainingTime);
                 
-                // Обновляем поля ввода в режиме минут/секунд
                 if (currentMode === 'minutes') {
                     updateInputFields(remainingTime);
                 }
                 
                 // Запускаем музыку за 10 секунд до окончания
                 if (remainingTime === musicStartTime && !isMusicPlaying) {
-                    playAlarmSound();
-                    statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка включена!';
-                    statusEl.style.color = '#FF9500';
-                    statusEl.classList.add('warning');
-                    timerDisplay.classList.add('warning');
+                    if (isAudioUnlocked) {
+                        playAlarmSound();
+                        statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка включена!';
+                        statusEl.style.color = '#FF9500';
+                        statusEl.classList.add('warning');
+                        timerDisplay.classList.add('warning');
+                    } else {
+                        statusEl.innerHTML = '<span class="status-icon">⚠️</span> Аудио заблокировано браузером';
+                        statusEl.classList.add('error');
+                        audioWarningEl.style.display = 'block';
+                    }
                 }
                 
-                // Таймер завершился
                 if (remainingTime <= 0) {
                     clearInterval(countdown);
                     timerComplete();
                 }
             }, 1000);
             
-            // Сохраняем состояние
             saveState();
         }
 
@@ -582,7 +697,6 @@
             clearInterval(countdown);
             isRunning = false;
             
-            // Если музыка играет, останавливаем её
             if (isMusicPlaying) {
                 stopAlarmSound();
                 statusEl.innerHTML = '<span class="status-icon">⏸️</span> Таймер и музыка на паузе';
@@ -591,7 +705,6 @@
             } else {
                 statusEl.innerHTML = '<span class="status-icon">⏸️</span> Таймер на паузе';
                 statusEl.style.color = '#FF9500';
-                timerDisplay.classList.remove('warning');
             }
             
             saveState();
@@ -600,25 +713,23 @@
         function resetTimer() {
             clearInterval(countdown);
             isRunning = false;
-            
-            // Останавливаем музыку
             stopAlarmSound();
             
             remainingTime = 0;
             totalTime = 0;
             updateDisplay(0);
             
-            // Сбрасываем все поля ввода
             hoursInput.value = '';
             minutesInput.value = '';
             secondsInput.value = '';
             timeInput.value = '';
             
             statusEl.innerHTML = '';
-            statusEl.classList.remove('warning', 'completed');
+            statusEl.classList.remove('warning', 'completed', 'error');
             timerDisplay.classList.remove('warning', 'completed');
+            resetBtn.innerHTML = '⏹️ Стоп';
+            resetBtn.classList.remove('music-playing');
             
-            // Очищаем сохраненное состояние
             localStorage.removeItem('timerState');
             localStorage.removeItem('timerTime');
             localStorage.removeItem('timerHours');
@@ -641,26 +752,32 @@
                 statusEl.classList.add('completed');
             }
             
-            // Vibration if supported
             if (navigator.vibrate) {
                 navigator.vibrate([500, 200, 500, 200, 500]);
             }
             
-            // Save state
             saveState();
         }
 
         function playAlarmSound() {
             if (isMusicPlaying) return;
+            if (!isAudioUnlocked) {
+                unlockAudio();
+                setTimeout(() => {
+                    if (isAudioUnlocked) playAlarmSound();
+                }, 100);
+                return;
+            }
             
-            if (audioBuffer && audioContext) {
-                try {
-                    // Resume audio context if suspended (needed for iOS)
+            stopAlarmSound(); // Останавливаем предыдущий источник если есть
+            
+            try {
+                // Используем Web Audio API если доступен и разблокирован
+                if (audioContext && audioBuffer) {
                     if (audioContext.state === 'suspended') {
                         audioContext.resume();
                     }
                     
-                    // Создаем новый источник звука
                     audioSource = audioContext.createBufferSource();
                     audioSource.buffer = audioBuffer;
                     audioSource.connect(audioContext.destination);
@@ -668,29 +785,33 @@
                     audioSource.start(0);
                     
                     isMusicPlaying = true;
-                    
-                    // Добавляем иконку музыки к кнопке Стоп
                     resetBtn.innerHTML = '⏹️ Стоп (музыка)';
                     resetBtn.classList.add('music-playing');
-                    
-                    return true;
-                } catch (error) {
-                    console.error('Error playing sound:', error);
+                    return;
                 }
+            } catch (e) {
+                console.error('Web Audio API error:', e);
             }
             
-            // Fallback to HTML5 audio
-            if (!audioSource || !(audioSource instanceof AudioBufferSourceNode)) {
+            // Fallback на HTML5 Audio
+            try {
                 audioSource = new Audio('timer.mp3');
                 audioSource.loop = true;
-                audioSource.play().catch(error => {
-                    console.error('Fallback audio error:', error);
-                    statusEl.innerHTML = '<span class="status-icon">⚠️</span> Не удалось воспроизвести звук';
-                });
+                audioSource.volume = 0.8;
                 
-                isMusicPlaying = true;
-                resetBtn.innerHTML = '⏹️ Стоп (музыка)';
-                resetBtn.classList.add('music-playing');
+                audioSource.play().then(() => {
+                    isMusicPlaying = true;
+                    resetBtn.innerHTML = '⏹️ Стоп (музыка)';
+                    resetBtn.classList.add('music-playing');
+                }).catch(e => {
+                    console.error('HTML5 Audio play error:', e);
+                    statusEl.innerHTML = '<span class="status-icon">⚠️</span> Ошибка воспроизведения звука';
+                    statusEl.classList.add('error');
+                });
+            } catch (e) {
+                console.error('HTML5 Audio init error:', e);
+                statusEl.innerHTML = '<span class="status-icon">⚠️</span> Аудио не поддерживается';
+                statusEl.classList.add('error');
             }
         }
 
@@ -698,21 +819,46 @@
             if (!isMusicPlaying) return;
             
             try {
-                // Останавливаем звук в зависимости от типа источника
-                if (audioSource instanceof AudioBufferSourceNode) {
-                    audioSource.stop();
-                    audioSource = null;
-                } else if (audioSource instanceof Audio) {
-                    audioSource.pause();
-                    audioSource.currentTime = 0;
+                if (audioSource) {
+                    if (audioSource instanceof AudioBufferSourceNode) {
+                        try { audioSource.stop(); } catch (e) {}
+                        audioSource = null;
+                    } else if (audioSource instanceof Audio) {
+                        audioSource.pause();
+                        audioSource.currentTime = 0;
+                        audioSource = null;
+                    }
                 }
-            } catch (error) {
-                console.error('Error stopping sound:', error);
+            } catch (e) {
+                console.error('Error stopping sound:', e);
             }
             
             isMusicPlaying = false;
             resetBtn.innerHTML = '⏹️ Стоп';
             resetBtn.classList.remove('music-playing');
+        }
+
+        function testAudio() {
+            if (!isAudioUnlocked) {
+                unlockAudio();
+                setTimeout(testAudio, 200);
+                return;
+            }
+            
+            statusEl.innerHTML = '<span class="status-icon">🔊</span> Тестируем звук...';
+            statusEl.style.color = '#007AFF';
+            statusEl.classList.remove('error');
+            
+            playAlarmSound();
+            
+            // Автоматически останавливаем через 3 секунды
+            setTimeout(() => {
+                stopAlarmSound();
+                if (!isRunning) {
+                    statusEl.innerHTML = '<span class="status-icon">✅</span> Звук работает!';
+                    statusEl.style.color = '#34C759';
+                }
+            }, 3000);
         }
 
         function updateDisplay(seconds) {
@@ -723,7 +869,6 @@
             timerDisplay.textContent = 
                 `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
             
-            // Add pulse effect when less than 10 seconds
             if (seconds > 0 && seconds <= 10) {
                 timerDisplay.classList.add('pulse');
             } else {
@@ -747,12 +892,8 @@
                 localStorage.setItem('timerHours', hoursInput.value || '0');
                 localStorage.setItem('timerMinutes', minutesInput.value || '0');
                 localStorage.setItem('timerSeconds', secondsInput.value || '0');
-                localStorage.removeItem('timerTime');
             } else {
                 localStorage.setItem('timerTime', timeInput.value || '');
-                localStorage.removeItem('timerHours');
-                localStorage.removeItem('timerMinutes');
-                localStorage.removeItem('timerSeconds');
             }
         }
 
@@ -761,7 +902,6 @@
         }
 
         function loadSavedState() {
-            // Загружаем режим
             const savedMode = localStorage.getItem('timerMode');
             if (savedMode) {
                 currentMode = savedMode;
@@ -770,7 +910,6 @@
                 }
             }
             
-            // Загружаем время
             if (currentMode === 'minutes') {
                 const savedHours = localStorage.getItem('timerHours') || '0';
                 const savedMinutes = localStorage.getItem('timerMinutes') || '0';
@@ -793,7 +932,6 @@
                 }
             }
             
-            // Загружаем состояние таймера
             const savedState = localStorage.getItem('timerState');
             if (savedState) {
                 const state = JSON.parse(savedState);
@@ -806,16 +944,19 @@
                     if (remainingTime > 0) {
                         isRunning = true;
                         
-                        // Проверяем, нужно ли уже запускать музыку
-                        if (remainingTime <= musicStartTime && !state.isMusicPlaying) {
-                            playAlarmSound();
-                            statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка включена!';
-                            statusEl.style.color = '#FF9500';
-                            statusEl.classList.add('warning');
-                            timerDisplay.classList.add('warning');
-                            isMusicPlaying = true;
-                        } else if (state.isMusicPlaying) {
-                            playAlarmSound();
+                        // Если нужно включить музыку
+                        if (remainingTime <= musicStartTime) {
+                            setTimeout(() => {
+                                unlockAudio();
+                                if (isAudioUnlocked) {
+                                    playAlarmSound();
+                                    statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка включена!';
+                                    statusEl.style.color = '#FF9500';
+                                    statusEl.classList.add('warning');
+                                    timerDisplay.classList.add('warning');
+                                    isMusicPlaying = true;
+                                }
+                            }, 300);
                         }
                         
                         countdown = setInterval(() => {
@@ -826,13 +967,14 @@
                                 updateInputFields(remainingTime);
                             }
                             
-                            // Запускаем музыку за 10 секунд до окончания
                             if (remainingTime === musicStartTime && !isMusicPlaying) {
-                                playAlarmSound();
-                                statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка включена!';
-                                statusEl.style.color = '#FF9500';
-                                statusEl.classList.add('warning');
-                                timerDisplay.classList.add('warning');
+                                if (isAudioUnlocked) {
+                                    playAlarmSound();
+                                    statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка включена!';
+                                    statusEl.style.color = '#FF9500';
+                                    statusEl.classList.add('warning');
+                                    timerDisplay.classList.add('warning');
+                                }
                             }
                             
                             if (remainingTime <= 0) {
@@ -843,96 +985,27 @@
                         
                         statusEl.innerHTML = '<span class="status-icon">⏱️</span> Таймер возобновлен';
                         statusEl.style.color = '#007AFF';
-                        if (isMusicPlaying) {
-                            timerDisplay.classList.add('warning');
-                        }
                     } else {
                         timerComplete();
-                    }
-                } else {
-                    remainingTime = state.remainingTime;
-                    totalTime = state.totalTime || remainingTime;
-                    updateDisplay(remainingTime);
-                    if (currentMode === 'minutes') {
-                        updateInputFields(remainingTime);
-                    }
-                    
-                    // Если музыка была включена, восстанавливаем её
-                    if (state.isMusicPlaying) {
-                        playAlarmSound();
-                        statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка играет';
-                        statusEl.style.color = '#FF9500';
-                        statusEl.classList.add('warning');
-                        timerDisplay.classList.add('warning');
                     }
                 }
             }
         }
 
-        // Handle page visibility changes
+        // Обработка видимости страницы
         document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                // Page is hidden, save state
-                if (isRunning) {
-                    saveState();
-                }
-            } else {
-                // Page is visible, restore state if needed
-                if (isRunning && countdown) {
-                    clearInterval(countdown);
-                    const savedState = localStorage.getItem('timerState');
-                    if (savedState) {
-                        const state = JSON.parse(savedState);
-                        const elapsed = Math.floor((Date.now() - state.timestamp) / 1000);
-                        remainingTime = Math.max(0, state.remainingTime - elapsed);
-                        totalTime = state.totalTime || remainingTime;
-                        
-                        if (remainingTime > 0) {
-                            // Проверяем, нужно ли уже запускать музыку
-                            if (remainingTime <= musicStartTime && !isMusicPlaying) {
-                                playAlarmSound();
-                                statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка включена!';
-                                statusEl.style.color = '#FF9500';
-                                statusEl.classList.add('warning');
-                                timerDisplay.classList.add('warning');
-                                isMusicPlaying = true;
-                            }
-                            
-                            countdown = setInterval(() => {
-                                remainingTime--;
-                                updateDisplay(remainingTime);
-                                
-                                if (currentMode === 'minutes') {
-                                    updateInputFields(remainingTime);
-                                }
-                                
-                                // Запускаем музыку за 10 секунд до окончания
-                                if (remainingTime === musicStartTime && !isMusicPlaying) {
-                                    playAlarmSound();
-                                    statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка включена!';
-                                    statusEl.style.color = '#FF9500';
-                                    statusEl.classList.add('warning');
-                                    timerDisplay.classList.add('warning');
-                                }
-                                
-                                if (remainingTime <= 0) {
-                                    clearInterval(countdown);
-                                    timerComplete();
-                                }
-                            }, 1000);
-                        } else {
-                            timerComplete();
-                        }
-                    }
-                }
+            if (document.hidden && isRunning) {
+                saveState();
             }
         });
 
-        // Quick input handling - allow typing directly
-        hoursInput.addEventListener('click', (e) => e.target.select());
-        minutesInput.addEventListener('click', (e) => e.target.select());
-        secondsInput.addEventListener('click', (e) => e.target.select());
-        timeInput.addEventListener('click', (e) => e.target.select());
+        // Удобный ввод
+        [hoursInput, minutesInput, secondsInput, timeInput].forEach(input => {
+            input.addEventListener('click', (e) => e.target.select());
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') startTimer();
+            });
+        });
     </script>
 </body>
 </html>
