@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#121212">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Timer">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>Обратный таймер</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .timer-display {
+            font-size: 8.5rem;
+            font-weight: 700;
+            letter-spacing: -0.05em;
+            margin: 20px 0;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1;
+            transition: all 0.3s ease;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #333 0%, #222 100%);
+            border: 2px solid #444;
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            touch-action: manipulation;
+            min-width: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #444 0%, #333 100%);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            opacity: 0.9;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007AFF 0%, #0056b3 100%);
+            border-color: #007AFF;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0066cc 0%, #004080 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #FF3B30 0%, #cc2926 100%);
+            border-color: #FF3B30;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #e62e26 0%, #b31f1f 100%);
+        }
+
+        .time-input-container {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        .time-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 120px;
+        }
+
+        .time-input {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            color: #fff;
+            padding: 15px 10px;
+            border-radius: 12px;
+            font-size: 1.8rem;
+            font-weight: 600;
+            width: 100%;
+            text-align: center;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .time-input:focus {
+            outline: none;
+            border-color: #007AFF;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+            background: #222;
+        }
+
+        .time-label {
+            margin-top: 8px;
+            color: #888;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .input-separator {
+            font-size: 2rem;
+            align-self: center;
+            color: #444;
+            margin: 25px 0;
+            font-weight: 300;
+        }
+
+        .status {
+            margin: 15px 0;
+            padding: 12px 20px;
+            background: #2a2a2a;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            color: #aaa;
+            min-height: 26px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .status-icon {
+            font-size: 1.2rem;
+        }
+
+        .mode-toggle {
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .mode-btn {
+            background: #2a2a2a;
+            border: 2px solid #444;
+            color: #888;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #007AFF 0%, #0056b3 100%);
+            border-color: #007AFF;
+            color: #fff;
+        }
+
+        .mode-btn:hover:not(.active) {
+            background: #333;
+            color: #aaa;
+        }
+
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .warning {
+            color: #FF9500 !important;
+            animation: flash-warning 1s infinite;
+        }
+
+        @keyframes flash-warning {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .completed {
+            color: #34C759 !important;
+            text-shadow: 0 0 30px rgba(52, 199, 89, 0.5);
+        }
+
+        .music-playing {
+            animation: music-pulse 0.5s infinite alternate;
+        }
+
+        @keyframes music-pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+        .music-icon {
+            font-size: 1.5rem;
+            margin-right: 8px;
+            animation: music-bounce 0.5s infinite alternate;
+        }
+
+        @keyframes music-bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-3px); }
+        }
+
+        .instructions {
+            margin-top: 25px;
+            color: #666;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 480px) {
+            .timer-display {
+                font-size: 6rem;
+            }
+            
+            .btn {
+                padding: 12px 20px;
+                font-size: 1rem;
+                min-width: 95px;
+            }
+            
+            .time-input {
+                font-size: 1.6rem;
+                padding: 12px 8px;
+            }
+            
+            .time-group {
+                min-width: 100px;
+            }
+            
+            .controls {
+                gap: 10px;
+            }
+            
+            .mode-toggle {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .mode-btn {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="font-size: 2rem; margin-bottom: 10px; color: #888;">Обратный таймер</h1>
+        
+        <div class="timer-display" id="timer">00:00:00</div>
+        
+        <div class="mode-toggle">
+            <button class="mode-btn active" id="modeMinutes">⏱️ Минуты и секунды</button>
+            <button class="mode-btn" id="modeSeconds">⏱️ Только секунды</button>
+        </div>
+        
+        <div id="minutesSecondsMode">
+            <div class="time-input-container">
+                <div class="time-group">
+                    <input type="number" id="hoursInput" class="time-input" placeholder="00" min="0" max="24">
+                    <span class="time-label">Часы</span>
+                </div>
+                <div class="time-group">
+                    <input type="number" id="minutesInput" class="time-input" placeholder="00" min="0" max="59">
+                    <span class="time-label">Минуты</span>
+                </div>
+                <div class="time-group">
+                    <input type="number" id="secondsInput" class="time-input" placeholder="00" min="0" max="59">
+                    <span class="time-label">Секунды</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="secondsOnlyMode" style="display: none; width: 100%; max-width: 300px; margin: 0 auto;">
+            <input type="number" id="timeInput" class="time-input" placeholder="Секунды" min="1" max="86400">
+        </div>
+        
+        <div class="status" id="status"></div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" id="startBtn">▶️ Старт</button>
+            <button class="btn" id="pauseBtn">⏸️ Пауза</button>
+            <button class="btn btn-danger" id="resetBtn">⏹️ Стоп</button>
+        </div>
+        
+        <div class="instructions">
+            <p id="instructionsText">Установите время и нажмите "Старт"</p>
+            <p style="margin-top: 8px; color: #FF9500;">🎵 Музыка начнётся за 10 секунд до окончания</p>
+        </div>
+    </div>
+
+    <script>
+        // DOM элементы
+        const timerDisplay = document.getElementById('timer');
+        const hoursInput = document.getElementById('hoursInput');
+        const minutesInput = document.getElementById('minutesInput');
+        const secondsInput = document.getElementById('secondsInput');
+        const timeInput = document.getElementById('timeInput');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusEl = document.getElementById('status');
+        const modeMinutesBtn = document.getElementById('modeMinutes');
+        const modeSecondsBtn = document.getElementById('modeSeconds');
+        const minutesSecondsMode = document.getElementById('minutesSecondsMode');
+        const secondsOnlyMode = document.getElementById('secondsOnlyMode');
+        const instructionsText = document.getElementById('instructionsText');
+
+        // Переменные состояния
+        let countdown;
+        let remainingTime = 0;
+        let totalTime = 0; // Полное время таймера
+        let isRunning = false;
+        let audioContext = null;
+        let audioBuffer = null;
+        let currentMode = 'minutes'; // 'minutes' or 'seconds'
+        let audioSource = null; // Для хранения источника звука
+        let isMusicPlaying = false; // Флаг воспроизведения музыки
+        let musicStartTime = 10; // За сколько секунд начинать музыку
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', init);
+
+        function init() {
+            // Загрузка сохраненного времени и режима
+            loadSavedState();
+            
+            // Обработчики событий
+            startBtn.addEventListener('click', startTimer);
+            pauseBtn.addEventListener('click', pauseTimer);
+            resetBtn.addEventListener('click', resetTimer);
+            
+            // Обработчики ввода
+            hoursInput.addEventListener('input', validateAndSaveTime);
+            minutesInput.addEventListener('input', validateAndSaveTime);
+            secondsInput.addEventListener('input', validateAndSaveTime);
+            timeInput.addEventListener('input', validateSecondsOnly);
+            
+            // Переключение режимов
+            modeMinutesBtn.addEventListener('click', () => switchMode('minutes'));
+            modeSecondsBtn.addEventListener('click', () => switchMode('seconds'));
+            
+            // PWA installation prompt
+            let deferredPrompt;
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+            });
+
+            // Register service worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registered:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+            }
+
+            // Preload audio
+            preloadAudio();
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            if (mode === 'minutes') {
+                minutesSecondsMode.style.display = 'block';
+                secondsOnlyMode.style.display = 'none';
+                modeMinutesBtn.classList.add('active');
+                modeSecondsBtn.classList.remove('active');
+                instructionsText.textContent = 'Установите часы, минуты и секунды';
+            } else {
+                minutesSecondsMode.style.display = 'none';
+                secondsOnlyMode.style.display = 'block';
+                modeSecondsBtn.classList.add('active');
+                modeMinutesBtn.classList.remove('active');
+                instructionsText.textContent = 'Введите время в секундах (макс. 86400)';
+            }
+            
+            saveMode();
+        }
+
+        function preloadAudio() {
+            // Используем Web Audio API для лучшей совместимости с iOS
+            if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                fetch('timer.mp3')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Audio file not found');
+                        }
+                        return response.arrayBuffer();
+                    })
+                    .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
+                    .then(buffer => {
+                        audioBuffer = buffer;
+                        console.log('Audio loaded successfully');
+                    })
+                    .catch(error => {
+                        console.error('Error loading audio:', error);
+                        statusEl.innerHTML = '<span class="status-icon">⚠️</span> Звуковой файл не найден';
+                        statusEl.style.color = '#FF3B30';
+                    });
+            }
+        }
+
+        function validateAndSaveTime() {
+            // Валидация часов
+            let hours = parseInt(hoursInput.value) || 0;
+            hours = Math.max(0, Math.min(24, hours));
+            hoursInput.value = hours;
+            
+            // Валидация минут
+            let minutes = parseInt(minutesInput.value) || 0;
+            minutes = Math.max(0, Math.min(59, minutes));
+            minutesInput.value = minutes;
+            
+            // Валидация секунд
+            let seconds = parseInt(secondsInput.value) || 0;
+            seconds = Math.max(0, Math.min(59, seconds));
+            secondsInput.value = seconds;
+            
+            // Обновляем отображение таймера
+            remainingTime = hours * 3600 + minutes * 60 + seconds;
+            totalTime = remainingTime;
+            updateDisplay(remainingTime);
+            
+            saveTime();
+        }
+
+        function validateSecondsOnly() {
+            const value = parseInt(timeInput.value);
+            if (isNaN(value) || value < 1) {
+                timeInput.value = '';
+                remainingTime = 0;
+                totalTime = 0;
+                updateDisplay(0);
+            } else if (value > 86400) {
+                timeInput.value = 86400;
+                remainingTime = 86400;
+                totalTime = 86400;
+                updateDisplay(86400);
+            } else {
+                remainingTime = value;
+                totalTime = value;
+                updateDisplay(value);
+            }
+            saveTime();
+        }
+
+        function startTimer() {
+            if (isRunning) return;
+            
+            // Получаем время в зависимости от режима
+            if (currentMode === 'minutes') {
+                const hours = parseInt(hoursInput.value) || 0;
+                const minutes = parseInt(minutesInput.value) || 0;
+                const seconds = parseInt(secondsInput.value) || 0;
+                
+                remainingTime = hours * 3600 + minutes * 60 + seconds;
+                totalTime = remainingTime;
+                
+                if (remainingTime <= 0) {
+                    statusEl.innerHTML = '<span class="status-icon">⚠️</span> Установите время больше 0';
+                    statusEl.style.color = '#FF3B30';
+                    return;
+                }
+            } else {
+                const inputValue = parseInt(timeInput.value);
+                if (isNaN(inputValue) || inputValue < 1) {
+                    statusEl.innerHTML = '<span class="status-icon">⚠️</span> Введите время в секундах';
+                    statusEl.style.color = '#FF3B30';
+                    timeInput.focus();
+                    return;
+                }
+                remainingTime = inputValue;
+                totalTime = inputValue;
+            }
+            
+            isRunning = true;
+            statusEl.innerHTML = '<span class="status-icon">⏱️</span> Таймер запущен';
+            statusEl.style.color = '#007AFF';
+            statusEl.classList.remove('warning', 'completed');
+            
+            countdown = setInterval(() => {
+                remainingTime--;
+                updateDisplay(remainingTime);
+                
+                // Обновляем поля ввода в режиме минут/секунд
+                if (currentMode === 'minutes') {
+                    updateInputFields(remainingTime);
+                }
+                
+                // Запускаем музыку за 10 секунд до окончания
+                if (remainingTime === musicStartTime && !isMusicPlaying) {
+                    playAlarmSound();
+                    statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка включена!';
+                    statusEl.style.color = '#FF9500';
+                    statusEl.classList.add('warning');
+                    timerDisplay.classList.add('warning');
+                }
+                
+                // Таймер завершился
+                if (remainingTime <= 0) {
+                    clearInterval(countdown);
+                    timerComplete();
+                }
+            }, 1000);
+            
+            // Сохраняем состояние
+            saveState();
+        }
+
+        function updateInputFields(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            
+            hoursInput.value = hours;
+            minutesInput.value = minutes;
+            secondsInput.value = secs;
+        }
+
+        function pauseTimer() {
+            if (!isRunning) return;
+            
+            clearInterval(countdown);
+            isRunning = false;
+            
+            // Если музыка играет, останавливаем её
+            if (isMusicPlaying) {
+                stopAlarmSound();
+                statusEl.innerHTML = '<span class="status-icon">⏸️</span> Таймер и музыка на паузе';
+                statusEl.style.color = '#FF9500';
+                timerDisplay.classList.remove('warning');
+            } else {
+                statusEl.innerHTML = '<span class="status-icon">⏸️</span> Таймер на паузе';
+                statusEl.style.color = '#FF9500';
+                timerDisplay.classList.remove('warning');
+            }
+            
+            saveState();
+        }
+
+        function resetTimer() {
+            clearInterval(countdown);
+            isRunning = false;
+            
+            // Останавливаем музыку
+            stopAlarmSound();
+            
+            remainingTime = 0;
+            totalTime = 0;
+            updateDisplay(0);
+            
+            // Сбрасываем все поля ввода
+            hoursInput.value = '';
+            minutesInput.value = '';
+            secondsInput.value = '';
+            timeInput.value = '';
+            
+            statusEl.innerHTML = '';
+            statusEl.classList.remove('warning', 'completed');
+            timerDisplay.classList.remove('warning', 'completed');
+            
+            // Очищаем сохраненное состояние
+            localStorage.removeItem('timerState');
+            localStorage.removeItem('timerTime');
+            localStorage.removeItem('timerHours');
+            localStorage.removeItem('timerMinutes');
+            localStorage.removeItem('timerSeconds');
+        }
+
+        function timerComplete() {
+            isRunning = false;
+            timerDisplay.classList.add('completed');
+            timerDisplay.classList.remove('warning');
+            
+            if (isMusicPlaying) {
+                statusEl.innerHTML = '<span class="status-icon">🎵</span> Время вышло! Музыка играет...';
+                statusEl.style.color = '#34C759';
+                statusEl.classList.add('completed');
+            } else {
+                statusEl.innerHTML = '<span class="status-icon">✅</span> Время вышло!';
+                statusEl.style.color = '#34C759';
+                statusEl.classList.add('completed');
+            }
+            
+            // Vibration if supported
+            if (navigator.vibrate) {
+                navigator.vibrate([500, 200, 500, 200, 500]);
+            }
+            
+            // Save state
+            saveState();
+        }
+
+        function playAlarmSound() {
+            if (isMusicPlaying) return;
+            
+            if (audioBuffer && audioContext) {
+                try {
+                    // Resume audio context if suspended (needed for iOS)
+                    if (audioContext.state === 'suspended') {
+                        audioContext.resume();
+                    }
+                    
+                    // Создаем новый источник звука
+                    audioSource = audioContext.createBufferSource();
+                    audioSource.buffer = audioBuffer;
+                    audioSource.connect(audioContext.destination);
+                    audioSource.loop = true;
+                    audioSource.start(0);
+                    
+                    isMusicPlaying = true;
+                    
+                    // Добавляем иконку музыки к кнопке Стоп
+                    resetBtn.innerHTML = '⏹️ Стоп (музыка)';
+                    resetBtn.classList.add('music-playing');
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Error playing sound:', error);
+                }
+            }
+            
+            // Fallback to HTML5 audio
+            if (!audioSource || !(audioSource instanceof AudioBufferSourceNode)) {
+                audioSource = new Audio('timer.mp3');
+                audioSource.loop = true;
+                audioSource.play().catch(error => {
+                    console.error('Fallback audio error:', error);
+                    statusEl.innerHTML = '<span class="status-icon">⚠️</span> Не удалось воспроизвести звук';
+                });
+                
+                isMusicPlaying = true;
+                resetBtn.innerHTML = '⏹️ Стоп (музыка)';
+                resetBtn.classList.add('music-playing');
+            }
+        }
+
+        function stopAlarmSound() {
+            if (!isMusicPlaying) return;
+            
+            try {
+                // Останавливаем звук в зависимости от типа источника
+                if (audioSource instanceof AudioBufferSourceNode) {
+                    audioSource.stop();
+                    audioSource = null;
+                } else if (audioSource instanceof Audio) {
+                    audioSource.pause();
+                    audioSource.currentTime = 0;
+                }
+            } catch (error) {
+                console.error('Error stopping sound:', error);
+            }
+            
+            isMusicPlaying = false;
+            resetBtn.innerHTML = '⏹️ Стоп';
+            resetBtn.classList.remove('music-playing');
+        }
+
+        function updateDisplay(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            
+            timerDisplay.textContent = 
+                `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            
+            // Add pulse effect when less than 10 seconds
+            if (seconds > 0 && seconds <= 10) {
+                timerDisplay.classList.add('pulse');
+            } else {
+                timerDisplay.classList.remove('pulse');
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('timerState', JSON.stringify({
+                remainingTime,
+                totalTime,
+                isRunning,
+                timestamp: Date.now(),
+                mode: currentMode,
+                isMusicPlaying
+            }));
+        }
+
+        function saveTime() {
+            if (currentMode === 'minutes') {
+                localStorage.setItem('timerHours', hoursInput.value || '0');
+                localStorage.setItem('timerMinutes', minutesInput.value || '0');
+                localStorage.setItem('timerSeconds', secondsInput.value || '0');
+                localStorage.removeItem('timerTime');
+            } else {
+                localStorage.setItem('timerTime', timeInput.value || '');
+                localStorage.removeItem('timerHours');
+                localStorage.removeItem('timerMinutes');
+                localStorage.removeItem('timerSeconds');
+            }
+        }
+
+        function saveMode() {
+            localStorage.setItem('timerMode', currentMode);
+        }
+
+        function loadSavedState() {
+            // Загружаем режим
+            const savedMode = localStorage.getItem('timerMode');
+            if (savedMode) {
+                currentMode = savedMode;
+                if (currentMode === 'seconds') {
+                    switchMode('seconds');
+                }
+            }
+            
+            // Загружаем время
+            if (currentMode === 'minutes') {
+                const savedHours = localStorage.getItem('timerHours') || '0';
+                const savedMinutes = localStorage.getItem('timerMinutes') || '0';
+                const savedSeconds = localStorage.getItem('timerSeconds') || '0';
+                
+                hoursInput.value = savedHours;
+                minutesInput.value = savedMinutes;
+                secondsInput.value = savedSeconds;
+                
+                remainingTime = parseInt(savedHours) * 3600 + parseInt(savedMinutes) * 60 + parseInt(savedSeconds);
+                totalTime = remainingTime;
+                updateDisplay(remainingTime);
+            } else {
+                const savedTime = localStorage.getItem('timerTime');
+                if (savedTime) {
+                    timeInput.value = savedTime;
+                    remainingTime = parseInt(savedTime);
+                    totalTime = remainingTime;
+                    updateDisplay(remainingTime);
+                }
+            }
+            
+            // Загружаем состояние таймера
+            const savedState = localStorage.getItem('timerState');
+            if (savedState) {
+                const state = JSON.parse(savedState);
+                const elapsed = Math.floor((Date.now() - state.timestamp) / 1000);
+                
+                if (state.isRunning) {
+                    remainingTime = Math.max(0, state.remainingTime - elapsed);
+                    totalTime = state.totalTime || remainingTime;
+                    
+                    if (remainingTime > 0) {
+                        isRunning = true;
+                        
+                        // Проверяем, нужно ли уже запускать музыку
+                        if (remainingTime <= musicStartTime && !state.isMusicPlaying) {
+                            playAlarmSound();
+                            statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка включена!';
+                            statusEl.style.color = '#FF9500';
+                            statusEl.classList.add('warning');
+                            timerDisplay.classList.add('warning');
+                            isMusicPlaying = true;
+                        } else if (state.isMusicPlaying) {
+                            playAlarmSound();
+                        }
+                        
+                        countdown = setInterval(() => {
+                            remainingTime--;
+                            updateDisplay(remainingTime);
+                            
+                            if (currentMode === 'minutes') {
+                                updateInputFields(remainingTime);
+                            }
+                            
+                            // Запускаем музыку за 10 секунд до окончания
+                            if (remainingTime === musicStartTime && !isMusicPlaying) {
+                                playAlarmSound();
+                                statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка включена!';
+                                statusEl.style.color = '#FF9500';
+                                statusEl.classList.add('warning');
+                                timerDisplay.classList.add('warning');
+                            }
+                            
+                            if (remainingTime <= 0) {
+                                clearInterval(countdown);
+                                timerComplete();
+                            }
+                        }, 1000);
+                        
+                        statusEl.innerHTML = '<span class="status-icon">⏱️</span> Таймер возобновлен';
+                        statusEl.style.color = '#007AFF';
+                        if (isMusicPlaying) {
+                            timerDisplay.classList.add('warning');
+                        }
+                    } else {
+                        timerComplete();
+                    }
+                } else {
+                    remainingTime = state.remainingTime;
+                    totalTime = state.totalTime || remainingTime;
+                    updateDisplay(remainingTime);
+                    if (currentMode === 'minutes') {
+                        updateInputFields(remainingTime);
+                    }
+                    
+                    // Если музыка была включена, восстанавливаем её
+                    if (state.isMusicPlaying) {
+                        playAlarmSound();
+                        statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка играет';
+                        statusEl.style.color = '#FF9500';
+                        statusEl.classList.add('warning');
+                        timerDisplay.classList.add('warning');
+                    }
+                }
+            }
+        }
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Page is hidden, save state
+                if (isRunning) {
+                    saveState();
+                }
+            } else {
+                // Page is visible, restore state if needed
+                if (isRunning && countdown) {
+                    clearInterval(countdown);
+                    const savedState = localStorage.getItem('timerState');
+                    if (savedState) {
+                        const state = JSON.parse(savedState);
+                        const elapsed = Math.floor((Date.now() - state.timestamp) / 1000);
+                        remainingTime = Math.max(0, state.remainingTime - elapsed);
+                        totalTime = state.totalTime || remainingTime;
+                        
+                        if (remainingTime > 0) {
+                            // Проверяем, нужно ли уже запускать музыку
+                            if (remainingTime <= musicStartTime && !isMusicPlaying) {
+                                playAlarmSound();
+                                statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка включена!';
+                                statusEl.style.color = '#FF9500';
+                                statusEl.classList.add('warning');
+                                timerDisplay.classList.add('warning');
+                                isMusicPlaying = true;
+                            }
+                            
+                            countdown = setInterval(() => {
+                                remainingTime--;
+                                updateDisplay(remainingTime);
+                                
+                                if (currentMode === 'minutes') {
+                                    updateInputFields(remainingTime);
+                                }
+                                
+                                // Запускаем музыку за 10 секунд до окончания
+                                if (remainingTime === musicStartTime && !isMusicPlaying) {
+                                    playAlarmSound();
+                                    statusEl.innerHTML = '<span class="status-icon">🎵</span> Музыка включена!';
+                                    statusEl.style.color = '#FF9500';
+                                    statusEl.classList.add('warning');
+                                    timerDisplay.classList.add('warning');
+                                }
+                                
+                                if (remainingTime <= 0) {
+                                    clearInterval(countdown);
+                                    timerComplete();
+                                }
+                            }, 1000);
+                        } else {
+                            timerComplete();
+                        }
+                    }
+                }
+            }
+        });
+
+        // Quick input handling - allow typing directly
+        hoursInput.addEventListener('click', (e) => e.target.select());
+        minutesInput.addEventListener('click', (e) => e.target.select());
+        secondsInput.addEventListener('click', (e) => e.target.select());
+        timeInput.addEventListener('click', (e) => e.target.select());
+    </script>
+</body>
+</html>
