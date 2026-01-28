@@ -1,6 +1,6 @@
 {
-  "name": "Обратный таймер",
-  "short_name": "Таймер",
+  "name": "Edith Timer",
+  "short_name": "Edith Timer",
   "description": "Простой обратный таймер с уведомлением и звуком",
   "start_url": "/",
   "display": "standalone",
