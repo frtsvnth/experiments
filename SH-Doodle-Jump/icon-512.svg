@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Небесно-голубой фон -->
+  <rect width="512" height="512" fill="#87CEEB"/>
+  
+  <!-- Облака -->
+  <ellipse cx="100" cy="80" rx="30" ry="20" fill="white" opacity="0.7"/>
+  <ellipse cx="120" cy="75" rx="35" ry="22" fill="white" opacity="0.7"/>
+  <ellipse cx="85" cy="75" rx="25" ry="18" fill="white" opacity="0.7"/>
+  
+  <ellipse cx="400" cy="120" rx="35" ry="23" fill="white" opacity="0.7"/>
+  <ellipse cx="425" cy="115" rx="30" ry="20" fill="white" opacity="0.7"/>
+  <ellipse cx="380" cy="115" rx="28" ry="19" fill="white" opacity="0.7"/>
+  
+  <!-- Звезды -->
+  <g fill="#FFD700" opacity="0.8">
+    <path d="M 80 200 L 85 210 L 95 210 L 87 217 L 90 227 L 80 220 L 70 227 L 73 217 L 65 210 L 75 210 Z"/>
+    <path d="M 430 250 L 435 260 L 445 260 L 437 267 L 440 277 L 430 270 L 420 277 L 423 267 L 415 260 L 425 260 Z"/>
+    <path d="M 150 380 L 155 390 L 165 390 L 157 397 L 160 407 L 150 400 L 140 407 L 143 397 L 135 390 L 145 390 Z"/>
+  </g>
+  
+  <!-- Платформа внизу -->
+  <rect x="165" y="400" width="180" height="30" rx="15" fill="#808080"/>
+  <rect x="165" y="400" width="180" height="10" rx="5" fill="#999999"/>
+  
+  <!-- Дополнительные платформы на фоне (меньше, выше) -->
+  <rect x="350" y="320" width="100" height="20" rx="10" fill="#808080" opacity="0.5"/>
+  <rect x="70" y="280" width="90" height="18" rx="9" fill="#808080" opacity="0.5"/>
+  
+  <!-- Тело персонажа (зеленое) -->
+  <ellipse cx="256" cy="220" rx="90" ry="105" fill="#4CAF50"/>
+  
+  <!-- Тень под персонажем -->
+  <ellipse cx="256" cy="325" rx="60" ry="15" fill="black" opacity="0.2"/>
+  
+  <!-- Левая нога -->
+  <ellipse cx="200" cy="315" rx="30" ry="20" fill="#3D8B40"/>
+  
+  <!-- Правая нога -->
+  <ellipse cx="312" cy="315" rx="30" ry="20" fill="#3D8B40"/>
+  
+  <!-- Белые глаза -->
+  <circle cx="226" cy="190" r="22" fill="white"/>
+  <circle cx="286" cy="190" r="22" fill="white"/>
+  
+  <!-- Зрачки -->
+  <circle cx="230" cy="193" r="11" fill="#333"/>
+  <circle cx="290" cy="193" r="11" fill="#333"/>
+  
+  <!-- Блики на глазах -->
+  <circle cx="224" cy="186" r="6" fill="white"/>
+  <circle cx="284" cy="186" r="6" fill="white"/>
+  
+  <!-- Нос/хобот -->
+  <ellipse cx="256" cy="240" rx="15" ry="25" fill="#3D8B40"/>
+  
+  <!-- Рот (улыбка) -->
+  <path d="M 225 260 Q 256 275 287 260" stroke="#3D8B40" stroke-width="5" fill="none" stroke-linecap="round"/>
+  
+  <!-- Детали на теле (текстура) -->
+  <ellipse cx="256" cy="200" rx="70" ry="80" fill="none" stroke="#5FD068" stroke-width="3" opacity="0.3"/>
+  
+  <!-- Румянец -->
+  <ellipse cx="200" cy="215" rx="15" ry="10" fill="#FF6B9D" opacity="0.4"/>
+  <ellipse cx="312" cy="215" rx="15" ry="10" fill="#FF6B9D" opacity="0.4"/>
+</svg>

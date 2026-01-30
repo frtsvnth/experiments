@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Tap & Stack - казуальная мобильная игра">
+    
+    <!-- Мета-теги для iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tap & Stack">
+    
+    <!-- PWA манифест -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <!-- Стили -->
+    <link rel="stylesheet" href="style.css">
+    
+    <title>Tap & Stack</title>
+</head>
+<body>
+    <!-- Начальный экран -->
+    <div id="menuScreen" class="screen">
+        <h1 class="game-title">Tap & Stack</h1>
+        <p class="game-description">Тапай, чтобы складывать блоки идеально!</p>
+        <div class="high-score-display">
+            <span class="label">Рекорд:</span>
+            <span id="highScoreDisplay">0</span>
+        </div>
+        <button id="playButton" class="btn btn-play">Играть</button>
+    </div>
+
+    <!-- Игровой canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Экран Game Over -->
+    <div id="gameOverScreen" class="screen">
+        <h2 class="game-over-title">Игра окончена!</h2>
+        <div class="score-container">
+            <div class="score-item">
+                <span class="label">Счёт:</span>
+                <span id="finalScore" class="score-value">0</span>
+            </div>
+            <div class="score-item">
+                <span class="label">Рекорд:</span>
+                <span id="finalHighScore" class="score-value">0</span>
+            </div>
+        </div>
+        <button id="restartButton" class="btn btn-restart">Играть снова</button>
+        <button id="menuButton" class="btn btn-menu">Меню</button>
+    </div>
+
+    <!-- Игровой скрипт -->
+    <script src="script.js"></script>
+</body>
+</html>

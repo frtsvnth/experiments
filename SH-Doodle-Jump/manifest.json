@@ -1,0 +1,37 @@
+{
+  "name": "Doodle Jump Clone",
+  "short_name": "Doodle Jump",
+  "description": "Прыгай как можно выше! Казуальная игра в стиле Doodle Jump.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#87CEEB",
+  "theme_color": "#FF6B6B",
+  "orientation": "portrait",
+  "scope": "./",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
