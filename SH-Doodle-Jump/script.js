@@ -325,14 +325,19 @@ function update() {
     // Обновление камеры (плавное следование за игроком при движении вверх)
     if (player.velY < 0 && player.y < CANVAS_HEIGHT / 2) {
         // Игрок летит вверх и находится в верхней половине экрана
-        const diff = CANVAS_HEIGHT / 2 - player.y;
-        cameraY -= diff;
-        player.y = CANVAS_HEIGHT / 2;
+        const currentWorldY = player.y + cameraY;
         
-        // Обновление максимальной высоты и счёта
-        maxHeightReached = Math.min(maxHeightReached, player.y + cameraY);
-        score = Math.floor(Math.abs(maxHeightReached) / 10);
-        currentScoreEl.textContent = score;
+        // Проверяем, достиг ли игрок новой максимальной высоты
+        if (currentWorldY < maxHeightReached) {
+            const diff = CANVAS_HEIGHT / 2 - player.y;
+            cameraY -= diff;
+            player.y = CANVAS_HEIGHT / 2;
+            
+            // Обновление максимальной высоты и счёта
+            maxHeightReached = currentWorldY;
+            score = Math.floor(Math.abs(maxHeightReached) / 10);
+            currentScoreEl.textContent = score;
+        }
     }
     
     // Обновление движущихся платформ

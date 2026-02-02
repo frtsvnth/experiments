@@ -1,0 +1,32 @@
+{
+  "name": "Shashkin Jump",
+  "short_name": "Shashkin Jump",
+  "description": "Jump as high as you can in this fun casual game!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#87CEEB",
+  "theme_color": "#FF6B6B",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "entertainment"],
+  "screenshots": [
+    {
+      "src": "/screenshot1.png",
+      "sizes": "480x800",
+      "type": "image/png"
+    }
+  ]
+}
