@@ -1,13 +1,15 @@
 const CACHE_NAME = 'doodle-jump-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/script.js',
-  '/manifest.json',
-  '/player.png',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/Users/fortyseventh/experiments/shashkin-jump/index.html',
+  '/Users/fortyseventh/experiments/shashkin-jump/animation-demo.html',
+  '/Users/fortyseventh/experiments/shashkin-jump/manifest.json',
+  '/Users/fortyseventh/experiments/shashkin-jump/sprite_sheet.png',
+  '/Users/fortyseventh/experiments/shashkin-jump/sprite/sprite1.png',
+  '/Users/fortyseventh/experiments/shashkin-jump/sprite/sprite2.png',
+  '/Users/fortyseventh/experiments/shashkin-jump/sprite/sprite3.png',
+  '/Users/fortyseventh/experiments/shashkin-jump/sprite/sprite4.png',
+  '/Users/fortyseventh/experiments/shashkin-jump/sprite/sprite5.png',
+  '/Users/fortyseventh/experiments/shashkin-jump/sprite/sprite6.png'
 ];
 
 // Установка Service Worker

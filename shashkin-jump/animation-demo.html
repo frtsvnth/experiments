@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анимация персонажа</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .animation-area {
+            position: relative;
+            margin: 30px 0;
+            background: #f0f0f0;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        #spriteCanvas {
+            border: 3px solid #333;
+            border-radius: 5px;
+            background: #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-start {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-stop {
+            background: linear-gradient(45deg, #f44336, #da190b);
+            color: white;
+        }
+
+        .btn-stop:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+        }
+
+        .btn-speed {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+        }
+
+        .btn-speed:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            color: #333;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Анимация персонажа из Sprite Sheet</h1>
+        
+        <div class="animation-area">
+            <canvas id="spriteCanvas" width="257" height="507" style="transform: scale(0.33); transform-origin: top left;"></canvas> 
+        </div>
+
+        <div class="controls">
+            <button class="btn-start" onclick="startAnimation()">Запустить анимацию</button>
+            <button class="btn-stop" onclick="stopAnimation()">Остановить анимацию</button>
+            <button class="btn-speed" onclick="toggleSpeed()">Смена скорости</button>
+        </div>
+
+        <div class="info">
+            <p><strong>Как работает:</strong> Анимация идет по горизонтали слева-направо, сначала с первой строки, потом второй.</p>
+            <p><strong>Sprite Sheet:</strong> 6 кадров, размер: 3×2</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">Текущий кадр</div>
+                <div class="stat-value" id="currentFrame">1</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Скорость (кадр/с)</div>
+                <div class="stat-value" id="fps">10</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Состояние</div>
+                <div class="stat-value" id="status">Остановлена</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('spriteCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let animationId = null;
+        let currentFrame = 0;
+        let isPlaying = false;
+        let fps = 10;
+        let frameInterval = 1000 / fps;
+        let lastTime = 0;
+        
+        // Sprite sheet dimensions (3 columns x 2 rows)
+        const cols = 3;
+        const rows = 2;
+        const frameWidth = 257;
+        const frameHeight = 507;
+        
+        // Load sprite sheet
+        const spriteSheet = new Image();
+        spriteSheet.src = 'sprite_sheet.png';
+        
+        spriteSheet.onload = function() {
+            drawFrame(0);
+        };
+        
+        function drawFrame(frameIndex) {
+            // Calculate row and column
+            const row = Math.floor(frameIndex / cols);
+            const col = frameIndex % cols;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw the specific frame from sprite sheet
+            ctx.drawImage(
+                spriteSheet,
+                col * frameWidth, row * frameHeight, // source x, y
+                frameWidth, frameHeight, // source width, height
+                0, 0, // destination x, y
+                canvas.width, canvas.height // destination width, height
+            );
+            
+            // Update current frame display
+            document.getElementById('currentFrame').textContent = frameIndex + 1;
+        }
+        
+        function animate(currentTime) {
+            if (!isPlaying) return;
+            
+            // Throttle animation to desired FPS
+            if (currentTime - lastTime >= frameInterval) {
+                lastTime = currentTime;
+                
+                // Update frame (loop back to 0 after last frame)
+                currentFrame = (currentFrame + 1) % (cols * rows);
+                
+                // Draw the current frame
+                drawFrame(currentFrame);
+            }
+            
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        function startAnimation() {
+            if (!isPlaying) {
+                isPlaying = true;
+                document.getElementById('status').textContent = 'Играет';
+                animate(performance.now());
+            }
+        }
+        
+        function stopAnimation() {
+            isPlaying = false;
+            cancelAnimationFrame(animationId);
+            document.getElementById('status').textContent = 'Остановлена';
+        }
+        
+        function toggleSpeed() {
+            fps = fps === 10 ? 20 : 10;
+            frameInterval = 1000 / fps;
+            document.getElementById('fps').textContent = fps;
+            
+            // Visual feedback
+            const originalColor = document.querySelector('.btn-speed').style.background;
+            document.querySelector('.btn-speed').style.background = 'linear-gradient(45deg, #ff9800, #f57c00)';
+            setTimeout(() => {
+                document.querySelector('.btn-speed').style.background = originalColor;
+            }, 200);
+        }
+        
+        // Keyboard controls
+        document.addEventListener('keydown', function(e) {
+            switch(e.key) {
+                case ' ':
+                    e.preventDefault();
+                    isPlaying ? stopAnimation() : startAnimation();
+                    break;
+                case 'ArrowRight':
+                    currentFrame = (currentFrame + 1) % (cols * rows);
+                    drawFrame(currentFrame);
+                    break;
+                case 'ArrowLeft':
+                    currentFrame = (currentFrame - 1 + (cols * rows)) % (cols * rows);
+                    drawFrame(currentFrame);
+                    break;
+            }
+        });
+        
+        // Auto-start animation after page load
+        window.addEventListener('load', function() {
+            setTimeout(startAnimation, 500);
+        });
+    </script>
+</body>
+</html>

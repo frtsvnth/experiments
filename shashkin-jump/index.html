@@ -1,255 +1,258 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#FF6B6B">
-    <meta name="description" content="Прыгай как можно выше в этой увлекательной казуальной игре!">
-    <link rel="manifest" href="manifest.json">
-    <title>Doodle Jump Clone</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+	<meta charset="UTF-8">
+	<meta name="viewport"
+		content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<meta name="theme-color" content="#FF6B6B">
+	<meta name="description" content="Прыгай как можно выше в этой увлекательной казуальной игре!">
+	<link rel="manifest" href="manifest.json">
+	<title>Doodle Jump Clone</title>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1a2a6c;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-            touch-action: none;
-        }
+		body {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			background: #1a2a6c;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			min-height: 100vh;
+			overflow: hidden;
+			touch-action: none;
+		}
 
-        #game-container {
-            position: relative;
-            width: 100%;
-            max-width: 480px;
-            height: 800px;
-            margin: 0 auto;
-        }
+		#game-container {
+			position: relative;
+			width: 100%;
+			max-width: 480px;
+			height: 800px;
+			margin: 0 auto;
+		}
 
-        canvas {
-            display: block;
-            background: linear-gradient(to bottom, #87CEEB, #1E90FF);
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            max-width: 100%;
-            max-height: 100vh;
-        }
+		canvas {
+			display: block;
+			background: linear-gradient(to bottom, #87CEEB, #1E90FF);
+			border-radius: 12px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+			max-width: 100%;
+			max-height: 100vh;
+		}
 
-        .screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: rgba(26, 42, 108, 0.95);
-            color: white;
-            border-radius: 12px;
-            z-index: 10;
-            text-align: center;
-            padding: 20px;
-        }
+		.screen {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			background: rgba(26, 42, 108, 0.95);
+			color: white;
+			border-radius: 12px;
+			z-index: 10;
+			text-align: center;
+			padding: 20px;
+		}
 
-        .screen.hidden {
-            display: none;
-        }
+		.screen.hidden {
+			display: none;
+		}
 
-        h1 {
-            font-size: 3.2rem;
-            margin-bottom: 20px;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            background: linear-gradient(to right, #FF6B6B, #4ECDC4);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            letter-spacing: 2px;
-        }
+		h1 {
+			font-size: 3.2rem;
+			margin-bottom: 20px;
+			text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+			background: linear-gradient(to right, #FF6B6B, #4ECDC4);
+			-webkit-background-clip: text;
+			background-clip: text;
+			color: transparent;
+			letter-spacing: 2px;
+		}
 
-        .subtitle {
-            font-size: 1.4rem;
-            margin-bottom: 30px;
-            color: #e0e0ff;
-            max-width: 85%;
-            line-height: 1.4;
-        }
+		.subtitle {
+			font-size: 1.4rem;
+			margin-bottom: 30px;
+			color: #e0e0ff;
+			max-width: 85%;
+			line-height: 1.4;
+		}
 
-        .score-display {
-            font-size: 2.5rem;
-            margin: 20px 0;
-            color: #FFD166;
-            font-weight: bold;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-        }
+		.score-display {
+			font-size: 2.5rem;
+			margin: 20px 0;
+			color: #FFD166;
+			font-weight: bold;
+			text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+		}
 
-        .btn {
-            background: linear-gradient(to bottom, #FF6B6B, #EE5A5A);
-            color: white;
-            border: none;
-            padding: 18px 50px;
-            font-size: 1.6rem;
-            border-radius: 50px;
-            margin: 15px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 6px 15px rgba(255, 107, 107, 0.4);
-            font-weight: bold;
-            letter-spacing: 1px;
-            touch-action: manipulation;
-        }
+		.btn {
+			background: linear-gradient(to bottom, #FF6B6B, #EE5A5A);
+			color: white;
+			border: none;
+			padding: 18px 50px;
+			font-size: 1.6rem;
+			border-radius: 50px;
+			margin: 15px;
+			cursor: pointer;
+			transition: all 0.2s ease;
+			box-shadow: 0 6px 15px rgba(255, 107, 107, 0.4);
+			font-weight: bold;
+			letter-spacing: 1px;
+			touch-action: manipulation;
+		}
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.6);
-        }
+		.btn:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 8px 20px rgba(255, 107, 107, 0.6);
+		}
 
-        .btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.4);
-        }
+		.btn:active {
+			transform: translateY(2px);
+			box-shadow: 0 4px 10px rgba(255, 107, 107, 0.4);
+		}
 
-        .btn.secondary {
-            background: linear-gradient(to bottom, #4ECDC4, #3AADA0);
-            box-shadow: 0 6px 15px rgba(78, 205, 196, 0.4);
-        }
+		.btn.secondary {
+			background: linear-gradient(to bottom, #4ECDC4, #3AADA0);
+			box-shadow: 0 6px 15px rgba(78, 205, 196, 0.4);
+		}
 
-        .btn.secondary:hover {
-            box-shadow: 0 8px 20px rgba(78, 205, 196, 0.6);
-        }
+		.btn.secondary:hover {
+			box-shadow: 0 8px 20px rgba(78, 205, 196, 0.6);
+		}
 
-        .instructions {
-            background: rgba(30, 45, 90, 0.85);
-            border-radius: 15px;
-            padding: 20px;
-            margin-top: 20px;
-            max-width: 90%;
-        }
+		.instructions {
+			background: rgba(30, 45, 90, 0.85);
+			border-radius: 15px;
+			padding: 20px;
+			margin-top: 20px;
+			max-width: 90%;
+		}
 
-        .instructions h3 {
-            color: #4ECDC4;
-            margin-bottom: 10px;
-            font-size: 1.6rem;
-        }
+		.instructions h3 {
+			color: #4ECDC4;
+			margin-bottom: 10px;
+			font-size: 1.6rem;
+		}
 
-        .instructions p {
-            color: #e0e0ff;
-            line-height: 1.5;
-            font-size: 1.1rem;
-        }
+		.instructions p {
+			color: #e0e0ff;
+			line-height: 1.5;
+			font-size: 1.1rem;
+		}
 
-        .record {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.6);
-            color: #FFD166;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 1.3rem;
-            z-index: 5;
-        }
+		.record {
+			position: absolute;
+			top: 20px;
+			left: 50%;
+			transform: translateX(-50%);
+			background: rgba(0, 0, 0, 0.6);
+			color: #FFD166;
+			padding: 8px 15px;
+			border-radius: 20px;
+			font-weight: bold;
+			font-size: 1.3rem;
+			z-index: 5;
+		}
 
-        .touch-area {
-            position: absolute;
-            bottom: 0;
-            height: 150px;
-            width: 50%;
-            z-index: 20;
-        }
+		.touch-area {
+			position: absolute;
+			bottom: 0;
+			height: 150px;
+			width: 50%;
+			z-index: 20;
+		}
 
-        #left-area {
-            left: 0;
-        }
+		#left-area {
+			left: 0;
+		}
 
-        #right-area {
-            right: 0;
-        }
+		#right-area {
+			right: 0;
+		}
 
-        @media (max-height: 700px) {
-            #game-container {
-                height: 100vh;
-                max-height: 700px;
-            }
-            
-            h1 {
-                font-size: 2.6rem;
-            }
-            
-            .subtitle {
-                font-size: 1.2rem;
-                margin-bottom: 25px;
-            }
-            
-            .btn {
-                padding: 15px 45px;
-                font-size: 1.4rem;
-            }
-        }
+		@media (max-height: 700px) {
+			#game-container {
+				height: 100vh;
+				max-height: 700px;
+			}
 
-        @media (max-width: 400px) {
-            h1 {
-                font-size: 2.4rem;
-            }
-            
-            .subtitle {
-                font-size: 1.1rem;
-            }
-            
-            .btn {
-                padding: 14px 40px;
-                font-size: 1.3rem;
-            }
-            
-            .score-display {
-                font-size: 2.2rem;
-            }
-        }
-    </style>
+			h1 {
+				font-size: 2.6rem;
+			}
+
+			.subtitle {
+				font-size: 1.2rem;
+				margin-bottom: 25px;
+			}
+
+			.btn {
+				padding: 15px 45px;
+				font-size: 1.4rem;
+			}
+		}
+
+		@media (max-width: 400px) {
+			h1 {
+				font-size: 2.4rem;
+			}
+
+			.subtitle {
+				font-size: 1.1rem;
+			}
+
+			.btn {
+				padding: 14px 40px;
+				font-size: 1.3rem;
+			}
+
+			.score-display {
+				font-size: 2.2rem;
+			}
+		}
+	</style>
 </head>
-<body>
-    <div id="game-container">
-        <canvas id="gameCanvas" width="480" height="800"></canvas>
-        
-        <div id="menu-screen" class="screen">
-            <h1>DOODLE JUMP</h1>
-            <p class="subtitle">Прыгай по платформам и поднимайся как можно выше!</p>
-            <button id="start-btn" class="btn">НАЧАТЬ ИГРУ</button>
-            <div class="instructions">
-                <h3>УПРАВЛЕНИЕ</h3>
-                <p>Касайтесь левой или правой части экрана</p>
-            </div>
-        </div>
-        
-        <div id="game-over-screen" class="screen hidden">
-            <h1>ИГРА ОКОНЧЕНА</h1>
-            <div class="score-display">ВЫСОТА: <span id="final-score">0</span></div>
-            <div class="score-display">РЕКОРД: <span id="record-score">0</span></div>
-            <button id="restart-btn" class="btn">ИГРАТЬ СНОВА</button>
-            <button id="menu-btn" class="btn secondary">В МЕНЮ</button>
-        </div>
-        
-        <div id="record-display" class="record hidden">РЕКОРД: 0</div>
-        
-        <div id="left-area" class="touch-area"></div>
-        <div id="right-area" class="touch-area"></div>
-    </div>
 
-    <script>
-        // ======================
-        // ИГРОВАЯ ЛОГИКА - ПОЛНОСТЬЮ ИСПРАВЛЕННАЯ
+<body>
+	<div id="game-container">
+		<canvas id="gameCanvas" width="480" height="800"></canvas>
+
+		<div id="menu-screen" class="screen">
+			<h1>DOODLE JUMP</h1>
+			<p class="subtitle">Прыгай по платформам и поднимайся как можно выше!</p>
+			<button id="start-btn" class="btn">НАЧАТЬ ИГРУ</button>
+			<div class="instructions">
+				<h3>УПРАВЛЕНИЕ</h3>
+				<p>Касайтесь левой или правой части экрана</p>
+			</div>
+		</div>
+
+		<div id="game-over-screen" class="screen hidden">
+			<h1>ИГРА ОКОНЧЕНА</h1>
+			<div class="score-display">ВЫСОТА: <span id="final-score">0</span></div>
+			<div class="score-display">РЕКОРД: <span id="record-score">0</span></div>
+			<button id="restart-btn" class="btn">ИГРАТЬ СНОВА</button>
+			<button id="menu-btn" class="btn secondary">В МЕНЮ</button>
+		</div>
+
+		<div id="record-display" class="record hidden">РЕКОРД: 0</div>
+
+		<div id="left-area" class="touch-area"></div>
+		<div id="right-area" class="touch-area"></div>
+	</div>
+
+	<script>
+		// ======================
+        // ИГРОВАЯ ЛОГИКА - ИСПРАВЛЕНА ГЕНЕРАЦИЯ МОНЕТ И ГЕЙМОВЕР
         // ======================
         
         const GAME_STATES = {
@@ -258,11 +261,9 @@
             GAME_OVER: 'game_over'
         };
         
-        // Получаем канвас и контекст
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
-        // Элементы UI
         const menuScreen = document.getElementById('menu-screen');
         const gameOverScreen = document.getElementById('game-over-screen');
         const finalScoreDisplay = document.getElementById('final-score');
@@ -274,7 +275,6 @@
         const leftArea = document.getElementById('left-area');
         const rightArea = document.getElementById('right-area');
         
-        // Настройка для ретина-дисплеев
         const dpr = window.devicePixelRatio || 1;
         canvas.width = 480 * dpr;
         canvas.height = 800 * dpr;
@@ -282,61 +282,61 @@
         canvas.style.height = '800px';
         ctx.scale(dpr, dpr);
         
-        // Игровые переменные
         let gameState = GAME_STATES.MENU;
         let platforms = [];
         let coins = [];
         let particles = [];
         let score = 0;
         let highScore = localStorage.getItem('doodleJumpHighScore') ? parseInt(localStorage.getItem('doodleJumpHighScore')) : 0;
-        let cameraY = 0; // Камера (отрицательное значение = подъем)
-        let lastPlayerY = 0; // Для отслеживания движения игрока
         
-        // Персонаж - ИСПРАВЛЕНА ФИЗИКА
+        // ПЛАВНАЯ КАМЕРА
+        let cameraY = 0;
+        let cameraTargetY = 0;
+        
+        let platformIdCounter = 0;
+        let currentPlatformId = null;
+        let nextPlatformY = 750;
+        let lastGeneratedHeight = 0;
+        let lastGeneratedCoinHeight = 0; // Для отслеживания генерации монет
+        
         const player = {
-            x: 240, // центр канваса
-            y: 650, // начальная позиция
+            x: 240,
+            y: 650,
             width: 48,
             height: 64,
             velX: 0,
             velY: 0,
             speed: 8,
-            jumpPower: -16, // отрицательное значение для прыжка вверх
+            jumpPower: -16,
             gravity: 0.6,
-            maxFallSpeed: 20, // максимальная скорость падения
+            maxFallSpeed: 20,
             facingRight: true,
-            onPlatform: false,
-            canJump: true // флаг для предотвращения множественных прыжков
+            grounded: false,
+            justJumped: false
         };
         
-        // Управление
         let touchLeft = false;
         let touchRight = false;
         let keys = { left: false, right: false };
         
-        // Платформы
         const platformWidth = 80;
         const platformHeight = 20;
         const platformTypes = ['normal', 'moving', 'breakable', 'spring'];
         let movingPlatforms = [];
         let breakablePlatforms = [];
-        let lastPlatformY = 750; // Начальная позиция последней платформы
         
         // ======================
         // ИНИЦИАЛИЗАЦИЯ ИГРЫ
         // ======================
         
         function init() {
-            // Показать рекорд
             recordScoreDisplay.textContent = highScore;
             recordDisplay.textContent = `РЕКОРД: ${highScore}`;
             
-            // Обработчики событий
             startBtn.addEventListener('click', startGame);
             restartBtn.addEventListener('click', restartGame);
             menuBtn.addEventListener('click', showMenu);
             
-            // Управление с клавиатуры
             window.addEventListener('keydown', (e) => {
                 if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
                 if (e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
@@ -347,7 +347,6 @@
                 if (e.key === 'ArrowRight' || e.key === 'd') keys.right = false;
             });
             
-            // Управление касанием
             leftArea.addEventListener('touchstart', (e) => { e.preventDefault(); touchLeft = true; });
             leftArea.addEventListener('touchend', (e) => { e.preventDefault(); touchLeft = false; });
             leftArea.addEventListener('touchcancel', (e) => { e.preventDefault(); touchLeft = false; });
@@ -358,10 +357,7 @@
             rightArea.addEventListener('touchcancel', (e) => { e.preventDefault(); touchRight = false; });
             rightArea.addEventListener('touchmove', (e) => { e.preventDefault(); });
             
-            // Генерация начальных платформ
             generateInitialPlatforms();
-            
-            // Запуск игрового цикла
             gameLoop();
         }
         
@@ -375,9 +371,17 @@
             movingPlatforms = [];
             breakablePlatforms = [];
             particles = [];
+            platformIdCounter = 0;
+            currentPlatformId = null;
+            nextPlatformY = 750;
+            lastGeneratedHeight = 0;
+            lastGeneratedCoinHeight = 0;
+            cameraY = 0;
+            cameraTargetY = 0;
             
-            // Начальная платформа под игроком
+            // === ЦЕНТРАЛЬНАЯ НАЧАЛЬНАЯ ПЛАТФОРМА ===
             platforms.push({
+                id: platformIdCounter++,
                 x: 200,
                 y: 750,
                 width: platformWidth,
@@ -385,29 +389,25 @@
                 type: 'normal'
             });
             
-            // Генерация остальных платформ
-            lastPlatformY = 750;
-            for (let i = 0; i < 14; i++) {
-                generatePlatform();
+            // Генерируем платформы от низа вверх
+            for (let y = 630; y > -1500; y -= 120) {
+                generatePlatformAtY(y);
             }
             
-            // Генерация монет
-            for (let i = 0; i < 8; i++) {
-                generateCoin();
+            // Генерируем начальные монеты
+            for (let y = 700; y > -1500; y -= 80) {
+                generateCoinAtY(y);
             }
         }
         
-        function generatePlatform() {
+        function generatePlatformAtY(y) {
             const padding = 30;
-            const minY = lastPlatformY - 160;
-            const maxY = lastPlatformY - 90;
-            const y = Math.random() * (maxY - minY) + minY;
             const x = Math.random() * (480 - platformWidth - padding * 2) + padding;
             
-            // Больше нормальных платформ, реже специальные
-            const type = Math.random() > 0.7 ? platformTypes[Math.floor(Math.random() * platformTypes.length)] : 'normal';
+            const type = Math.random() > 0.8 ? platformTypes[Math.floor(Math.random() * platformTypes.length)] : 'normal';
             
             const platform = {
+                id: platformIdCounter++,
                 x: x,
                 y: y,
                 width: platformWidth,
@@ -415,7 +415,6 @@
                 type: type
             };
             
-            // Для движущихся платформ
             if (type === 'moving') {
                 platform.direction = Math.random() > 0.5 ? 1 : -1;
                 platform.speed = 1.5 + Math.random() * 1.5;
@@ -424,20 +423,21 @@
                 movingPlatforms.push(platform);
             }
             
-            // Для разрушаемых платформ
             if (type === 'breakable') {
                 platform.health = 3;
                 breakablePlatforms.push(platform);
             }
             
             platforms.push(platform);
-            lastPlatformY = y;
+            
+            if (y < nextPlatformY) {
+                nextPlatformY = y;
+            }
         }
         
-        function generateCoin() {
+        function generateCoinAtY(y) {
             const padding = 30;
             const x = Math.random() * (480 - 40 - padding * 2) + padding;
-            const y = Math.random() * 1200 - 400;
             
             coins.push({
                 x: x,
@@ -463,33 +463,46 @@
         }
         
         // ======================
-        // ФИЗИКА И КОЛЛИЗИИ - ПОЛНОСТЬЮ ПЕРЕПИСАНЫ
+        // ФИЗИКА И КОЛЛИЗИИ
         // ======================
         
-        function checkPlatformCollision() {
-            player.onPlatform = false;
-            player.canJump = true;
+        function checkCollisions() {
+            player.grounded = false;
+            let landedOnPlatformId = null;
+            let landedPlatformY = null;
+            
+            // Сначала обновляем позицию по вертикали
+            player.y += player.velY;
             
             for (let i = platforms.length - 1; i >= 0; i--) {
                 const p = platforms[i];
+                
+                const playerTop = player.y;
                 const playerBottom = player.y + player.height;
+                const playerLeft = player.x;
+                const playerRight = player.x + player.width;
+                
                 const platformTop = p.y;
                 const platformBottom = p.y + p.height;
+                const platformLeft = p.x;
+                const platformRight = p.x + p.width;
                 
-                // Проверяем, что игрок находится над платформой
-                const isAbovePlatform = player.x + player.width > p.x && 
-                                       player.x < p.x + p.width &&
-                                       playerBottom >= platformTop &&
-                                       playerBottom <= platformTop + 20; // допуск 20 пикселей
+                const horizontalOverlap = playerRight > platformLeft && playerLeft < platformRight;
                 
-                // Проверяем, что игрок падает вниз (или стоит на месте)
-                const isFallingOrLanding = player.velY >= 0;
+                if (!horizontalOverlap) continue;
                 
-                // Проверяем, что игрок не проходит сквозь платформу снизу
-                const notComingFromBelow = player.y < platformBottom;
-                
-                if (isAbovePlatform && isFallingOrLanding && notComingFromBelow) {
-                    // Игрок приземлился на платформу
+                // === СЛУЧАЙ 1: Приземление на платформу сверху ===
+                if (player.velY > 0 && // падает вниз
+                    playerBottom - player.velY <= platformTop && // в предыдущем кадре был выше
+                    playerBottom >= platformTop) { // в текущем кадре достиг платформы
+                    
+                    // Приземление на платформу
+                    player.y = platformTop - player.height;
+                    player.velY = player.jumpPower; // МГНОВЕННЫЙ прыжок
+                    player.grounded = true;
+                    player.justJumped = true;
+                    landedOnPlatformId = p.id;
+                    landedPlatformY = p.y;
                     
                     // Обработка разных типов платформ
                     if (p.type === 'breakable') {
@@ -502,33 +515,96 @@
                             continue;
                         }
                     } else if (p.type === 'spring') {
-                        player.velY = player.jumpPower * 1.8; // сильнее прыжок
-                        player.canJump = false; // предотвращаем повторный прыжок
+                        player.velY = player.jumpPower * 1.8;
                         createParticles(player.x + player.width/2, player.y + player.height, 12, '#4ECDC4');
                     } else {
-                        player.velY = player.jumpPower; // обычный прыжок
-                        player.canJump = false; // предотвращаем повторный прыжок
                         createParticles(player.x + player.width/2, player.y + player.height, 6, '#FFD166');
                     }
                     
-                    player.onPlatform = true;
-                    player.y = platformTop - player.height; // точно позиционируем игрока
-                    
-                    // Движение вместе с движущейся платформой
                     if (p.type === 'moving') {
                         player.x += p.speed * p.direction;
                     }
+                    
+                    continue;
                 }
+            }
+            
+            // === ОБНОВЛЕНИЕ КАМЕРЫ ПРИ СМЕНЕ ПЛАТФОРМЫ ===
+            if (landedOnPlatformId !== null && landedOnPlatformId !== currentPlatformId) {
+                currentPlatformId = landedOnPlatformId;
+                
+                // ИСПРАВЛЕНО: убран минус
+                cameraTargetY = (landedPlatformY - 750);
+                
+                score = Math.floor(-cameraTargetY / 10);
+            }
+            
+            // === ПЛАВНОЕ ДВИЖЕНИЕ КАМЕРЫ ===
+            if (Math.abs(cameraTargetY - cameraY) > 0.5) {
+                cameraY += (cameraTargetY - cameraY) * 0.2;
+            } else {
+                cameraY = cameraTargetY;
+            }
+            
+            // === ГЕНЕРАЦИЯ НОВЫХ ПЛАТФОРМ ===
+            const playerWorldY = player.y + cameraY;
+            const generateThreshold = 200;
+            
+            if (playerWorldY < lastGeneratedHeight - generateThreshold) {
+                const platformsPerBlock = 10;
+                const spacing = 100;
+                
+                for (let i = 0; i < platformsPerBlock; i++) {
+                    const newY = nextPlatformY - spacing;
+                    generatePlatformAtY(newY);
+                }
+                
+                lastGeneratedHeight = playerWorldY;
+            }
+            
+            // === ГЕНЕРАЦИЯ НОВЫХ МОНЕТ ===
+            if (playerWorldY < lastGeneratedCoinHeight - generateThreshold) {
+                const coinsPerBlock = 8; // Генерируем 8 монет за раз
+                const coinSpacing = 80; // Расстояние между монетами
+                
+                for (let i = 0; i < coinsPerBlock; i++) {
+                    const newY = nextPlatformY - coinSpacing - (i * coinSpacing);
+                    generateCoinAtY(newY);
+                }
+                
+                lastGeneratedCoinHeight = playerWorldY;
+            }
+            
+            // === ПРОВЕРКА ГЕЙМОВЕРА - УСКОРЕНА ===
+            const gameOverThreshold = cameraY + 800; // Уменьшено с 1000 до 600
+            if (player.y + cameraY > gameOverThreshold) {
+                gameOver();
+                return;
+            }
+            
+            // Применение гравитации
+            if (!player.grounded) {
+                player.velY += player.gravity;
+                if (player.velY > player.maxFallSpeed) {
+                    player.velY = player.maxFallSpeed;
+                }
+                player.justJumped = false;
+            }
+            
+            // Горизонтальное движение
+            player.x += player.velX;
+            
+            // Ограничение по горизонтали (телепортация)
+            if (player.x + player.width < 0) {
+                player.x = 480;
+            } else if (player.x > 480) {
+                player.x = -player.width;
             }
         }
         
         function update() {
             if (gameState !== GAME_STATES.PLAYING) return;
             
-            // Сохраняем предыдущую позицию для камеры
-            lastPlayerY = player.y;
-            
-            // Горизонтальное движение
             player.velX = 0;
             
             if (keys.left || touchLeft) {
@@ -541,29 +617,7 @@
                 player.facingRight = true;
             }
             
-            // Обновление позиции игрока
-            player.x += player.velX;
-            
-            // Применение гравитации (только если не на платформе)
-            if (!player.onPlatform) {
-                player.velY += player.gravity;
-                // Ограничение максимальной скорости падения
-                if (player.velY > player.maxFallSpeed) {
-                    player.velY = player.maxFallSpeed;
-                }
-            }
-            
-            player.y += player.velY;
-            
-            // Ограничение по горизонтали (телепортация)
-            if (player.x + player.width < 0) {
-                player.x = 480;
-            } else if (player.x > 480) {
-                player.x = -player.width;
-            }
-            
-            // Проверка коллизий с платформами
-            checkPlatformCollision();
+            checkCollisions();
             
             // Проверка столкновений с монетами
             for (let i = coins.length - 1; i >= 0; i--) {
@@ -578,7 +632,6 @@
                     score += 10;
                     createParticles(c.x + c.width/2, c.y + c.height/2, 8, '#FFD166');
                     coins.splice(i, 1);
-                    generateCoin(); // Генерируем новую монету
                 }
             }
             
@@ -596,7 +649,7 @@
                 const p = particles[i];
                 p.x += p.speedX;
                 p.y += p.speedY;
-                p.speedY += 0.15; // гравитация для частиц
+                p.speedY += 0.15;
                 p.life--;
                 
                 if (p.life <= 0) {
@@ -604,32 +657,11 @@
                 }
             }
             
-            // УПРАВЛЕНИЕ КАМЕРОЙ - ИСПРАВЛЕНО
-            const cameraThreshold = 300; // Порог для движения камеры
+            // Удаляем старые платформы и монеты
+            const removeThreshold = cameraY + 800; // Уменьшено с 1500 до 1200
             
-            // Камера следует за игроком только когда он поднимается выше порога
-            if (player.y < cameraThreshold) {
-                const cameraMoveAmount = cameraThreshold - player.y;
-                cameraY -= cameraMoveAmount;
-                player.y = cameraThreshold;
-                
-                // Обновление счета (высота = -cameraY)
-                score = Math.floor(-cameraY / 10);
-                
-                // Генерация новых платформ при подъеме
-                if (cameraY < lastPlatformY - 800) {
-                    generatePlatform();
-                }
-            }
-            
-            // Удаление старых платформ и монет
-            platforms = platforms.filter(p => p.y - cameraY < 900);
-            coins = coins.filter(c => c.y - cameraY < 900 && !c.collected);
-            
-            // Проверка окончания игры (падение вниз)
-            if (player.y > 900) {
-                gameOver();
-            }
+            platforms = platforms.filter(p => p.y < removeThreshold);
+            coins = coins.filter(c => c.y < removeThreshold && !c.collected);
         }
         
         // ======================
@@ -637,7 +669,6 @@
         // ======================
         
         function drawBackground() {
-            // Градиентный фон
             const gradient = ctx.createLinearGradient(0, 0, 0, 800);
             const skyTop = Math.min(255, Math.max(0, 100 + cameraY / 20));
             const skyBottom = Math.min(255, Math.max(0, 180 + cameraY / 20));
@@ -646,7 +677,6 @@
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, 480, 800);
             
-            // Солнце/луна в зависимости от высоты
             const sunY = 100 - cameraY * 0.1;
             if (sunY > -100 && sunY < 900) {
                 ctx.fillStyle = cameraY < -2000 ? '#CCCCCC' : '#FFD166';
@@ -655,7 +685,6 @@
                 ctx.fill();
             }
             
-            // Облака
             ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
             drawCloud(100, 150 - cameraY * 0.05, 25);
             drawCloud(300, 80 - cameraY * 0.07, 30);
@@ -664,7 +693,7 @@
         }
         
         function drawCloud(x, y, size) {
-            if (y > 850 || y < -100) return;
+            if (y > 900 || y < -150) return;
             
             ctx.beginPath();
             ctx.arc(x, y, size, 0, Math.PI * 2);
@@ -676,9 +705,8 @@
         
         function drawPlatform(platform) {
             const y = platform.y - cameraY;
-            if (y > 850 || y < -100) return;
+            if (y > 900 || y < -150) return;
             
-            // Цвет в зависимости от типа
             switch(platform.type) {
                 case 'normal': ctx.fillStyle = '#7986CB'; break;
                 case 'moving': ctx.fillStyle = '#4DB6AC'; break;
@@ -690,14 +718,11 @@
                 default: ctx.fillStyle = '#7986CB';
             }
             
-            // Основная платформа
             ctx.fillRect(platform.x, y, platform.width, platform.height);
             
-            // Детали
             ctx.fillStyle = '#3F51B5';
             ctx.fillRect(platform.x, y + platform.height - 4, platform.width, 4);
             
-            // Пружина
             if (platform.type === 'spring') {
                 ctx.fillStyle = '#FF7043';
                 const springWidth = platform.width * 0.4;
@@ -709,7 +734,6 @@
                     springHeight
                 );
                 
-                // Детали пружины
                 ctx.fillStyle = '#BF360C';
                 ctx.fillRect(
                     platform.x + platform.width/2 - springWidth/2 + 3, 
@@ -728,15 +752,13 @@
         
         function drawCoin(coin) {
             const y = coin.y - cameraY;
-            if (y > 850 || y < -100 || coin.collected) return;
+            if (y > 900 || y < -150 || coin.collected) return;
             
-            // Монета
             ctx.fillStyle = '#FFD166';
             ctx.beginPath();
             ctx.arc(coin.x + coin.width/2, y + coin.height/2, coin.width/2 - 2, 0, Math.PI * 2);
             ctx.fill();
             
-            // Блеск
             ctx.fillStyle = '#FFF9C4';
             ctx.beginPath();
             ctx.arc(coin.x + coin.width/2 - 4, y + coin.height/2 - 4, 3, 0, Math.PI * 2);
@@ -746,15 +768,12 @@
         function drawPlayer() {
             const y = player.y - cameraY;
             
-            // Тело
             ctx.fillStyle = player.facingRight ? '#FF6B6B' : '#4ECDC4';
             ctx.fillRect(player.x, y, player.width, player.height * 0.8);
             
-            // Голова
             ctx.fillStyle = '#FFD9B3';
             ctx.fillRect(player.x + 8, y - 16, player.width - 16, 24);
             
-            // Глаза
             ctx.fillStyle = '#000000';
             if (player.facingRight) {
                 ctx.fillRect(player.x + 26, y - 10, 6, 8);
@@ -764,24 +783,19 @@
                 ctx.fillRect(player.x + 20, y - 10, 6, 8);
             }
             
-            // Рот (улыбка при прыжке вверх, нейтральный при падении)
             ctx.fillStyle = '#E74C3C';
             if (player.velY < -2) {
-                // Улыбка при прыжке
                 ctx.beginPath();
                 ctx.arc(player.x + 24, y + 2, 10, 0, Math.PI);
                 ctx.fill();
             } else if (player.velY > 2) {
-                // Хмурый рот при падении
                 ctx.beginPath();
                 ctx.arc(player.x + 24, y + 8, 10, Math.PI, Math.PI * 2);
                 ctx.fill();
             } else {
-                // Нейтральный рот
                 ctx.fillRect(player.x + 20, y + 4, 16, 3);
             }
             
-            // Ноги
             ctx.fillStyle = '#3498DB';
             ctx.fillRect(player.x + 10, y + player.height * 0.8 - 5, 10, 12);
             ctx.fillRect(player.x + 28, y + player.height * 0.8 - 5, 10, 12);
@@ -789,7 +803,7 @@
         
         function drawParticles() {
             particles.forEach(p => {
-                if (p.y - cameraY > 850 || p.y - cameraY < -100) return;
+                if (p.y - cameraY > 900 || p.y - cameraY < -150) return;
                 
                 ctx.globalAlpha = p.life / 35;
                 ctx.fillStyle = p.color;
@@ -816,22 +830,12 @@
         function draw() {
             ctx.clearRect(0, 0, 480, 800);
             
-            // Фон
             drawBackground();
-            
-            // Платформы
             platforms.forEach(drawPlatform);
-            
-            // Монеты
             coins.forEach(drawCoin);
-            
-            // Частицы
             drawParticles();
-            
-            // Персонаж
             drawPlayer();
             
-            // Счет
             if (gameState === GAME_STATES.PLAYING) {
                 drawScore();
             }
@@ -853,16 +857,16 @@
             recordDisplay.classList.remove('hidden');
             gameState = GAME_STATES.PLAYING;
             
-            // Сброс переменных
             score = 0;
             cameraY = 0;
+            cameraTargetY = 0;
             player.x = 240;
             player.y = 650;
             player.velX = 0;
             player.velY = 0;
             player.facingRight = true;
-            player.onPlatform = false;
-            player.canJump = true;
+            player.grounded = false;
+            player.justJumped = false;
             
             generateInitialPlatforms();
         }
@@ -871,16 +875,16 @@
             gameOverScreen.classList.add('hidden');
             gameState = GAME_STATES.PLAYING;
             
-            // Сброс переменных
             score = 0;
             cameraY = 0;
+            cameraTargetY = 0;
             player.x = 240;
             player.y = 650;
             player.velX = 0;
             player.velY = 0;
             player.facingRight = true;
-            player.onPlatform = false;
-            player.canJump = true;
+            player.grounded = false;
+            player.justJumped = false;
             
             generateInitialPlatforms();
         }
@@ -895,13 +899,11 @@
         function gameOver() {
             gameState = GAME_STATES.GAME_OVER;
             
-            // Обновление рекорда
             if (score > highScore) {
                 highScore = score;
                 localStorage.setItem('doodleJumpHighScore', highScore);
             }
             
-            // Обновление отображения
             finalScoreDisplay.textContent = score;
             recordScoreDisplay.textContent = highScore;
             recordDisplay.textContent = `РЕКОРД: ${highScore}`;
@@ -916,6 +918,7 @@
         window.addEventListener('load', () => {
             init();
         });
-    </script>
+	</script>
 </body>
+
 </html>
