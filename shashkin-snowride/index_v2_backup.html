@@ -294,35 +294,9 @@
             speedBoostInterval: 300,
             speedBoostMultiplier: 1.3, // Коэффициент ускорения увеличения скорости
             
-            // === УЛУЧШЕННЫЕ НАСТРОЙКИ ФОНОВОЙ ГРАФИКИ ===
-            starCount: 120,                    // Уменьшено с 200 до 120 для более деликатного неба
+            starCount: 200,
             mountainLayers: 4,
             mountainsPerLayer: 6,
-            
-            // Настройки звёзд
-            starsConfig: {
-                size: {
-                    min: 0.3,                   // Уменьшено с 0.5 до 0.3 (более мелкие звёзды)
-                    max: 1.2                    // Уменьшено с 2.5 до 1.2 (более деликатные яркие звёзды)
-                },
-                brightness: {
-                    min: 0.15,                  // Уменьшено с 0.3 до 0.15 (менее яркие)
-                    max: 0.6                     // Уменьшено с 1.0 до 0.6 (более приглушённые)
-                },
-                skyArea: 0.3,                   // Уменьшено с 0.5 до 0.3 (только верхние 30% экрана)
-                twinkleIntensity: 0.15          // Уменьшено мерцание с 0.3 до 0.15
-            },
-            
-            // Настройки гор (более приглушённые цвета)
-            mountainsConfig: {
-                colors: [
-                    'rgba(35, 70, 120, 0.6)',   // Ближние горы - более тёмные и прозрачные
-                    'rgba(45, 85, 140, 0.5)',   // 
-                    'rgba(55, 100, 160, 0.4)',  // 
-                    'rgba(65, 115, 180, 0.3)'   // Дальние горы - очень прозрачные
-                ],
-                speedFactors: [0.02, 0.015, 0.01, 0.005] // Более медленный параллакс
-            },
             
             // Настройки спрайта снегохода
             snowmobileSprite: {
@@ -610,9 +584,6 @@
         // Звёзды для неба
         let stars = [];
 
-        // Облака для более красивого неба
-        let clouds = [];
-
         // Препятствия
         let obstacles = [];
 
@@ -683,9 +654,6 @@
             // Инициализация звёзд
             initStars();
             
-            // Инициализация облаков
-            initClouds();
-            
             // Инициализация ландшафта
             initTerrain();
             
@@ -706,44 +674,19 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // === УЛУЧШЕННАЯ ИНИЦИАЛИЗАЦИЯ ЗВЁЗД ===
+        // Инициализация звёзд
         function initStars() {
             stars = [];
-            const starsConfig = GAME_CONFIG.starsConfig;
-            
             for (let i = 0; i < GAME_CONFIG.starCount; i++) {
                 stars.push({
                     x: Math.random() * game.gameWidth,
-                    // Только верхняя часть неба (уменьшено с 50% до 30%)
-                    y: Math.random() * game.gameHeight * starsConfig.skyArea,
-                    size: Math.random() * (starsConfig.size.max - starsConfig.size.min) + starsConfig.size.min,
-                    speed: Math.random() * 0.12 + 0.03,     // Более медленное движение
-                    brightness: Math.random() * (starsConfig.brightness.max - starsConfig.brightness.min) + starsConfig.brightness.min,
-                    twinkleSpeed: Math.random() * 0.03 + 0.01, // Более медленное мерцание
+                    y: Math.random() * game.gameHeight * 0.5,
+                    size: Math.random() * 2 + 0.5,
+                    speed: Math.random() * 0.15 + 0.05,
+                    brightness: Math.random() * 0.7 + 0.3,
+                    twinkleSpeed: Math.random() * 0.05,
                     twinkleOffset: Math.random() * Math.PI * 2,
-                    // Более разнообразные цвета звёзд
-                    color: Math.random() > 0.8 ? '#b3e5fc' :  // Голубоватые звёзды
-                           Math.random() > 0.6 ? '#fff8dc' :  // Тёплые звёзды  
-                           Math.random() > 0.4 ? '#e6e6fa' :  // Лавандовые звёзды
-                           '#ffffff'                         // Белые звёзды
-                });
-            }
-        }
-
-        // === ИНИЦИАЛИЗАЦИЯ ОБЛАКОВ ===
-        function initClouds() {
-            clouds = [];
-            const cloudCount = Math.floor(GAME_CONFIG.starCount * 0.15); // 15% от количества звёзд
-            
-            for (let i = 0; i < cloudCount; i++) {
-                clouds.push({
-                    x: Math.random() * game.gameWidth,
-                    y: Math.random() * game.gameHeight * 0.25, // Верхняя четверть экрана
-                    width: Math.random() * 80 + 40, // 40-120px
-                    height: Math.random() * 30 + 20, // 20-50px
-                    speed: Math.random() * 0.8 + 0.2, // 0.2-1.0
-                    opacity: Math.random() * 0.3 + 0.1, // 0.1-0.4
-                    puffs: Math.floor(Math.random() * 3) + 2 // 2-4 комка облака
+                    color: Math.random() > 0.9 ? '#b3e5fc' : '#ffffff'
                 });
             }
         }
@@ -769,33 +712,39 @@
             updateTerrain();
         }
 
-        // === УЛУЧШЕННАЯ ИНИЦИАЛИЗАЦИЯ ГОР ===
+        // Инициализация гор (без снежных шапок)
         function initMountains() {
             mountains = [];
             
-            const mountainsConfig = GAME_CONFIG.mountainsConfig;
+            // Цвета гор с разной насыщенностью (без снежных шапок)
+            const mountainColors = [
+                'rgba(45, 90, 154, 0.9)',   // Ближние горы - тёмные и насыщенные
+                'rgba(58, 106, 179, 0.8)',  // 
+                'rgba(74, 122, 197, 0.7)',  // 
+                'rgba(90, 138, 213, 0.6)'   // Дальние горы - светлые и прозрачные
+            ];
             
             for (let layer = 0; layer < GAME_CONFIG.mountainLayers; layer++) {
                 let layerMountains = [];
                 let count = GAME_CONFIG.mountainsPerLayer;
-                let speedFactor = mountainsConfig.speedFactors[layer] || (0.02 + layer * 0.01);
+                let speedFactor = 0.03 + layer * 0.02;
                 
                 // Высота гор уменьшается для дальних слоёв
-                let baseHeight = (180 - layer * 35) * game.currentScale; // Немного меньше гор
+                let baseHeight = (200 - layer * 40) * game.currentScale;
                 
                 for (let i = 0; i < count; i++) {
-                    let width = (game.gameWidth / count) * (1.2 + Math.random() * 0.4); // Более узкие горы
-                    let x = (game.gameWidth / count) * i - width * 0.1 + Math.random() * 40;
+                    let width = (game.gameWidth / count) * (1.5 + Math.random() * 0.5);
+                    let x = (game.gameWidth / count) * i - width * 0.2 + Math.random() * 50;
                     
-                    // Более умеренная вариация высоты
-                    let height = baseHeight * (0.7 + Math.random() * 0.5);
+                    // Добавляем случайную высоту для разнообразия
+                    let height = baseHeight * (0.6 + Math.random() * 0.8);
                     
                     layerMountains.push({
                         x, 
                         width, 
                         height, 
                         speedFactor, 
-                        color: mountainsConfig.colors[layer] || 'rgba(60, 100, 160, 0.5)',
+                        color: mountainColors[layer],
                         baseWidth: width,
                         baseHeight: height
                     });
@@ -897,24 +846,7 @@
                 
                 if (star.x < -10) {
                     star.x = game.gameWidth + 10;
-                    star.y = Math.random() * game.gameHeight * GAME_CONFIG.starsConfig.skyArea;
-                }
-            }
-        }
-
-        // === ОБНОВЛЕНИЕ ОБЛАКОВ ===
-        function updateClouds() {
-            for (let cloud of clouds) {
-                cloud.x -= cloud.speed;
-                
-                if (cloud.x + cloud.width < -50) {
-                    cloud.x = game.gameWidth + 50;
-                    cloud.y = Math.random() * game.gameHeight * 0.25;
-                    cloud.width = Math.random() * 80 + 40;
-                    cloud.height = Math.random() * 30 + 20;
-                    cloud.speed = Math.random() * 0.8 + 0.2;
-                    cloud.opacity = Math.random() * 0.3 + 0.1;
-                    cloud.puffs = Math.floor(Math.random() * 3) + 2;
+                    star.y = Math.random() * game.gameHeight * 0.5;
                 }
             }
         }
@@ -1325,7 +1257,6 @@
                 
                 // Обновляем игровые объекты
                 updateStars();
-                updateClouds();     // Обновляем облака
                 updateTerrain();
                 updatePlayer(deltaTime);
                 updateObstacles();
@@ -1336,80 +1267,32 @@
                 speedElement.textContent = `Скорость: ${game.speed.toFixed(1)}x`;
             }
             
-            // Отрисовка фона и игровых объектов
-            drawSkyGradient();  // Градиент неба
-            drawClouds();       // Облака (медленно движущиеся)
-            drawStars();        // Звёзды
-            drawMountains();    // Горы
-            drawTerrain();      // Земля
-            drawObstacles();    // Препятствия
-            drawPlayer();       // Игрок
-            drawParticles();    // Частицы
+            // Отрисовка
+            drawStars();
+            drawMountains();
+            drawTerrain();
+            drawObstacles();
+            drawPlayer();
+            drawParticles();
             
             requestAnimationFrame(gameLoop);
         }
 
-        // === ОТРИСОВКА ГРАДИЕНТА НЕБА ===
-        function drawSkyGradient() {
-            const gradient = ctx.createLinearGradient(0, 0, 0, game.gameHeight);
-            gradient.addColorStop(0, '#0a0e2a');      // Тёмно-синее вверху
-            gradient.addColorStop(0.3, '#1a237e');    // Глубокий синий
-            gradient.addColorStop(0.6, '#283593');    // Средний синий
-            gradient.addColorStop(0.8, '#3949ab');    // Светлее к горизонту
-            gradient.addColorStop(1, '#5c6bc0');      // Самый светлый у горизонта
-            
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, game.gameWidth, game.gameHeight);
-        }
-
-        // === ОТРИСОВКА ОБЛАКОВ ===
-        function drawClouds() {
-            for (let cloud of clouds) {
-                ctx.globalAlpha = cloud.opacity;
-                ctx.fillStyle = '#ffffff';
-                
-                // Рисуем облако из нескольких кругов
-                for (let i = 0; i < cloud.puffs; i++) {
-                    const puffX = cloud.x + (i * cloud.width / cloud.puffs) - cloud.width / 4;
-                    const puffY = cloud.y + Math.sin(i * 0.8) * 8;
-                    const puffSize = cloud.height * (0.7 + Math.sin(i) * 0.3);
-                    
-                    ctx.beginPath();
-                    ctx.arc(puffX, puffY, puffSize, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                
-                // Добавляем тень под облаком для объёма
-                ctx.globalAlpha = cloud.opacity * 0.3;
-                ctx.fillStyle = '#e3f2fd';
-                ctx.beginPath();
-                ctx.ellipse(cloud.x + cloud.width / 2, cloud.y + cloud.height / 2, 
-                           cloud.width / 2, cloud.height / 3, 0, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            ctx.globalAlpha = 1;
-        }
-
-        // === УЛУЧШЕННАЯ ОТРИСОВКА ЗВЁЗД ===
+        // Отрисовка звёзд
         function drawStars() {
-            const starsConfig = GAME_CONFIG.starsConfig;
-            
             for (let star of stars) {
-                let brightness = star.brightness + Math.sin(star.twinkleOffset + game.animationTime) * starsConfig.twinkleIntensity;
-                brightness = Math.max(0.1, Math.min(starsConfig.brightness.max, brightness));
+                let brightness = star.brightness + Math.sin(star.twinkleOffset + game.animationTime) * 0.3;
+                brightness = Math.max(0.2, Math.min(1, brightness));
                 
-                // Основная звезда
                 ctx.fillStyle = star.color.replace(')', `, ${brightness})`).replace('rgb', 'rgba');
                 ctx.beginPath();
                 ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // Только для самых ярких звёзд - очень деликатное свечение
-                if (star.size > 0.8 && brightness > 0.4) {
-                    ctx.fillStyle = star.color.replace(')', `, ${brightness * 0.1})`).replace('rgb', 'rgba');
+                if (star.size > 1.5) {
+                    ctx.fillStyle = star.color.replace(')', `, ${brightness * 0.2})`).replace('rgb', 'rgba');
                     ctx.beginPath();
-                    ctx.arc(star.x, star.y, star.size * 2, 0, Math.PI * 2);
+                    ctx.arc(star.x, star.y, star.size * 3, 0, Math.PI * 2);
                     ctx.fill();
                 }
             }
@@ -1810,7 +1693,6 @@
             obstacles = [];
             particles = [];
             
-            initClouds();        // Переинициализируем облака при новой игре
             initTerrain();
             updateMountainsScale();
         }

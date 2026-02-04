@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Облако слов</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Canvas для звездного поля */
+        #spaceCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            display: block;
+        }
+
+        /* Облако слов */
+        #wordCloud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        /* Слово */
+        .word {
+            position: absolute;
+            font-weight: 600;
+            cursor: pointer;
+            opacity: 0.9;
+            pointer-events: auto;
+            user-select: none;
+            white-space: nowrap;
+            transform: translate(-50%, -50%);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: drop-shadow(0 0 8px currentColor);
+            will-change: transform, opacity, font-size;
+            text-align: center;
+            max-width: 90vw;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .word:hover {
+            opacity: 1;
+            z-index: 1000;
+            transform: translate(-50%, -50%) scale(1.15);
+        }
+
+        /* Минималистичные элементы управления */
+        .ui-overlay {
+            position: fixed;
+            z-index: 100;
+            pointer-events: auto;
+        }
+
+        /* Панель статуса */
+        .status-panel {
+            top: 12px;
+            right: 12px;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(8px);
+            border-radius: 6px;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 11px;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .status-panel:hover {
+            opacity: 1;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #ff4d4d;
+            transition: all 0.3s ease;
+        }
+
+        .status-dot.active {
+            background: #00ff9d;
+            box-shadow: 0 0 8px #00ff9d;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Панель управления */
+        .control-panel {
+            bottom: 12px;
+            left: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-start;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(8px);
+            border-radius: 8px;
+            padding: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            transition: all 0.2s ease;
+            opacity: 0.7;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 1;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .btn.active {
+            background: rgba(76, 201, 240, 0.3);
+            opacity: 1;
+        }
+
+        /* Настройки */
+        .settings {
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(8px);
+            border-radius: 8px;
+            padding: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 160px;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .settings:hover {
+            opacity: 1;
+        }
+
+        .setting {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .setting label {
+            font-size: 9px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 2px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 1px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4cc9f0;
+            cursor: pointer;
+        }
+
+        select {
+            padding: 4px 6px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 11px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Статистика */
+        .stats-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: none;
+        }
+
+        .stats-overlay.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stats-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .close-btn:hover {
+            opacity: 1;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .stat-card h3 {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #4cc9f0;
+        }
+
+        .word-list {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .word-list h3 {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .word-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .word-tag {
+            padding: 4px 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .word-tag .count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0 4px;
+            border-radius: 2px;
+            font-size: 9px;
+            font-weight: 500;
+        }
+
+        /* Подпись */
+        .signature {
+            position: fixed;
+            bottom: 12px;
+            right: 12px;
+            z-index: 99;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 10px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .signature:hover {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Навигационный блок */
+        .nav-block {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 101;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            border-radius: 8px;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            min-width: 180px;
+        }
+
+        .nav-block:hover {
+            background: rgba(0, 0, 0, 0.6);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 11px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: rgba(255, 255, 255, 1);
+        }
+
+        .nav-icon {
+            font-size: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .nav-block:hover .nav-icon {
+            transform: rotate(180deg);
+        }
+
+        .nav-text {
+            font-family: inherit;
+            line-height: 1.2;
+        }
+
+        .heart {
+            color: #f72585;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .control-panel {
+                width: calc(100% - 24px);
+                align-items: stretch;
+            }
+            
+            .btn-group {
+                justify-content: center;
+            }
+            
+            .settings {
+                width: 100%;
+            }
+            
+            .stats-overlay {
+                width: 95%;
+                padding: 16px;
+            }
+
+            .nav-block {
+                bottom: 15px;
+                left: 50%;
+                transform: translateX(-50%);
+                min-width: 160px;
+                padding: 6px 10px;
+            }
+
+            .nav-link {
+                justify-content: center;
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas для звездного поля -->
+    <canvas id="spaceCanvas"></canvas>
+    
+    <!-- Облако слов -->
+    <div id="wordCloud"></div>
+    
+    <!-- Панель статуса -->
+    <div class="ui-overlay status-panel">
+        <div class="status-indicator">
+            <span class="status-dot"></span>
+            <span id="statusText">Готов</span>
+        </div>
+    </div>
+    
+    <!-- Панель управления -->
+    <div class="ui-overlay control-panel">
+        <div class="btn-group">
+            <button id="startBtn" class="btn active">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M15 12l-6-4v8l6-4z"/>
+                </svg>
+                Микрофон
+            </button>
+            <button id="clearBtn" class="btn">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                </svg>
+                Очистить
+            </button>
+            <button id="statsBtn" class="btn">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 20V10M12 20V4M6 20v-6"/>
+                </svg>
+                Статистика
+            </button>
+        </div>
+        
+        <div class="settings">
+            <div class="setting">
+                <label for="decaySpeed">Скорость исчезновения</label>
+                <input type="range" id="decaySpeed" class="slider" min="1" max="10" value="5">
+            </div>
+            <div class="setting">
+                <label for="language">Язык</label>
+                <select id="language">
+                    <option value="ru-RU">Русский</option>
+                    <option value="en-US">Английский</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Оверлей статистики -->
+    <div class="stats-overlay" id="statsOverlay">
+        <div class="stats-header">
+            <h2>Статистика</h2>
+            <button class="close-btn" id="closeStats">&times;</button>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Всего слов</h3>
+                <div id="statsTotalWords" class="stat-value">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Уникальных</h3>
+                <div id="statsUniqueWords" class="stat-value">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>В облаке</h3>
+                <div id="statsCurrentWords" class="stat-value">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Время</h3>
+                <div id="statsDuration" class="stat-value">0:00</div>
+            </div>
+        </div>
+        
+        <div class="word-list">
+            <h3>Самые частые</h3>
+            <div id="frequentWords" class="word-tags"></div>
+        </div>
+    </div>
+    
+    <!-- Подпись -->
+    <div class="signature">
+        <span>DeepSeek</span>
+        <svg class="heart" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+    </div>
+
+    <!-- Навигационный блок -->
+    <div class="nav-block">
+        <a href="index.html" class="nav-link">
+            <span class="nav-icon">🔄</span>
+            <span class="nav-text">Как это же сделал Qwen</span>
+        </a>
+    </div>
+
+    <script>
+        // Конфигурация
+        const CONFIG = {
+            // Размеры слов
+            WORD_MIN_SIZE: 20,
+            WORD_MAX_SIZE: 72,
+            WORD_BASE_SIZE: 24,
+            WORD_OPACITY: 0.9,
+            
+            // Поведение слов
+            GROWTH_RATE: 1.4,
+            DECAY_RATE: 0.93,
+            FADE_OUT_TIME: 8000,
+            WORD_LIFETIME: 15000,
+            MAX_WORDS: 30,
+            WORD_MARGIN: 80, // Увеличено для больших слов
+            
+            // Звезды
+            STARS_COUNT: 80, // Увеличено количество звезд
+            STAR_SPEED_MIN: 0.1,
+            STAR_SPEED_MAX: 0.3,
+            STAR_FADE: 0.08, // Ускорено затухание
+            
+            // Распознавание
+            WORD_PROCESS_DELAY: 250
+        };
+
+        class StarField {
+            constructor() {
+                this.canvas = document.getElementById('spaceCanvas');
+                this.ctx = this.canvas.getContext('2d', { alpha: true });
+                this.stars = [];
+                this.lastFrame = 0;
+                this.animationId = null;
+                this.resizeTimeout = null;
+                
+                // Инициализация
+                this.handleResize();
+                this.initStars();
+                this.bindEvents();
+                this.start();
+            }
+            
+            handleResize() {
+                // Очищаем предыдущий таймаут
+                if (this.resizeTimeout) {
+                    clearTimeout(this.resizeTimeout);
+                }
+                
+                // Устанавливаем размеры canvas
+                const dpr = window.devicePixelRatio || 1;
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                
+                // Устанавливаем физические размеры
+                this.canvas.width = width * dpr;
+                this.canvas.height = height * dpr;
+                
+                // Устанавливаем CSS размеры
+                this.canvas.style.width = width + 'px';
+                this.canvas.style.height = height + 'px';
+                
+                // Масштабируем контекст
+                this.ctx.scale(dpr, dpr);
+                
+                // Пересчет позиций звезд с задержкой
+                this.resizeTimeout = setTimeout(() => {
+                    this.recalculateStars();
+                }, 100);
+            }
+            
+            initStars() {
+                this.stars = [];
+                for (let i = 0; i < CONFIG.STARS_COUNT; i++) {
+                    this.stars.push({
+                        x: Math.random() * window.innerWidth,
+                        y: Math.random() * window.innerHeight,
+                        size: Math.random() * 1.2 + 0.3, // Увеличен размер
+                        speed: CONFIG.STAR_SPEED_MIN + Math.random() * (CONFIG.STAR_SPEED_MAX - CONFIG.STAR_SPEED_MIN),
+                        brightness: Math.random() * 0.6 + 0.4
+                    });
+                }
+            }
+            
+            recalculateStars() {
+                const scaleX = window.innerWidth / (this.canvas.width / window.devicePixelRatio);
+                const scaleY = window.innerHeight / (this.canvas.height / window.devicePixelRatio);
+                
+                this.stars.forEach(star => {
+                    star.x *= scaleX;
+                    star.y *= scaleY;
+                    
+                    // Если звезда вышла за границы, перемещаем её
+                    if (star.x > window.innerWidth || star.y > window.innerHeight) {
+                        star.x = Math.random() * window.innerWidth;
+                        star.y = Math.random() * window.innerHeight;
+                    }
+                });
+            }
+            
+            bindEvents() {
+                window.addEventListener('resize', () => {
+                    this.handleResize();
+                });
+                
+                window.addEventListener('load', () => {
+                    this.handleResize();
+                });
+            }
+            
+            update() {
+                const now = performance.now();
+                if (now - this.lastFrame < 16) return;
+                this.lastFrame = now;
+                
+                // Очистка с быстрым затуханием
+                this.ctx.fillStyle = `rgba(0, 0, 0, ${CONFIG.STAR_FADE})`;
+                this.ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+                
+                // Отрисовка звезд
+                this.stars.forEach(star => {
+                    // Обновление позиции
+                    star.y += star.speed;
+                    
+                    // Сброс при выходе за нижнюю границу
+                    if (star.y > window.innerHeight + 20) {
+                        star.y = -20;
+                        star.x = Math.random() * window.innerWidth;
+                    }
+                    
+                    // Рисуем звезду без трейлов
+                    this.ctx.beginPath();
+                    this.ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                    
+                    // Случайное мерцание
+                    const twinkle = Math.sin(now * 0.001 + star.x) * 0.2 + 0.8;
+                    
+                    // Градиент для мягкого свечения
+                    const gradient = this.ctx.createRadialGradient(
+                        star.x, star.y, 0,
+                        star.x, star.y, star.size * 1.8
+                    );
+                    gradient.addColorStop(0, `rgba(255, 255, 255, ${star.brightness * twinkle})`);
+                    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                    
+                    this.ctx.fillStyle = gradient;
+                    this.ctx.fill();
+                });
+            }
+            
+            start() {
+                const animate = () => {
+                    this.update();
+                    this.animationId = requestAnimationFrame(animate);
+                };
+                
+                animate();
+            }
+            
+            stop() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                    this.animationId = null;
+                }
+            }
+        }
+
+        class WordCloud {
+            constructor() {
+                this.activeWords = new Map();
+                this.wordStats = new Map();
+                this.lastProcessed = new Map();
+                
+                this.totalWords = 0;
+                this.sessionStart = null;
+                this.sessionDuration = 0;
+                
+                this.isListening = false;
+                this.recognition = null;
+                this.audioContext = null;
+                
+                this.initElements();
+                this.initEvents();
+                this.bindResize();
+                this.startUpdateLoop();
+            }
+            
+            initElements() {
+                // Элементы управления
+                this.startBtn = document.getElementById('startBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.statsBtn = document.getElementById('statsBtn');
+                this.closeStats = document.getElementById('closeStats');
+                this.statsOverlay = document.getElementById('statsOverlay');
+                
+                // Статус
+                this.statusDot = document.querySelector('.status-dot');
+                this.statusText = document.getElementById('statusText');
+                
+                // Настройки
+                this.decaySpeed = document.getElementById('decaySpeed');
+                this.languageSelect = document.getElementById('language');
+                
+                // Статистика
+                this.statsTotalWords = document.getElementById('statsTotalWords');
+                this.statsUniqueWords = document.getElementById('statsUniqueWords');
+                this.statsCurrentWords = document.getElementById('statsCurrentWords');
+                this.statsDuration = document.getElementById('statsDuration');
+                this.frequentWords = document.getElementById('frequentWords');
+                
+                // Контейнер для слов
+                this.container = document.getElementById('wordCloud');
+            }
+            
+            initEvents() {
+                // Кнопки
+                this.startBtn.addEventListener('click', () => this.toggleListening());
+                this.clearBtn.addEventListener('click', () => this.clear());
+                this.statsBtn.addEventListener('click', () => this.showStats());
+                this.closeStats.addEventListener('click', () => this.hideStats());
+                
+                // Язык
+                this.languageSelect.addEventListener('change', () => {
+                    if (this.isListening) {
+                        this.stopListening();
+                        setTimeout(() => this.startListening(), 100);
+                    }
+                });
+            }
+            
+            bindResize() {
+                let resizeTimeout;
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(() => {
+                        this.checkAllWordsBoundaries();
+                    }, 100);
+                });
+            }
+            
+            // Проверка границ для всех слов
+            checkAllWordsBoundaries() {
+                this.activeWords.forEach((data, word) => {
+                    this.ensureWordVisible(data.element, data);
+                });
+            }
+            
+            // Гарантирует, что слово полностью видно на экране
+            ensureWordVisible(element, data) {
+                if (!element || !data) return;
+                
+                // Получаем текущие размеры слова
+                const fontSize = parseFloat(getComputedStyle(element).fontSize);
+                const text = element.textContent;
+                
+                // Создаем временный элемент для измерения текста
+                const tempSpan = document.createElement('span');
+                tempSpan.style.font = getComputedStyle(element).font;
+                tempSpan.style.position = 'absolute';
+                tempSpan.style.visibility = 'hidden';
+                tempSpan.style.whiteSpace = 'nowrap';
+                tempSpan.textContent = text;
+                document.body.appendChild(tempSpan);
+                
+                const textWidth = tempSpan.offsetWidth;
+                const textHeight = tempSpan.offsetHeight;
+                document.body.removeChild(tempSpan);
+                
+                // Текущая позиция слова
+                let currentX = data.x || parseFloat(element.style.left) || window.innerWidth / 2;
+                let currentY = data.y || parseFloat(element.style.top) || window.innerHeight / 2;
+                
+                // Вычисляем отступы с учетом размера текста
+                const halfWidth = textWidth / 2;
+                const halfHeight = textHeight / 2;
+                
+                // Минимальные и максимальные координаты
+                const minX = CONFIG.WORD_MARGIN + halfWidth;
+                const maxX = window.innerWidth - CONFIG.WORD_MARGIN - halfWidth;
+                const minY = CONFIG.WORD_MARGIN + halfHeight;
+                const maxY = window.innerHeight - CONFIG.WORD_MARGIN - halfHeight;
+                
+                // Корректируем позицию при необходимости
+                let needsUpdate = false;
+                
+                if (currentX < minX) {
+                    currentX = minX;
+                    needsUpdate = true;
+                } else if (currentX > maxX) {
+                    currentX = maxX;
+                    needsUpdate = true;
+                }
+                
+                if (currentY < minY) {
+                    currentY = minY;
+                    needsUpdate = true;
+                } else if (currentY > maxY) {
+                    currentY = maxY;
+                    needsUpdate = true;
+                }
+                
+                // Обновляем позицию если нужно
+                if (needsUpdate) {
+                    element.style.left = `${currentX}px`;
+                    element.style.top = `${currentY}px`;
+                    data.x = currentX;
+                    data.y = currentY;
+                }
+            }
+            
+            toggleListening() {
+                if (this.isListening) {
+                    this.stopListening();
+                } else {
+                    this.startListening();
+                }
+            }
+            
+            async startListening() {
+                try {
+                    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                        alert('Используйте Chrome или Edge для работы с микрофоном');
+                        return;
+                    }
+                    
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true
+                        } 
+                    });
+                    
+                    this.setupAudio(stream);
+                    this.setupRecognition();
+                    
+                    this.isListening = true;
+                    this.sessionStart = Date.now();
+                    this.updateStatus();
+                    this.startBtn.classList.add('active');
+                    
+                } catch (error) {
+                    console.error('Ошибка микрофона:', error);
+                    alert('Не удалось получить доступ к микрофону');
+                }
+            }
+            
+            setupAudio(stream) {
+                if (this.audioContext) {
+                    this.audioContext.close();
+                }
+                
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const analyser = this.audioContext.createAnalyser();
+                const source = this.audioContext.createMediaStreamSource(stream);
+                
+                analyser.fftSize = 64;
+                analyser.smoothingTimeConstant = 0.3;
+                source.connect(analyser);
+            }
+            
+            setupRecognition() {
+                if (this.recognition) {
+                    this.recognition.stop();
+                }
+                
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                this.recognition = new SpeechRecognition();
+                
+                this.recognition.continuous = true;
+                this.recognition.interimResults = true;
+                this.recognition.lang = this.languageSelect.value;
+                this.recognition.maxAlternatives = 1;
+                
+                this.recognition.onresult = (event) => {
+                    let final = '';
+                    let interim = '';
+                    
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript.trim();
+                        if (event.results[i].isFinal) {
+                            final += transcript + ' ';
+                        } else {
+                            interim += transcript + ' ';
+                        }
+                    }
+                    
+                    // Обрабатываем промежуточные результаты
+                    if (interim) {
+                        this.processText(interim, false);
+                    }
+                    
+                    // И финальные
+                    if (final) {
+                        this.processText(final, true);
+                    }
+                };
+                
+                this.recognition.onerror = (event) => {
+                    console.error('Ошибка распознавания:', event.error);
+                    if (event.error === 'not-allowed') {
+                        alert('Доступ к микрофону запрещен');
+                        this.stopListening();
+                    }
+                };
+                
+                this.recognition.onend = () => {
+                    if (this.isListening) {
+                        setTimeout(() => {
+                            if (this.isListening && this.recognition) {
+                                try {
+                                    this.recognition.start();
+                                } catch (e) {
+                                    console.error('Ошибка перезапуска распознавания:', e);
+                                }
+                            }
+                        }, 100);
+                    }
+                };
+                
+                try {
+                    this.recognition.start();
+                } catch (e) {
+                    console.error('Ошибка старта распознавания:', e);
+                }
+            }
+            
+            processText(text, isFinal) {
+                const words = text.toLowerCase().split(/\s+/);
+                const now = Date.now();
+                
+                words.forEach(word => {
+                    const cleanWord = word.replace(/[^\wа-яё]/gi, '').trim();
+                    if (cleanWord.length < 2) return;
+                    
+                    // Защита от частого повторения
+                    if (this.lastProcessed.has(cleanWord)) {
+                        const lastTime = this.lastProcessed.get(cleanWord);
+                        if (now - lastTime < CONFIG.WORD_PROCESS_DELAY) {
+                            return;
+                        }
+                    }
+                    
+                    this.lastProcessed.set(cleanWord, now);
+                    
+                    // Очистка старых записей
+                    if (this.lastProcessed.size > 100) {
+                        const keys = Array.from(this.lastProcessed.keys());
+                        for (let i = 0; i < 50; i++) {
+                            this.lastProcessed.delete(keys[i]);
+                        }
+                    }
+                    
+                    // Обновление статистики
+                    this.totalWords++;
+                    
+                    if (this.wordStats.has(cleanWord)) {
+                        this.wordStats.get(cleanWord).count++;
+                    } else {
+                        this.wordStats.set(cleanWord, { count: 1, maxSize: CONFIG.WORD_BASE_SIZE });
+                    }
+                    
+                    // Добавление/обновление слова
+                    if (this.activeWords.has(cleanWord)) {
+                        this.updateWord(cleanWord);
+                    } else {
+                        if (this.activeWords.size >= CONFIG.MAX_WORDS) {
+                            this.removeOldestWord();
+                        }
+                        this.addWord(cleanWord);
+                    }
+                });
+                
+                this.updateStats();
+            }
+            
+            addWord(word) {
+                const color = this.getWordColor(word);
+                
+                const element = document.createElement('div');
+                element.className = 'word';
+                element.textContent = word;
+                element.style.color = color;
+                element.style.fontSize = `${CONFIG.WORD_BASE_SIZE}px`;
+                
+                // Позиционирование с учетом границ
+                const margin = CONFIG.WORD_MARGIN;
+                let x = margin + Math.random() * (window.innerWidth - 2 * margin);
+                let y = margin + Math.random() * (window.innerHeight - 2 * margin);
+                
+                element.style.left = `${x}px`;
+                element.style.top = `${y}px`;
+                
+                // Анимация появления
+                element.style.opacity = '0';
+                element.style.transform = 'translate(-50%, -50%) scale(0.5)';
+                
+                setTimeout(() => {
+                    element.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    element.style.opacity = CONFIG.WORD_OPACITY;
+                    element.style.transform = 'translate(-50%, -50%) scale(1)';
+                }, 10);
+                
+                // Клик для тестирования
+                element.addEventListener('click', () => this.processText(word, true));
+                
+                this.container.appendChild(element);
+                
+                const wordData = {
+                    element,
+                    count: 1,
+                    lastSeen: Date.now(),
+                    createdAt: Date.now(),
+                    size: CONFIG.WORD_BASE_SIZE,
+                    targetSize: CONFIG.WORD_BASE_SIZE,
+                    color,
+                    x,
+                    y
+                };
+                
+                this.activeWords.set(word, wordData);
+                
+                // Проверяем границы после добавления
+                setTimeout(() => {
+                    this.ensureWordVisible(element, wordData);
+                }, 100);
+            }
+            
+            updateWord(word) {
+                const data = this.activeWords.get(word);
+                if (!data) return;
+                
+                data.count++;
+                data.lastSeen = Date.now();
+                data.targetSize = Math.min(
+                    CONFIG.WORD_MAX_SIZE,
+                    data.targetSize * CONFIG.GROWTH_RATE
+                );
+                
+                // Анимация
+                data.element.style.transform = `translate(-50%, -50%) scale(1.3)`;
+                setTimeout(() => {
+                    if (data.element) {
+                        data.element.style.transform = `translate(-50%, -50%) scale(1)`;
+                    }
+                }, 150);
+                
+                // Проверяем границы после изменения размера
+                setTimeout(() => {
+                    this.ensureWordVisible(data.element, data);
+                }, 200);
+            }
+            
+            removeOldestWord() {
+                let oldestWord = null;
+                let oldestTime = Infinity;
+                
+                this.activeWords.forEach((data, word) => {
+                    if (data.lastSeen < oldestTime) {
+                        oldestTime = data.lastSeen;
+                        oldestWord = word;
+                    }
+                });
+                
+                if (oldestWord) {
+                    this.removeWord(oldestWord);
+                }
+            }
+            
+            removeWord(word) {
+                const data = this.activeWords.get(word);
+                if (data && data.element) {
+                    data.element.style.transition = 'opacity 0.3s ease';
+                    data.element.style.opacity = '0';
+                    setTimeout(() => {
+                        if (data.element && data.element.parentNode) {
+                            data.element.remove();
+                        }
+                    }, 300);
+                }
+                this.activeWords.delete(word);
+                this.lastProcessed.delete(word);
+            }
+            
+            startUpdateLoop() {
+                const update = () => {
+                    const now = Date.now();
+                    const decaySpeed = parseInt(this.decaySpeed.value) || 5;
+                    
+                    this.activeWords.forEach((data, word) => {
+                        const timeSinceLastSeen = now - data.lastSeen;
+                        
+                        // Плавное изменение размера
+                        if (Math.abs(data.size - data.targetSize) > 0.5) {
+                            data.size += (data.targetSize - data.size) * 0.3;
+                            data.element.style.fontSize = `${data.size}px`;
+                            
+                            // Проверяем границы при изменении размера
+                            this.ensureWordVisible(data.element, data);
+                        }
+                        
+                        // Уменьшение и исчезновение
+                        if (timeSinceLastSeen > CONFIG.FADE_OUT_TIME) {
+                            const decayFactor = 1 - (decaySpeed * 0.08);
+                            data.targetSize = Math.max(
+                                CONFIG.WORD_MIN_SIZE,
+                                data.targetSize * decayFactor
+                            );
+                            
+                            // Фейд аут
+                            const fadeProgress = Math.min(1, 
+                                (timeSinceLastSeen - CONFIG.FADE_OUT_TIME) / 
+                                (CONFIG.WORD_LIFETIME - CONFIG.FADE_OUT_TIME)
+                            );
+                            data.element.style.opacity = CONFIG.WORD_OPACITY * (1 - fadeProgress);
+                            
+                            // Удаление
+                            if (data.targetSize <= CONFIG.WORD_MIN_SIZE * 1.2) {
+                                this.removeWord(word);
+                            }
+                        }
+                    });
+                    
+                    this.updateStats();
+                    requestAnimationFrame(update);
+                };
+                
+                update();
+            }
+            
+            getWordColor(word) {
+                let hash = 0;
+                for (let i = 0; i < word.length; i++) {
+                    hash = word.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                const hue = Math.abs(hash % 360);
+                return `hsla(${hue}, 75%, 65%, ${CONFIG.WORD_OPACITY})`;
+            }
+            
+            updateStatus() {
+                if (this.isListening) {
+                    this.statusDot.classList.add('active');
+                    this.statusText.textContent = 'Слушаю...';
+                } else {
+                    this.statusDot.classList.remove('active');
+                    this.statusText.textContent = 'Готов';
+                }
+            }
+            
+            updateStats() {
+                this.statsCurrentWords.textContent = this.activeWords.size;
+                this.statsTotalWords.textContent = this.totalWords;
+                this.statsUniqueWords.textContent = this.wordStats.size;
+                
+                if (this.sessionStart) {
+                    this.sessionDuration = Date.now() - this.sessionStart;
+                    const minutes = Math.floor(this.sessionDuration / 60000);
+                    const seconds = Math.floor((this.sessionDuration % 60000) / 1000);
+                    this.statsDuration.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }
+            
+            stopListening() {
+                this.isListening = false;
+                
+                if (this.recognition) {
+                    try {
+                        this.recognition.stop();
+                    } catch (e) {
+                        console.error('Ошибка остановки распознавания:', e);
+                    }
+                    this.recognition = null;
+                }
+                
+                if (this.audioContext) {
+                    this.audioContext.close().catch(console.error);
+                    this.audioContext = null;
+                }
+                
+                this.updateStatus();
+                this.startBtn.classList.remove('active');
+            }
+            
+            clear() {
+                this.activeWords.forEach((data, word) => {
+                    if (data.element) {
+                        data.element.remove();
+                    }
+                });
+                this.activeWords.clear();
+                this.lastProcessed.clear();
+                this.updateStats();
+            }
+            
+            showStats() {
+                // Обновляем данные
+                this.updateStats();
+                
+                // Топ слов
+                const frequentWords = [...this.wordStats.entries()]
+                    .sort((a, b) => b[1].count - a[1].count)
+                    .slice(0, 8);
+                
+                this.frequentWords.innerHTML = '';
+                frequentWords.forEach(([word, data]) => {
+                    const tag = document.createElement('div');
+                    tag.className = 'word-tag';
+                    tag.innerHTML = `
+                        <span>${word}</span>
+                        <span class="count">${data.count}</span>
+                    `;
+                    this.frequentWords.appendChild(tag);
+                });
+                
+                // Показываем
+                this.statsOverlay.classList.add('visible');
+            }
+            
+            hideStats() {
+                this.statsOverlay.classList.remove('visible');
+            }
+        }
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            // Запускаем звездное поле
+            const starField = new StarField();
+            
+            // Запускаем облако слов
+            const wordCloud = new WordCloud();
+            
+            // Очистка при закрытии страницы
+            window.addEventListener('beforeunload', () => {
+                starField.stop();
+                wordCloud.stopListening();
+            });
+        });
+    </script>
+</body>
+</html>
