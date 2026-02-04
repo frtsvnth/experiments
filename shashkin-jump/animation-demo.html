@@ -165,10 +165,18 @@
             <button class="btn-start" onclick="startAnimation()">Запустить анимацию</button>
             <button class="btn-stop" onclick="stopAnimation()">Остановить анимацию</button>
             <button class="btn-speed" onclick="toggleSpeed()">Смена скорости</button>
+            <button class="btn-speed" onclick="showJumpSequence()">Демо прыжка</button>
         </div>
 
         <div class="info">
-            <p><strong>Как работает:</strong> Анимация идет по горизонтали слева-направо, сначала с первой строки, потом второй.</p>
+            <p><strong>Новая логика анимации:</strong> Кадры зависят от фазы прыжка, а не от направления движения.</p>
+            <p><strong>Фазы анимации:</strong></p>
+            <ul style="text-align: left; margin: 10px 0;">
+                <li><strong>Покой (кадр 1):</strong> Ожидание на платформе</li>
+                <li><strong>Прыжок (кадры 2→4):</strong> Начало движения вверх</li>
+                <li><strong>Полет (кадр 4):</strong> Активный полет</li>
+                <li><strong>Приземление (кадр 5→6):</strong> Подготовка и момент касания</li>
+            </ul>
             <p><strong>Sprite Sheet:</strong> 6 кадров, размер: 3×2</p>
         </div>
 
@@ -276,6 +284,46 @@
             setTimeout(() => {
                 document.querySelector('.btn-speed').style.background = originalColor;
             }, 200);
+        }
+        
+        function showJumpSequence() {
+            // Демонстрация последовательности прыжка
+            const sequence = [
+                { frame: 0, duration: 1000, name: 'Покой (кадр 1)' },    // 1 секунда
+                { frame: 1, duration: 300, name: 'Прыжок начало (кадр 2)' },  // 0.3 секунды
+                { frame: 2, duration: 300, name: 'Прыжок середина (кадр 3)' }, // 0.3 секунды  
+                { frame: 3, duration: 1500, name: 'Полет (кадр 4)' },        // 1.5 секунды
+                { frame: 4, duration: 500, name: 'Подготовка к приземлению (кадр 5)' }, // 0.5 секунды
+                { frame: 5, duration: 800, name: 'Приземление (кадр 6)' }    // 0.8 секунды
+            ];
+            
+            let currentStep = 0;
+            const statusElement = document.getElementById('status');
+            
+            function playNextStep() {
+                if (currentStep >= sequence.length) {
+                    // Возвращаемся к покою
+                    currentFrame = 0;
+                    drawFrame(currentFrame);
+                    statusElement.textContent = 'Остановлена';
+                    currentStep = 0;
+                    return;
+                }
+                
+                const step = sequence[currentStep];
+                currentFrame = step.frame;
+                drawFrame(currentFrame);
+                statusElement.textContent = step.name;
+                document.getElementById('currentFrame').textContent = currentFrame + 1;
+                
+                currentStep++;
+                setTimeout(playNextStep, step.duration);
+            }
+            
+            if (!isPlaying) {
+                isPlaying = true;
+                playNextStep();
+            }
         }
         
         // Keyboard controls

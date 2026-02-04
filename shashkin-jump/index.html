@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a2a6c">
-    <title>Doodle Jump - Улучшенная версия</title>
+    <title>Shashkin Jump</title>
     <style>
         * {
             margin: 0;
@@ -161,7 +161,7 @@
         /* Индикаторы тач-зон (только для отладки, можно отключить) */
         .touch-indicator {
             position: absolute;
-            top: 20%;
+            top: 10%;
             transform: translateY(-50%);
             width: 40px;
             height: 40px;
@@ -262,7 +262,7 @@
         <canvas id="spriteCanvas" width="480" height="800" style="position: absolute; top: 0; left: 0; z-index: 10;"></canvas>
         
         <div id="menu-screen" class="screen">
-            <h1>DOODLE JUMP</h1>
+            <h1>SHASHKIN JUMP</h1>
             <p class="subtitle">Прыгай по платформам и поднимайся как можно выше!</p>
             <button id="start-btn" class="btn">НАЧАТЬ ИГРУ</button>
             <div class="instructions">
@@ -362,11 +362,19 @@
                 this.frameHeight = 507;
                 
                 // Анимационные переменные
-                this.currentFrame = 0;
+                this.currentFrame = 0; // 0-based для внутреннего использования
                 this.isPlaying = false;
                 this.fps = 10;
                 this.frameInterval = 1000 / this.fps;
                 this.lastTime = 0;
+                
+                // Состояния анимации прыжка
+                this.animationState = 'idle'; // idle, jumping, flying, landing, landed
+                this.previousGrounded = false;
+                this.landingTimer = 0;
+                this.frameSequence = []; // Последовательность кадров для текущей анимации
+                this.frameIndex = 0;
+                this.frameTimer = 0;
                 
                 // Загрузка sprite sheet
                 this.spriteSheet = new Image();
@@ -374,15 +382,16 @@
                 
                 this.spriteSheet.onload = () => {
                     this.isPlaying = true;
+                    this.setAnimationState('idle');
                     this.animate(performance.now());
                 };
             }
             
             reset() {
                 this.x = SCREEN_WIDTH / 2 - 20;
-                this.y = 650;
-                this.width = 40;
-                this.height = 50;
+                this.y = 450 //650;
+                this.width = 60;
+                this.height = 75;
                 this.velX = 0;
                 this.velY = 0;
                 this.speed = 6;
@@ -395,7 +404,7 @@
             }
             
             update(input) {
-                // Горизонтальное движение
+                // Горизонтальное движение (влияет только на поворот)
                 this.velX = 0;
                 if (input.left) {
                     this.velX = -this.speed;
@@ -423,21 +432,92 @@
                     this.x = -this.width;
                 }
                 
+                // Отслеживаем состояние приземления/взлета
+                this.checkLandingState();
+                
                 this.grounded = false;
+            }
+            
+            checkLandingState() {
+                // Если персонаж был на земле и теперь оторвался - начинается прыжок
+                if (this.previousGrounded && !this.grounded && this.velY < -5) {
+                    this.setAnimationState('jumping');
+                }
+                
+                // Если персонаж летит вниз с большой скоростью - подготовка к приземлению
+                if (!this.grounded && this.velY > 8 && this.animationState !== 'landing') {
+                    this.setAnimationState('flying');
+                }
+                
+                // Обновляем состояние приземления
+                if (this.landingTimer > 0) {
+                    this.landingTimer--;
+                    if (this.landingTimer === 0) {
+                        this.setAnimationState('idle');
+                    }
+                }
+                
+                this.previousGrounded = this.grounded;
+            }
+            
+            setAnimationState(newState) {
+                if (this.animationState === newState) return;
+                
+                this.animationState = newState;
+                this.frameSequence = [];
+                this.frameIndex = 0;
+                this.frameTimer = 0;
+                
+                switch(newState) {
+                    case 'idle':
+                        // Кадр 1 (индекс 0)
+                        this.frameSequence = [0];
+                        break;
+                        
+                    case 'jumping':
+                        // Анимация прыжка: кадр 2 → 4 (индексы 1 → 3)
+                        this.frameSequence = [1, 0, 0];
+                        break;
+                        
+                    case 'flying':
+                        // Во время полета: кадр 4 (индекс 3)
+                        this.frameSequence = [0];
+                        break;
+                        
+                    case 'landing':
+                        // Подготовка к приземлению: кадр 5 (индекс 4)
+                        this.frameSequence = [4];
+                        break;
+                        
+                    case 'landed':
+                        // При приземлении: кадр 6 (индекс 5), потом пауза
+                        this.frameSequence = [5];
+                        this.landingTimer = 20; // Пауза в 20 кадров (~2 секунды при 10 FPS)
+                        break;
+                }
             }
             
             animate(currentTime) {
                 if (!this.isPlaying) return;
                 
-                // Только анимируем при движении
-                if (this.velX !== 0) {
-                    if (currentTime - this.lastTime >= this.frameInterval) {
-                        this.lastTime = currentTime;
-                        this.currentFrame = (this.currentFrame + 1) % (this.cols * this.rows);
+                // Обновляем анимацию по таймеру
+                if (currentTime - this.lastTime >= this.frameInterval) {
+                    this.lastTime = currentTime;
+                    
+                    // Если есть последовательность кадров
+                    if (this.frameSequence.length > 0) {
+                        this.frameTimer++;
+                        
+                        // Переключаем кадр через определенные интервалы
+                        if (this.frameTimer >= 3) { // 3 кадра на переключение
+                            this.frameTimer = 0;
+                            this.frameIndex = (this.frameIndex + 1) % this.frameSequence.length;
+                        }
+                        
+                        this.currentFrame = this.frameSequence[this.frameIndex];
+                    } else {
+                        this.currentFrame = 0; // По умолчанию первый кадр
                     }
-                } else {
-                    // В покое - первый кадр
-                    this.currentFrame = 0;
                 }
                 
                 // Отрисовка кадра
@@ -453,7 +533,7 @@
                 // Очищаем canvas
                 this.spriteCtx.clearRect(0, 0, this.spriteCanvas.width, this.spriteCanvas.height);
                 
-                // Расчет позиции кадра
+                // Расчет позиции кадра (currentFrame уже содержит правильный индекс)
                 const row = Math.floor(this.currentFrame / this.cols);
                 const col = this.currentFrame % this.cols;
                 
@@ -942,6 +1022,17 @@
                         player.y = platform.y - player.height;
                         player.velY = player.jumpPower;
                         player.grounded = true;
+                        
+                        // Запускаем анимацию приземления
+                        if (player.velY < -10) { // Только если это настоящий прыжок, не просто стояние
+                            player.setAnimationState('landing');
+                            // Через короткое время переключаем на "приземлено"
+                            setTimeout(() => {
+                                if (player.animationState === 'landing') {
+                                    player.setAnimationState('landed');
+                                }
+                            }, 200);
+                        }
                         
                         // Эффекты и обработка типов платформ
                         if (platform.type === 'breakable') {
