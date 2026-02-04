@@ -258,6 +258,9 @@
     <div id="game-container">
         <canvas id="gameCanvas" width="480" height="800"></canvas>
         
+        <!-- Sprite canvas для анимации персонажа -->
+        <canvas id="spriteCanvas" width="480" height="800" style="position: absolute; top: 0; left: 0; z-index: 10;"></canvas>
+        
         <div id="menu-screen" class="screen">
             <h1>DOODLE JUMP</h1>
             <p class="subtitle">Прыгай по платформам и поднимайся как можно выше!</p>
@@ -339,11 +342,40 @@
         let isNewRecord = false;
         
         // ===========================================================
-        // КЛАСС ИГРОКА
+        // КЛАСС АНИМИРОВАННОГО ИГРОКА
         // ===========================================================
-        class Player {
+        class AnimatedPlayer {
             constructor() {
                 this.reset();
+                this.initAnimation();
+            }
+            
+            initAnimation() {
+                // Инициализация sprite canvas
+                this.spriteCanvas = document.getElementById('spriteCanvas');
+                this.spriteCtx = this.spriteCanvas.getContext('2d');
+                
+                // Sprite sheet dimensions (3 columns x 2 rows)
+                this.cols = 3;
+                this.rows = 2;
+                this.frameWidth = 257;
+                this.frameHeight = 507;
+                
+                // Анимационные переменные
+                this.currentFrame = 0;
+                this.isPlaying = false;
+                this.fps = 10;
+                this.frameInterval = 1000 / this.fps;
+                this.lastTime = 0;
+                
+                // Загрузка sprite sheet
+                this.spriteSheet = new Image();
+                this.spriteSheet.src = 'sprite_sheet.png';
+                
+                this.spriteSheet.onload = () => {
+                    this.isPlaying = true;
+                    this.animate(performance.now());
+                };
             }
             
             reset() {
@@ -394,35 +426,69 @@
                 this.grounded = false;
             }
             
-            draw() {
-                const y = this.y - cameraY;
+            animate(currentTime) {
+                if (!this.isPlaying) return;
                 
-                // Тело
-                ctx.fillStyle = this.facingRight ? '#FF6B6B' : '#4ECDC4';
-                ctx.fillRect(this.x, y, this.width, this.height * 0.8);
-                
-                // Голова
-                ctx.fillStyle = '#FFD9B3';
-                ctx.fillRect(this.x + 8, y - 15, this.width - 16, 20);
-                
-                // Глаза
-                ctx.fillStyle = '#000';
-                if (this.facingRight) {
-                    ctx.fillRect(this.x + 25, y - 8, 6, 8);
-                    ctx.fillRect(this.x + 35, y - 8, 6, 8);
+                // Только анимируем при движении
+                if (this.velX !== 0) {
+                    if (currentTime - this.lastTime >= this.frameInterval) {
+                        this.lastTime = currentTime;
+                        this.currentFrame = (this.currentFrame + 1) % (this.cols * this.rows);
+                    }
                 } else {
-                    ctx.fillRect(this.x + 15, y - 8, 6, 8);
-                    ctx.fillRect(this.x + 5, y - 8, 6, 8);
+                    // В покое - первый кадр
+                    this.currentFrame = 0;
                 }
                 
-                // Рот
-                ctx.fillStyle = '#E74C3C';
-                ctx.fillRect(this.x + 15, y + 5, 10, 3);
+                // Отрисовка кадра
+                this.drawFrame();
                 
-                // Ноги
-                ctx.fillStyle = '#3498DB';
-                ctx.fillRect(this.x + 5, y + this.height * 0.8 - 5, 10, 10);
-                ctx.fillRect(this.x + 25, y + this.height * 0.8 - 5, 10, 10);
+                // Продолжаем анимацию
+                requestAnimationFrame((time) => this.animate(time));
+            }
+            
+            drawFrame() {
+                if (!this.spriteSheet.complete) return;
+                
+                // Очищаем canvas
+                this.spriteCtx.clearRect(0, 0, this.spriteCanvas.width, this.spriteCanvas.height);
+                
+                // Расчет позиции кадра
+                const row = Math.floor(this.currentFrame / this.cols);
+                const col = this.currentFrame % this.cols;
+                
+                // Масштабирование под размер игрока
+                const scale = Math.min(
+                    this.width / this.frameWidth,
+                    this.height / this.frameHeight
+                );
+                
+                // Отрисовка кадра с учетом направления
+                if (this.facingRight) {
+                    this.spriteCtx.drawImage(
+                        this.spriteSheet,
+                        col * this.frameWidth, row * this.frameHeight,
+                        this.frameWidth, this.frameHeight,
+                        this.x, this.y - cameraY,
+                        this.frameWidth * scale, this.frameHeight * scale
+                    );
+                } else {
+                    // Отражение для движения влево
+                    this.spriteCtx.save();
+                    this.spriteCtx.scale(-1, 1);
+                    this.spriteCtx.drawImage(
+                        this.spriteSheet,
+                        col * this.frameWidth, row * this.frameHeight,
+                        this.frameWidth, this.frameHeight,
+                        -this.x - this.width, this.y - cameraY,
+                        this.frameWidth * scale, this.frameHeight * scale
+                    );
+                    this.spriteCtx.restore();
+                }
+            }
+            
+            draw() {
+                // Анимация рисуется на sprite canvas, здесь ничего не делаем
             }
         }
         
@@ -586,7 +652,7 @@
         let input = { left: false, right: false };
         
         function init() {
-            player = new Player();
+            player = new AnimatedPlayer();
             
             // Установка рекорда
             recordScoreDisplay.textContent = highScore;
@@ -921,7 +987,7 @@
             platforms.forEach(platform => platform.draw());
             coins.forEach(coin => coin.draw());
             particles.forEach(particle => particle.draw());
-            player.draw();
+            // player.draw(); // Анимация рисуется на sprite canvas
         }
         
         function drawBackground() {
@@ -974,6 +1040,30 @@
                 highScoreDisplay.textContent = '';
             }
         }
+        
+        // ===========================================================
+        // УПРАВЛЕНИЕ АНИМАЦИЕЙ ПЕРСОНАЖА
+        // ===========================================================
+        // Обработчики для анимации персонажа (работают в режиме отладки)
+        // Пробел: пауза/возобновление анимации
+        // Стрелки влево/вправо: переключение кадров вручную
+        window.addEventListener('keydown', function(e) {
+            // Только в режиме игры
+            if (gameState !== GAME_STATES.PLAYING) return;
+            
+            switch(e.key) {
+                case 'p': // Пауза анимации (для отладки)
+                    player.isPlaying = !player.isPlaying;
+                    if (player.isPlaying) {
+                        player.animate(performance.now());
+                    }
+                    break;
+                case 's': // Смена скорости анимации (для отладки)
+                    player.fps = player.fps === 10 ? 20 : 10;
+                    player.frameInterval = 1000 / player.fps;
+                    break;
+            }
+        });
         
         // ===========================================================
         // УПРАВЛЕНИЕ ИГРОЙ
