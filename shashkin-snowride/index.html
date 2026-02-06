@@ -331,15 +331,15 @@
     <div id="gameContainer">
         <!-- КНОПКА ПОЛНОЭКРАННОГО РЕЖИМА ВЕБА-СТРАНИЦЫ -->
         <!-- Расположена в левом верхнем углу, всегда поверх всего контента -->
-        <button id="fullscreenPageBtn" class="fullscreen-page-btn" title="Полноэкранный режим страницы">
+        <!--<button id="fullscreenPageBtn" class="fullscreen-page-btn" title="Полноэкранный режим страницы">-->
             <!-- SVG иконка с двумя состояниями: обычный/полноэкранный -->
-            <svg class="fullscreen-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+           <!--  <svg class="fullscreen-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">-->
                 <!-- Обычный режим: показать полные квадраты по всем 4 углам -->
-                <path class="fullscreen-normal" d="M3 3H7V7H3V3Z M17 3H21V7H17V3Z M3 17H7V21H3V17Z M17 17H21V21H17V17Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <!--      <path class="fullscreen-normal" d="M3 3H7V7H3V3Z M17 3H21V7H17V3Z M3 17H7V21H3V17Z M17 17H21V21H17V17Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> -->
                 <!-- Полноэкранный режим: показать L-образные углы (убрать внешние стороны) -->
-                <path class="fullscreen-active" d="M3 3H11V5H5V11H3V3Z M13 3H21V5H19V11H13V3Z M3 13H5V21H3V19H11V13H3Z M13 13H19V19H21V21H13V13Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </button>
+         <!--       <path class="fullscreen-active" d="M3 3H7V7H3V3Z M17 3H21V7H17V3Z M3 17H7V21H3V17Z M17 17H21V21H17V17Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> -->
+         <!--   </svg> -->
+       <!-- </button> -->
         
         <canvas id="gameCanvas"></canvas>
         
@@ -519,8 +519,8 @@
             // Буферная зона предотвращает "мгновенную смерть" при малейшем касании
             // Увеличение значений делает игру легче, уменьшение - сложнее
             collisionBuffer: {
-                playerBuffer: 10,     // Увеличен буфер для мобильных устройств
-                obstacleBuffer: 6,   // Увеличен буфер для препятствий
+                playerBuffer: -10,     // Увеличен буфер для мобильных устройств
+                obstacleBuffer: -6,   // Увеличен буфер для препятствий
                 enablePlayerBuffer: true,   // Включить буфер для игрока
                 enableObstacleBuffer: true, // Включить буфер для препятствий
                 
@@ -798,7 +798,7 @@
             airBoostUsed: false,       // Использован ли рывок в воздухе
             airBoostRotation: 0,       // Текущий угол поворота при рывке
             airBoostVx: 0,             // Вектор движения вперёд при рывке
-            airBoostVxDecay: 0.92,     // Затухание вектора (чем меньше, тем быстрее)
+            airBoostVxDecay: 0.93,     // Затухание вектора (чем меньше, тем быстрее)
             airBoostDuration: 15       // Количество кадров для завершения рывка
         };
 
@@ -1522,7 +1522,7 @@
             if (player.isJumping) {
                 if (game.airBoostUsed && game.airBoostRotation < Math.PI * 2) {
                     // Плавный поворот при рывке в воздухе
-                    game.airBoostRotation += 0.15;
+                    game.airBoostRotation += 0.25;
                     player.rotation = Math.sin(game.airBoostRotation) * 0.8;
                 } else {
                     // Обычное вращение при прыжке
