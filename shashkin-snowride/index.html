@@ -112,6 +112,91 @@
             padding: 20px;
         }
         
+        /* === СТИЛИ ВИДЕОФОНА ДЛЯ ГЛАВНОЙ СТРАНИЦЫ === */
+        /* Видеофон растягивается на весь экран и заполняет пространство */
+        .background-video {
+            /* Позиционирование - покрывает весь экран */
+            position: absolute;           /* Абсолютное позиционирование внутри startScreen */
+            top: 0;                      /* От верхнего края */
+            left: 0;                     /* От левого края */
+            width: 100%;                 /* На всю ширину */
+            height: 100%;                /* На всю высоту */
+            object-fit: cover;           /* Растягивается, сохраняя пропорции, заполняя весь экран */
+            z-index: 1;                  /* Самый нижний слой (под контентом) */
+            
+            /* Видео настройки */
+            pointer-events: none;       /* Видео не перехватывает клики */
+            opacity: 0.8;                /* Немного прозрачности для читаемости текста */
+            
+            /* Производительность */
+            will-change: transform;      /* Оптимизация для анимаций */
+            transform: translateZ(0);     /* Принудительное использование GPU */
+        }
+        
+        /* Fallback для браузеров без поддержки видео */
+        .video-fallback {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a2a, #1a1a4a, #2a2a6a);
+            z-index: 1;
+        }
+
+        /* Контент поверх видео */
+        #startScreen > *:not(.background-video):not(.video-fallback) {
+            position: relative;         /* Относительное позиционирование поверх видео */
+            z-index: 10;                 /* Высокий z-index для отображения поверх видео */
+        }
+
+        /* Заголовок с лучшей читаемостью на фоне видео */
+        #startScreen h1 {
+            text-shadow: 
+                0 0 20px rgba(79, 195, 247, 0.8),
+                0 0 40px rgba(79, 195, 247, 0.6),
+                0 0 60px rgba(79, 195, 247, 0.4),
+                2px 2px 4px rgba(0, 0, 0, 0.8); /* Дополнительная тень для контраста */
+        }
+
+        /* Текст с улучшенной читаемостью */
+        #startScreen p {
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Кнопки с улучшенной видимостью */
+        #startScreen .button {
+            box-shadow: 
+                0 5px 15px rgba(0, 0, 0, 0.5),
+                0 0 20px rgba(79, 195, 247, 0.3);
+        }
+
+        /* Управление видимостью видео */
+        #startScreen:not(.screen) .background-video {
+            display: none;              /* Скрыто когда startScreen не показан */
+        }
+
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 768px) {
+            .background-video {
+                opacity: 0.7;          /* Больше прозрачности на мобильных для лучшей читаемости */
+            }
+            
+            #startScreen h1 {
+                text-shadow: 
+                    0 0 15px rgba(79, 195, 247, 0.9),
+                    0 0 30px rgba(79, 195, 247, 0.7),
+                    2px 2px 4px rgba(0, 0, 0, 0.9);
+            }
+        }
+
+        /* Для очень маленьких экранов */
+        @media (max-width: 480px) {
+            .background-video {
+                opacity: 0.6;          /* Ещё больше прозрачности */
+            }
+        }
+        
         #gameOverScreen {
             display: none;
         }
@@ -351,7 +436,16 @@
         <button id="jumpButton">ПРЫЖОК</button>
         
         <div id="startScreen" class="screen">
-            <h1>❄️ Shashkin SnowRide ❄️</h1>
+            <!-- Видеофон для главной страницы -->
+            <video id="backgroundVideo" class="background-video" autoplay loop muted playsinline>
+                <source src="shsh.mp4" type="video/mp4">
+                <!-- Fallback для браузеров без поддержки видео -->
+                <div class="video-fallback"></div>
+            </video>
+            
+           
+            <h1>Shashkin SnowRide</h1>
+             <h2>❄️</h2>
             <p>Управляйте снегоходом, прыгайте через препятствия и старайтесь проехать как можно дальше!</p>
             <p style="color: #69f0ae; font-size: 16px;">Короткое нажатие - низкий прыжок<br>Длинное нажатие - высокий прыжок</p>
             <button id="startButton" class="button">СТАРТ</button>
@@ -387,6 +481,7 @@
         const bestScoreElement = document.getElementById('bestScore');
         const loadingElement = document.getElementById('loading');
         const fullscreenPageBtn = document.getElementById('fullscreenPageBtn');
+        const backgroundVideo = document.getElementById('backgroundVideo');
 
         // === НАСТРАИВАЕМЫЕ ПАРАМЕТРЫ ===
         const SCALING_CONFIG = {
@@ -794,12 +889,19 @@
             treeSpriteFrame: 0,
             treeSpriteTimer: 0,
             
-            // Для рывка в воздухе (плавная анимация)
+            // Для рывка в воздухе (плавная анимация с возвратом)
             airBoostUsed: false,       // Использован ли рывок в воздухе
             airBoostRotation: 0,       // Текущий угол поворота при рывке
             airBoostVx: 0,             // Вектор движения вперёд при рывке
-            airBoostVxDecay: 0.93,     // Затухание вектора (чем меньше, тем быстрее)
-            airBoostDuration: 15       // Количество кадров для завершения рывка
+            airBoostVxDecay: 0.92,     // Затухание вектора (чем меньше, тем быстрее)
+            airBoostDuration: 20,     // Увеличено время буста для лучшего эффекта
+            
+            // Система возврата в исходную позицию (ИСПРАВЛЕНИЕ СМЕЩЕНИЯ)
+            airBoostOriginalX: 0,      // Исходная позиция X игрока
+            airBoostMaxOffset: 80,     // Максимальное смещение от исходной позиции (пиксели)
+            airBoostReturnPhase: false, // Фаза возврата в исходную позицию
+            airBoostReturnSpeed: 2,    // Скорость возврата (пикселей за кадр)
+            airBoostOffset: 0          // Текущее смещение от исходной позиции
         };
 
         // Игрок
@@ -1511,7 +1613,13 @@
                 player.vy = 0;
                 player.isJumping = false;
                 player.isJumpHeld = false;
-                game.airBoostUsed = false; // Сбрасываем флаг рывка при приземлении
+                
+                // Сбрасываем всю систему airBoost при приземлении
+                game.airBoostUsed = false;
+                game.airBoostReturnPhase = false;
+                game.airBoostVx = 0;
+                game.airBoostOffset = 0;
+                console.log('AirBoost: сброшен при приземлении');
                 
                 if (Math.abs(player.vy) > 5) {
                     createLandingParticles(player.x, player.y + player.height / 2);
@@ -1532,21 +1640,57 @@
                 player.rotation = Math.min(0.3, (player.y - (groundY - player.height / 2)) * 0.05);
             }
             
-            // === ПРИМЕНЕНИЕ ВЕКТОРА ДВИЖЕНИЯ ПРИ РЫВКЕ ===
-            if (game.airBoostVx > 0.1) {
-                // Применяем вектор движения вперёд
-                player.x += game.airBoostVx;
+            // === ИСПРАВЛЕННАЯ СИСТЕМА AIRBOOST С ВОЗВРАТОМ ===
+            if (game.airBoostUsed) {
+                game.airBoostDuration--;
                 
-                // Уменьшаем вектор для плавного затухания
-                game.airBoostVx *= game.airBoostVxDecay;
-                
-                // Сбрасываем вектор когда он становится очень маленьким
-                if (game.airBoostVx < 0.1) {
+                // ФАЗА 1: Активный буст (движение вперёд)
+                if (game.airBoostDuration > 0) {
+                    if (game.airBoostVx > 0.1) {
+                        // Применяем вектор движения вперёд
+                        player.x += game.airBoostVx;
+                        
+                        // Отслеживаем текущее смещение от исходной позиции
+                        game.airBoostOffset = player.x - game.airBoostOriginalX;
+                        
+                        // Ограничиваем максимальное смещение
+                        if (game.airBoostOffset > game.airBoostMaxOffset) {
+                            player.x = game.airBoostOriginalX + game.airBoostMaxOffset;
+                            game.airBoostOffset = game.airBoostMaxOffset;
+                        }
+                        
+                        // Уменьшаем вектор для плавного затухания
+                        game.airBoostVx *= game.airBoostVxDecay;
+                    }
+                } 
+                // ФАЗА 2: Завершение буста и начало возврата
+                else if (game.airBoostVx <= 0.1 && !game.airBoostReturnPhase) {
                     game.airBoostVx = 0;
+                    game.airBoostReturnPhase = true;
+                    console.log('AirBoost: начинаем возврат к исходной позиции');
+                }
+                // ФАЗА 3: Возврат в исходную позицию
+                else if (game.airBoostReturnPhase) {
+                    // Плавно возвращаемся к исходной позиции
+                    const returnDirection = game.airBoostOriginalX - player.x;
+                    const returnStep = Math.sign(returnDirection) * game.airBoostReturnSpeed;
+                    
+                    if (Math.abs(returnDirection) <= game.airBoostReturnSpeed) {
+                        // Достигли исходной позиции
+                        player.x = game.airBoostOriginalX;
+                        game.airBoostReturnPhase = false;
+                        game.airBoostUsed = false;
+                        game.airBoostOffset = 0;
+                        console.log('AirBoost: возврат завершён');
+                    } else {
+                        // Продолжаем возврат
+                        player.x += returnStep;
+                        game.airBoostOffset = player.x - game.airBoostOriginalX;
+                    }
                 }
             }
         }
-            
+
         // Создание частиц при рывке в воздухе
         function createAirBoostParticles(x, y) {
             let particleCount = 8; // Меньше частиц чем при приземлении
@@ -1609,7 +1753,12 @@
                 player.jumpStartTime = Date.now();
                 player.jumpHoldTime = 0;
                 player.jumpType = 'short';
-                game.airBoostUsed = false; // Сбрасываем флаг рывка
+                
+                // Сбрасываем всю систему airBoost при начале нового прыжка
+                game.airBoostUsed = false;
+                game.airBoostReturnPhase = false;
+                game.airBoostVx = 0;
+                game.airBoostOffset = 0;
                 
                 // Начинаем прыжок с короткой силой (адаптивной)
                 const jumpForces = GAME_CONFIG.jumpForce;
@@ -1622,13 +1771,21 @@
                 // Рывок в воздухе - короткий прыжок с переворотом
                 game.airBoostUsed = true;
                 game.airBoostRotation = 0; // Начинаем поворот
+                game.airBoostReturnPhase = false; // Сбрасываем фазу возврата
+                
+                // Сохраняем исходную позицию для возврата
+                game.airBoostOriginalX = player.x;
+                game.airBoostOffset = 0;
                 
                 // Увеличиваем импульс вверх (больше чем обычный прыжок, адаптивный)
                 const jumpForces = GAME_CONFIG.jumpForce;
                 player.vy = Math.min(player.vy, jumpForces.short * 0.5);
                 
                 // Добавляем плавное движение вперёд через вектор скорости
-                game.airBoostVx = 1.5 * game.currentScale; // Вектор движения вперёд
+                game.airBoostVx = 2.0 * game.currentScale; // Увеличена сила буста
+                game.airBoostDuration = 20; // Время активного буста
+                
+                console.log(`AirBoost: начат от позиции ${game.airBoostOriginalX.toFixed(1)}`);
                 
                 // Создаем частицы при рывке
                 createAirBoostParticles(player.x, player.y);
@@ -1686,6 +1843,13 @@
                 // Обновляем HUD
                 scoreElement.textContent = `Счёт: ${Math.floor(game.score)}`;
                 speedElement.textContent = `Скорость: ${game.speed.toFixed(1)}x`;
+                
+                // Отладочная информация airBoost (можно убрать в продакшене)
+                if (game.airBoostUsed || game.airBoostReturnPhase) {
+                    const offset = (player.x - game.airBoostOriginalX).toFixed(1);
+                    const phase = game.airBoostUsed ? 'АКТИВЕН' : (game.airBoostReturnPhase ? 'ВОЗВРАТ' : 'ОЖИДАНИЕ');
+                    console.log(`AirBoost: ${phase}, смещение: ${offset}px, позиция: ${player.x.toFixed(1)}`);
+                }
             }
             
             // Отрисовка фона и игровых объектов
@@ -2325,6 +2489,66 @@
             
             // Добавляем слушатели для полноэкранного режима
             addFullscreenEventListeners();
+            
+            // === НАСТРОЙКА ВИДЕОФОНА ===
+            setupVideoBackground();
+        }
+
+        // === НАСТРОЙКА И УПРАВЛЕНИЕ ВИДЕОФОНОМ ===
+        function setupVideoBackground() {
+            if (!backgroundVideo) return;
+            
+            // Обработчики загрузки видео
+            backgroundVideo.addEventListener('loadeddata', () => {
+                console.log('✅ Видеофон загружен и готов к воспроизведению');
+                backgroundVideo.style.display = 'block';
+            });
+            
+            backgroundVideo.addEventListener('error', (e) => {
+                console.warn('⚠️ Ошибка загрузки видеофона:', e);
+                // Показываем fallback
+                const fallback = document.querySelector('.video-fallback');
+                if (fallback) {
+                    fallback.style.display = 'block';
+                }
+            });
+            
+            // Обработчик окончания видео (для зацикливания)
+            backgroundVideo.addEventListener('ended', () => {
+                backgroundVideo.currentTime = 0;
+                backgroundVideo.play().catch(e => {
+                    console.warn('Не удалось перезапустить видео:', e);
+                });
+            });
+            
+            // Автозапуск видео (с обработкой ошибок автозапуска)
+            backgroundVideo.play().then(() => {
+                console.log('▶️ Видеофон запущен');
+            }).catch(error => {
+                console.warn('⚠️ Автозапуск видео заблокирован браузером:', error);
+                // Показываем кнопку для ручного запуска (если нужно)
+            });
+            
+            // Обработчик видимости страницы (экономия ресурсов)
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    backgroundVideo.pause();
+                } else if (startScreen.style.display !== 'none') {
+                    backgroundVideo.play().catch(e => {
+                        console.warn('Не удалось возобновить видео:', e);
+                    });
+                }
+            });
+        }
+
+        // Функция для показа видео при возврате к главному экрану
+        function showBackgroundVideo() {
+            if (backgroundVideo && startScreen.style.display !== 'none') {
+                backgroundVideo.style.display = 'block';
+                backgroundVideo.play().catch(e => {
+                    console.warn('Не удалось запустить видео:', e);
+                });
+            }
         }
 
         // Изменение размера канваса
@@ -2380,6 +2604,12 @@
             startScreen.style.display = 'none';
             gameOverScreen.style.display = 'none';
             
+            // Управление видеофоном
+            if (backgroundVideo) {
+                backgroundVideo.pause();  // Останавливаем видео при начале игры
+                backgroundVideo.style.display = 'none'; // Скрываем видео
+            }
+            
             game.score = 0;
             game.speed = GAME_CONFIG.baseSpeed;
             game.gameTime = 0;
@@ -2424,6 +2654,11 @@
             
             finalScoreElement.textContent = currentScore;
             gameOverScreen.style.display = 'flex';
+            
+            // Показываем видеофон при возврате к главному экрану
+            setTimeout(() => {
+                showBackgroundVideo();
+            }, 500); // Небольшая задержка для плавности
         }
 
         // Перезапуск игры
