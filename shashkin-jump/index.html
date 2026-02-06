@@ -63,6 +63,23 @@
             padding: 20px;
         }
 
+        /* Стили для видеофона */
+        #video-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .screen.hidden {
+            display: none !important;
+        }
+
         .screen.hidden {
             display: none !important;
         }
@@ -262,6 +279,12 @@
         <canvas id="spriteCanvas" width="480" height="800" style="position: absolute; top: 0; left: 0; z-index: 10;"></canvas>
         
         <div id="menu-screen" class="screen">
+            <!-- Видеофон -->
+            <video id="video-bg" autoplay muted loop playsinline>
+                <source src="shsh-gr.mp4" type="video/mp4">
+                Ваш браузер не поддерживает видеофон.
+            </video>
+            
             <h1>SHASHKIN JUMP</h1>
             <p class="subtitle">Прыгай по платформам и поднимайся как можно выше!</p>
             <button id="start-btn" class="btn">НАЧАТЬ ИГРУ</button>
@@ -317,6 +340,7 @@
         // DOM элементы
         const menuScreen = document.getElementById('menu-screen');
         const gameOverScreen = document.getElementById('game-over-screen');
+        const videoBg = document.getElementById('video-bg');
         const finalScoreDisplay = document.getElementById('final-score');
         const recordScoreDisplay = document.getElementById('record-score');
         const startBtn = document.getElementById('start-btn');
@@ -1166,6 +1190,12 @@
             touchZones.classList.remove('hidden');
             gameState = GAME_STATES.PLAYING;
             
+            // Останавливаем и скрываем видеофон
+            if (videoBg) {
+                videoBg.pause();
+                videoBg.style.display = 'none';
+            }
+            
             // Сброс игры
             score = 0;
             cameraY = 0;
@@ -1199,6 +1229,13 @@
             touchZones.classList.add('hidden');
             menuScreen.classList.remove('hidden');
             gameState = GAME_STATES.MENU;
+            
+            // Показываем и запускаем видеофон
+            if (videoBg) {
+                videoBg.style.display = 'block';
+                videoBg.currentTime = 0; // Начинаем сначала
+                videoBg.play().catch(e => console.log('Видео не удалось запустить:', e));
+            }
         }
         
         function gameOver() {
