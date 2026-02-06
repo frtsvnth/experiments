@@ -213,135 +213,67 @@
             display: none;
         }
 
-        /* === СТИЛИ КНОПКИ ПОЛНОЭКРАННОГО РЕЖИМА ВЕБА-СТРАНИЦЫ === */
-        /* КНОПКА ПОЛНОЭКРАННОГО РЕЖИМА - АККУРАТНАЯ КНОПКА В ЛЕВОМ ВЕРХНЕМ УГЛУ */
-        .fullscreen-page-btn {
-            /* Позиционирование: левый верхний угол, поверх всего контента */
-            position: fixed;          /* Фиксированная позиция относительно окна */
-            top: 15px;               /* 15px от верхнего края */
-            left: 15px;              /* 15px от левого края */
-            z-index: 9999;           /* Очень высокий z-index, чтобы быть поверх всего */
-            
-            /* Размеры и внешний вид */
-            width: 44px;             /* Ширина кнопки */
-            height: 44px;            /* Высота кнопки */
-            background: rgba(0, 0, 0, 0.5); /* Полупрозрачный чёрный фон */
-            border: 2px solid rgba(255, 255, 255, 0.4); /* Светлая рамка */
-            border-radius: 8px;      /* Скруглённые углы */
-            
-            /* Цвета и эффекты */
-            color: white;            /* Цвет иконки */
-            cursor: pointer;         /* Курсор-рука при наведении */
-            transition: all 0.3s ease; /* Плавные анимации */
-            backdrop-filter: blur(8px); /* Эффект размытия фона */
-            
-            /* Компоновка */
-            display: flex;          /* Flexbox для центрирования иконки */
-            align-items: center;     /* Центрирование по вертикали */
-            justify-content: center; /* Центрирование по горизонтали */
-            padding: 0;              /* Убираем внутренние отступы */
-            margin: 0;               /* Убираем внешние отступы */
-            
-            /* Убираем стандартные стили кнопки */
-            outline: none;          /* Убираем контур при фокусе */
-            user-select: none;       /* Запрещаем выделение текста */
-            -webkit-tap-highlight-color: transparent; /* Убираем подсветку на мобильных */
+        /* Стили для кнопки полноэкранного режима */
+        .fullscreen-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 45px;
+            height: 45px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Эффект при наведении мыши */
-        .fullscreen-page-btn:hover {
-            background: rgba(0, 0, 0, 0.9); /* Более тёмный фон */
-            border-color: rgba(255, 255, 255, 0.7); /* Более яркая рамка */
-            transform: scale(1.05); /* Лёгкое увеличение */
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Тень */
+        .fullscreen-btn:hover {
+            background: rgba(0, 0, 0, 0.8);
+            border-color: rgba(255, 255, 255, 0.6);
+            transform: scale(1.05);
         }
 
-        /* Эффект при нажатии */
-        .fullscreen-page-btn:active {
-            transform: scale(0.95); /* Лёгкое уменьшение при нажатии */
+        .fullscreen-btn:active {
+            transform: scale(0.95);
         }
 
-        /* Стиль иконки внутри кнопки */
-        .fullscreen-page-btn .fullscreen-icon {
-            width: 22px;            /* Размер иконки */
-            height: 22px;
-            transition: opacity 0.3s ease; /* Плавное переключение видимости */
-        }
-
-        /* Показываем/скрываем части иконки в зависимости от состояния */
-        .fullscreen-page-btn .fullscreen-normal {
-            opacity: 1;             /* В обычном режиме видны все углы */
-        }
-
-        .fullscreen-page-btn .fullscreen-active {
-            opacity: 0;              /* В обычном режиме скрыты убранные углы */
-        }
-
-        /* В полноэкранном режиме меняем видимость частей иконки */
-        .fullscreen-page-btn.fullscreen-active .fullscreen-normal {
-            opacity: 0;              /* Скрываем все углы */
-        }
-
-        .fullscreen-page-btn.fullscreen-active .fullscreen-active {
-            opacity: 1;              /* Показываем убранные углы */
-        }
-
-        /* Цвет кнопки в полноэкранном режиме */
-        .fullscreen-page-btn.fullscreen-active {
-            background: rgba(76, 175, 79, 0.495); /* Зелёный цвет для полноэкранного режима */
-            border-color: rgba(255, 255, 255, 0.9); /* Яркая рамка */
-        }
-
-        .fullscreen-page-btn.fullscreen-active:hover {
-            background: rgba(76, 175, 80, 0.95); /* Ещё более яркий зелёный при наведении */
-        }
-
-        /* Адаптивность для мобильных устройств */
+        /* Адаптивная кнопка для мобильных */
         @media (max-width: 768px) {
-            .fullscreen-page-btn {
-                width: 48px;        /* Немного больше на мобильных */
-                height: 48px;
-                top: 12px;          /* Чуть ближе к краю */
-                left: 12px;
-            }
-            
-            .fullscreen-page-btn .fullscreen-icon {
-                width: 24px;        /* Больше иконка на мобильных */
-                height: 24px;
-            }
-        }
-
-        /* Адаптивность для очень маленьких экранов */
-        @media (max-width: 480px) {
-            .fullscreen-page-btn {
+            .fullscreen-btn {
                 width: 50px;
                 height: 50px;
+                font-size: 22px;
                 top: 10px;
-                left: 10px;
+                right: 10px;
             }
-            
-            .fullscreen-page-btn .fullscreen-icon {
-                width: 26px;
-                height: 26px;
-            }
+        }
+
+        /* Анимация при переключении полноэкранного режима */
+        .fullscreen-btn.fullscreen-active {
+            background: rgba(76, 175, 80, 0.8);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .fullscreen-btn.fullscreen-active:hover {
+            background: rgba(76, 175, 80, 0.9);
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <!-- КНОПКА ПОЛНОЭКРАННОГО РЕЖИМА ВЕБА-СТРАНИЦЫ -->
-        <!-- Расположена в левом верхнем углу, всегда поверх всего контента -->
-        <button id="fullscreenPageBtn" class="fullscreen-page-btn" title="Полноэкранный режим страницы">
-            <!-- SVG иконка с двумя состояниями: обычный/полноэкранный -->
-            <svg class="fullscreen-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <!-- Обычный режим: показать полные квадраты по всем 4 углам -->
-                <path class="fullscreen-normal" d="M3 3H7V7H3V3Z M17 3H21V7H17V3Z M3 17H7V21H3V17Z M17 17H21V21H17V17Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <!-- Полноэкранный режим: показать L-образные углы (убрать внешние стороны) -->
-                <path class="fullscreen-active" d="M3 3H11V5H5V11H3V3Z M13 3H21V5H19V11H13V3Z M3 13H5V21H3V19H11V13H3Z M13 13H19V19H21V21H13V13Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </button>
-        
         <canvas id="gameCanvas"></canvas>
+        
+        <!-- Кнопка полноэкранного режима -->
+        <button id="fullscreenBtn" class="fullscreen-btn" title="Полноэкранный режим">
+            <span class="fullscreen-icon">⛶</span>
+        </button>
         
         <div id="hud">
             <div id="score">Счёт: 0</div>
@@ -386,7 +318,7 @@
         const highScoreElement = document.getElementById('highScore');
         const bestScoreElement = document.getElementById('bestScore');
         const loadingElement = document.getElementById('loading');
-        const fullscreenPageBtn = document.getElementById('fullscreenPageBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
 
         // === НАСТРАИВАЕМЫЕ ПАРАМЕТРЫ ===
         const SCALING_CONFIG = {
@@ -403,9 +335,14 @@
         // === УТИЛИТА ДЛЯ ОПРЕДЕЛЕНИЯ МОБИЛЬНОГО УСТРОЙСТВА ===
         // Используется во всех адаптивных настройках для единообразного определения
         function isMobileDevice() {
-            return (window.innerWidth && window.innerWidth <= 768) || 
-                   (navigator.userAgent && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) ||
-                   window.innerHeight > window.innerWidth;
+            const result = (window.innerWidth && window.innerWidth <= 768) || 
+                          (navigator.userAgent && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) ||
+                          window.innerHeight > window.innerWidth;
+            
+            if (game.gameTime % 300 === 0) { // Проверяем каждые 5 секунд
+                console.log('isMobileDevice:', result, 'width:', window.innerWidth, 'height:', window.innerHeight);
+            }
+            return result;
         }
 
         const GAME_CONFIG = {
@@ -892,6 +829,14 @@
 
         // Инициализация
         async function init() {
+            console.log('Инициализация игры началась...');
+            
+            // Проверяем наличие необходимых элементов
+            if (!canvas || !ctx) {
+                console.error('Не найдены canvas или ctx');
+                return;
+            }
+            
             // Загрузка ресурсов
             await loadAssets();
             
@@ -1652,6 +1597,11 @@
         // Игровой цикл
         function gameLoop() {
             const currentTime = Date.now();
+            
+            // Отладочный вывод каждый 60 кадров (1 раз в секунду при 60 FPS)
+            if (game.gameTime % 60 === 0) {
+                console.log('Игровой цикл работает, время:', game.gameTime, 'скорость:', game.speed);
+            }
             let deltaTime = currentTime - game.lastFrameTime;
             game.lastFrameTime = currentTime;
             
@@ -2030,301 +1980,471 @@
                            15 * game.currentScale, 5 * game.currentScale);
                 ctx.fillRect(player.width/2 - 5 * game.currentScale, -player.height/4, 
                            15 * game.currentScale, 5 * game.currentScale);
-                
-                ctx.fillStyle = '#333333';
-                ctx.fillRect(-player.width/2, player.height/2 - 10 * game.currentScale, 
-                           player.width, 8 * game.currentScale);
-                
-                ctx.fillStyle = '#666666';
-                for (let i = -player.width/2 + 5; i < player.width/2; i += 10 * game.currentScale) {
-                    ctx.fillRect(i, player.height/2 - 10 * game.currentScale, 
-                               5 * game.currentScale, 8 * game.currentScale);
-                }
-                
-                ctx.fillStyle = '#ffeb3b';
-                ctx.beginPath();
-                ctx.arc(-player.width/2 + 5 * game.currentScale, -player.height/4, 
-                       5 * game.currentScale, 0, Math.PI * 2);
-                ctx.fill();
             }
             
             ctx.restore();
         }
 
-        // Отрисовка частиц
-        function drawParticles() {
-            for (let p of particles) {
-                ctx.fillStyle = p.color;
-                ctx.globalAlpha = p.life / 40;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            ctx.globalAlpha = 1;
-        }
-
-        // === ПОЛНОЭКРАННЫЙ РЕЖИМ ВЕБА-СТРАНИЦЫ ===
-        /*
-        ╔══════════════════════════════════════════════════════════════════════════════╗
-        ║                        ПОЛНОЭКРАННЫЙ РЕЖИМ ВЕБА-СТРАНИЦЫ                      ║
-        ║                                                                              ║
-        ║  Эти функции позволяют переключать полноэкранный режим для ВСЕЙ веб-страницы ║
-        ║  (не только для отдельных элементов). Кнопка расположена в левом верхнем     ║
-        ║  углу и имеет понятную SVG-иконку, которая меняется в зависимости от режима.  ║
-        ║                                                                              ║
-        ║  ФУНКЦИИ ДЛЯ ПЕРЕНОСА В ДРУГИЕ ПРОЕКТЫ:                                      ║
-        ║  1. toggleFullscreen() - основная функция переключения                       ║
-        ║  2. updateFullscreenButton() - обновление состояния кнопки                   ║
-        ║  3. onFullscreenChange() - обработчик изменения режима                       ║
-        ║  4. addFullscreenEventListeners() - настройка слушателей                     ║
-        ║                                                                              ║
-        ║  ТРЕБУЕТСЯ HTML: <button id="fullscreenPageBtn" class="fullscreen-page-btn"> ║
-        ║  ТРЕБУЕТСЯ CSS: .fullscreen-page-btn { ... }                                ║
-        ║  ТРЕБУЕТСЯ JS:  const fullscreenPageBtn = document.getElementById('fullscreenPageBtn'); ║
-        ╚══════════════════════════════════════════════════════════════════════════════╝
-        */
-
-        /**
-         * ПЕРЕКЛЮЧЕНИЕ ПОЛНОЭКРАННОГО РЕЖИМА ВЕБА-СТРАНИЦЫ
-         * Эта функция переключает между обычным и полноэкранным режимом ВСЕЙ страницы
-         * Поддерживает все современные браузеры через кроссбраузерный API
-         */
+        // === ФУНКЦИИ ДЛЯ ПОЛНОЭКРАННОГО РЕЖИМА ===
+        
+        // Переключение полноэкранного режима
         function toggleFullscreen() {
-            console.log('Переключение полноэкранного режима...');
+            const gameContainer = document.getElementById('gameContainer');
             
-            // Проверяем, находимся ли мы уже в полноэкранном режиме
             if (!document.fullscreenElement) {
-                // ВХОДИМ В ПОЛНОЭКРАННЫЙ РЕЖИМ
-                console.log('Входим в полноэкранный режим...');
-                
-                // Пробуем разные методы для разных браузеров
-                if (document.documentElement.requestFullscreen) {
-                    // Стандартный метод (Chrome, Firefox, Opera, Edge)
-                    document.documentElement.requestFullscreen();
-                } else if (document.documentElement.webkitRequestFullscreen) {
-                    // Safari
-                    document.documentElement.webkitRequestFullscreen();
-                } else if (document.documentElement.msRequestFullscreen) {
-                    // Internet Explorer
-                    document.documentElement.msRequestFullscreen();
-                } else if (document.documentElement.mozRequestFullScreen) {
-                    // Старые версии Firefox
-                    document.documentElement.mozRequestFullScreen();
-                } else {
-                    console.warn('Полноэкранный режим не поддерживается в этом браузере');
-                    alert('Полноэкранный режим не поддерживается в вашем браузере');
+                // Входим в полноэкранный режим
+                if (gameContainer.requestFullscreen) {
+                    gameContainer.requestFullscreen();
+                } else if (gameContainer.webkitRequestFullscreen) {
+                    gameContainer.webkitRequestFullscreen();
+                } else if (gameContainer.msRequestFullscreen) {
+                    gameContainer.msRequestFullscreen();
                 }
             } else {
-                // ВЫХОДИМ ИЗ ПОЛНОЭКРАННОГО РЕЖИМА
-                console.log('Выходим из полноэкранного режима...');
-                
-                // Пробуем разные методы для разных браузеров
+                // Выходим из полноэкранного режима
                 if (document.exitFullscreen) {
-                    // Стандартный метод
                     document.exitFullscreen();
                 } else if (document.webkitExitFullscreen) {
-                    // Safari
                     document.webkitExitFullscreen();
                 } else if (document.msExitFullscreen) {
-                    // Internet Explorer
                     document.msExitFullscreen();
-                } else if (document.mozCancelFullScreen) {
-                    // Старые версии Firefox
-                    document.mozCancelFullScreen();
-                } else {
-                    console.warn('Выход из полноэкранного режима не поддерживается');
                 }
             }
         }
-            
-        /**
-         * ОБНОВЛЕНИЕ СОСТОЯНИЯ КНОПКИ ПОЛНОЭКРАННОГО РЕЖИМА
-         * Эта функция обновляет внешний вид кнопки в зависимости от текущего состояния
-         * Меняет цвет, иконку и tooltip в зависимости от режима
-         */
+
+        // Обновление состояния кнопки полноэкранного режима
         function updateFullscreenButton() {
-            if (!fullscreenPageBtn) return; // Защита от ошибок
+            const icon = fullscreenBtn.querySelector('.fullscreen-icon');
             
-            // Определяем текущее состояние
-            const isFullscreen = !!document.fullscreenElement;
-            
-            if (isFullscreen) {
-                // В ПОЛНОЭКРАННОМ РЕЖИМЕ
-                console.log('Кнопка: полноэкранный режим активен');
-                
-                // Добавляем класс для визуального состояния
-                fullscreenPageBtn.classList.add('fullscreen-active');
-                
-                // Меняем tooltip (всплывающая подсказка)
-                fullscreenPageBtn.title = 'Выйти из полноэкранного режима';
-                
-                // Можно добавить дополнительные визуальные изменения
-                // fullscreenPageBtn.style.background = 'rgba(76, 175, 80, 0.85)';
-                
+            if (document.fullscreenElement) {
+                // В полноэкранном режиме
+                fullscreenBtn.classList.add('fullscreen-active');
+                fullscreenBtn.title = 'Выйти из полноэкранного режима';
+                icon.textContent = '⛶'; // Символ "свернуть"
             } else {
-                // В ОБЫЧНОМ РЕЖИМЕ
-                console.log('Кнопка: обычный режим');
-                
-                // Убираем класс визуального состояния
-                fullscreenPageBtn.classList.remove('fullscreen-active');
-                
-                // Меняем tooltip
-                fullscreenPageBtn.title = 'Полноэкранный режим страницы';
-                
-                // Возвращаем обычный вид
-                // fullscreenPageBtn.style.background = 'rgba(0, 0, 0, 0.75)';
+                // Обычный режим
+                fullscreenBtn.classList.remove('fullscreen-active');
+                fullscreenBtn.title = 'Полноэкранный режим';
+                icon.textContent = '⛶'; // Символ "развернуть"
             }
         }
 
-        /**
-         * ОБРАБОТЧИК ИЗМЕНЕНИЯ ПОЛНОЭКРАННОГО РЕЖИМА
-         * Эта функция вызывается автоматически при изменении полноэкранного режима
-         * Обновляет кнопку и может выполнять дополнительные действия
-         */
+        // Обработчик изменения полноэкранного режима
         function onFullscreenChange() {
-            console.log('Событие изменения полноэкранного режима');
-            
-            // Обновляем состояние кнопки
             updateFullscreenButton();
             
-            // Дополнительные действия при смене режима
-            const isFullscreen = !!document.fullscreenElement;
-            
-            if (isFullscreen) {
-                console.log('✅ Вошли в полноэкранный режим');
-                // Можно добавить дополнительные действия:
-                // - скрыть другие UI элементы
-                // - изменить стили для полноэкранного режима
-                // - показать уведомление пользователю
-                
-            } else {
-                console.log('❌ Вышли из полноэкранного режима');
-                // Можно добавить дополнительные действия:
-                // - показать скрытые UI элементы
-                // - вернуть обычные стили
-                // - показать уведомление пользователю
-            }
-            
-            // Важно: пересчитываем размеры после изменения режима
-            // Полноэкранный режим может изменить размеры окна
+            // Пересчитываем размеры после изменения режима
             setTimeout(() => {
-                if (typeof resizeCanvas === 'function') {
-                    resizeCanvas();
-                    console.log('Размеры пересчитаны после смены полноэкранного режима');
-                }
-            }, 100); // Небольшая задержка для стабилизации
+                resizeCanvas();
+            }, 100);
         }
 
-        /**
-         * НАСТРОЙКА СЛУШАТЕЛЕЙ СОБЫТИЙ ДЛЯ ПОЛНОЭКРАННОГО РЕЖИМА
-         * Эта функция настраивает все необходимые обработчики событий
-         * Вызывается один раз при инициализации
-         */
-        function addFullscreenEventListeners() {
-            console.log('Настройка слушателей полноэкранного режима...');
-            
-            // Проверяем наличие кнопки
-            if (!fullscreenPageBtn) {
-                console.error('Кнопка полноэкранного режима не найдена!');
-                return;
-            }
-            
-            // Клик по кнопке - переключение режима
-            fullscreenPageBtn.addEventListener('click', (e) => {
-                e.preventDefault(); // Предотвращаем стандартное поведение
-                toggleFullscreen();
-            });
-            
-            // Слушаем изменения полноэкранного режима
-            // Разные браузеры используют разные названия событий
-            document.addEventListener('fullscreenchange', onFullscreenChange);
-            document.addEventListener('webkitfullscreenchange', onFullscreenChange); // Safari
-            document.addEventListener('msfullscreenchange', onFullscreenChange); // IE
-            document.addEventListener('mozfullscreenchange', onFullscreenChange); // Старый Firefox
-            
-            // Слушаем нажатие клавиши F11 (дополнительно)
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'F11') {
-                    // Даем браузеру обработать F11, но обновляем кнопку
-                    setTimeout(updateFullscreenButton, 100);
-                }
-                
-                // Клавиша Escape для выхода из полноэкранного режима
-                if (e.key === 'Escape' && document.fullscreenElement) {
-                    console.log('Выход из полноэкранного режима по Escape');
-                    // Не вызываем toggleFullscreen() - браузер сам обработает Escape
-                }
-            });
-            
-            // Обновляем кнопку при загрузке страницы
-            updateFullscreenButton();
-            
-            console.log('✅ Слушатели полноэкранного режима настроены');
-        }
-
-        // Настройка обработчиков событий
+        // === НАСТРОЙКА ОБРАБОТЧИКОВ СОБЫТИЙ ===
         function setupEventListeners() {
+            console.log('Настройка обработчиков событий...');
+            
             // Клавиатура
             document.addEventListener('keydown', (e) => {
-                if ((e.code === 'Space' || e.code === 'ArrowUp') && game.running && !player.isJumpHeld) {
+                if (!game.running) return;
+                
+                if (e.code === 'Space' || e.code === 'ArrowUp') {
+                    e.preventDefault();
                     startJump();
-                    e.preventDefault();
                 }
             });
-            
+
+            // Клавиатура для завершения прыжка
             document.addEventListener('keyup', (e) => {
-                if ((e.code === 'Space' || e.code === 'ArrowUp') && game.running && player.isJumpHeld) {
-                    endJump();
+                if (!game.running) return;
+                
+                if (e.code === 'Space' || e.code === 'ArrowUp') {
                     e.preventDefault();
-                }
-            });
-            
-            // Мышь для кнопки прыжка
-            jumpButton.addEventListener('mousedown', startJump);
-            jumpButton.addEventListener('mouseup', endJump);
-            jumpButton.addEventListener('mouseleave', () => {
-                if (player.isJumpHeld) {
                     endJump();
                 }
             });
-            
-            jumpButton.addEventListener('touchstart', (e) => {
-                startJump();
-                e.preventDefault();
+
+            // События мыши для прыжка
+            document.addEventListener('mousedown', (e) => {
+                if (!game.running) return;
+                if (e.target === jumpButton || e.target === canvas) {
+                    e.preventDefault();
+                    startJump();
+                }
             });
-            
-            jumpButton.addEventListener('touchend', (e) => {
-                endJump();
-                e.preventDefault();
-            });
-            
-            // Мышь для канваса
-            canvas.addEventListener('mousedown', startJump);
-            canvas.addEventListener('mouseup', endJump);
-            canvas.addEventListener('mouseleave', () => {
-                if (player.isJumpHeld) {
+
+            document.addEventListener('mouseup', (e) => {
+                if (!game.running) return;
+                if (e.target === jumpButton || e.target === canvas) {
+                    e.preventDefault();
                     endJump();
                 }
             });
-            
-            canvas.addEventListener('touchstart', (e) => {
-                startJump();
+
+            // События касаний для мобильных устройств
+            document.addEventListener('touchstart', (e) => {
+                if (!game.running) return;
                 e.preventDefault();
-            });
-            
-            canvas.addEventListener('touchend', (e) => {
+                const touch = e.touches[0];
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                
+                if (target === jumpButton || target === canvas) {
+                    startJump();
+                }
+            }, { passive: false });
+
+            document.addEventListener('touchend', (e) => {
+                if (!game.running) return;
+                e.preventDefault();
                 endJump();
-                e.preventDefault();
-            });
-            
-            // Кнопки интерфейса
+            }, { passive: false });
+
+            // Кнопки старта и рестарта
             startButton.addEventListener('click', startGame);
-            restartButton.addEventListener('click', restartGame);
-            
+            restartButton.addEventListener('click', startGame);
+
+            // Обработчик изменения размера окна
             window.addEventListener('resize', resizeCanvas);
+
+            // Обработчик изменения ориентации для мобильных
+            window.addEventListener('orientationchange', () => {
+                setTimeout(resizeCanvas, 100);
+            });
+
+            // Кнопка полноэкранного режима
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+            // Слушатели изменений полноэкранного режима
+            document.addEventListener('fullscreenchange', onFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+            document.addEventListener('msfullscreenchange', onFullscreenChange);
             
-            // Добавляем слушатели для полноэкранного режима
-            addFullscreenEventListeners();
+            // Обновляем состояние кнопки при загрузке
+            updateFullscreenButton();
+        }
+
+        // === ОБНОВЛЕНИЕ ИГРОКА ===
+        function updatePlayer(deltaTime) {
+            // Применяем гравитацию
+            player.vy += GAME_CONFIG.gravity;
+            player.y += player.vy;
+
+            // Получаем высоту земли под игроком
+            const groundY = getGroundHeightAt(player.x);
+            
+            // Проверяем коллизию с землёй
+            if (player.y + player.height/2 >= groundY) {
+                player.y = groundY - player.height/2;
+                player.vy = 0;
+                
+                // Завершаем прыжок при приземлении
+                if (player.isJumping) {
+                    endJump();
+                }
+                
+                // Сброс поворота при приземлении
+                player.rotation = Math.max(player.rotation - 0.1, 0);
+                
+                // Завершаем рывок в воздухе
+                if (game.airBoostUsed) {
+                    game.airBoostUsed = false;
+                    game.airBoostRotation = 0;
+                    game.airBoostVx = 0;
+                }
+            }
+
+            // Обновляем время удержания прыжка
+            if (player.isJumpHeld) {
+                player.jumpHoldTime = Date.now() - player.jumpStartTime;
+                
+                // Ограничиваем время удержания
+                if (player.jumpHoldTime >= GAME_CONFIG.maxJumpHoldTime) {
+                    endJump();
+                }
+            }
+
+            // Поворот игрока в зависимости от скорости и позиции
+            if (!player.isJumping && player.vy > 0) {
+                // Падение - наклон назад
+                player.rotation = Math.min(player.rotation + 0.05, Math.PI / 6);
+            } else if (player.isJumping && player.vy < 0) {
+                // Прыжок вверх - наклон вперёд
+                player.rotation = Math.max(player.rotation - 0.03, -Math.PI / 12);
+            } else if (!player.isJumping && player.vy === 0) {
+                // На земле - постепенно выпрямляемся
+                player.rotation = Math.max(player.rotation - 0.1, 0);
+            }
+
+            // Проверяем границы экрана
+            if (player.y - player.height/2 < 0) {
+                player.y = player.height/2;
+                player.vy = 0;
+            }
+
+            // Применяем рывок в воздухе
+            if (game.airBoostUsed) {
+                player.x += game.airBoostVx;
+                game.airBoostVx *= game.airBoostVxDecay;
+                game.airBoostRotation += 0.1;
+                
+                if (game.airBoostRotation > Math.PI / 3) {
+                    game.airBoostRotation = Math.PI / 3;
+                }
+                
+                player.rotation = -game.airBoostRotation;
+                
+                game.airBoostDuration--;
+                if (game.airBoostDuration <= 0) {
+                    game.airBoostUsed = false;
+                }
+            }
+        }
+
+        // Начало прыжка
+        function startJump() {
+            if (player.isJumping) return;
+            
+            player.isJumping = true;
+            player.isJumpHeld = true;
+            player.jumpStartTime = Date.now();
+            player.jumpHoldTime = 0;
+            player.jumpType = 'short';
+            
+            // Начинаем прыжок с короткой силой (адаптивной)
+            const jumpForces = GAME_CONFIG.jumpForce;
+            player.vy = jumpForces.short;
+        }
+
+        // Завершение прыжка
+        function endJump() {
+            if (!player.isJumping) return;
+            
+            player.isJumpHeld = false;
+            
+            // Определяем тип прыжка по времени удержания
+            if (player.jumpHoldTime >= 200) {
+                player.jumpType = 'long';
+                // Дополнительная сила для длинного прыжка (адаптивная)
+                const jumpForces = GAME_CONFIG.jumpForce;
+                player.vy += jumpForces.long - jumpForces.short;
+            } else {
+                player.jumpType = 'short';
+            }
+            
+            // Если прыжок был очень коротким, всё равно оставляем короткий прыжок (адаптивный)
+            if (player.jumpHoldTime < 50) {
+                player.jumpType = 'short';
+                const jumpForces = GAME_CONFIG.jumpForce;
+                player.vy = jumpForces.short;
+            }
+            
+            // Рывок в воздухе при длинном прыжке
+            if (player.jumpType === 'long' && !game.airBoostUsed && player.vy < -5) {
+                game.airBoostUsed = true;
+                game.airBoostDuration = 15;
+                game.airBoostRotation = 0;
+                
+                // Увеличиваем импульс вверх (больше чем обычный прыжок, адаптивный)
+                const jumpForces = GAME_CONFIG.jumpForce;
+                player.vy = Math.min(player.vy, jumpForces.short * 0.5);
+                
+                // Добавляем движение вперёд
+                game.airBoostVx = 3 * game.currentScale;
+            }
+        }
+
+        // Обновление препятствий
+        function updateObstacles() {
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let obstacle = obstacles[i];
+                obstacle.x -= game.speed;
+                
+                // Анимация зайца
+                if (obstacle.type === 'hare') {
+                    obstacle.jumpOffset += obstacle.jumpSpeed;
+                    obstacle.y = getGroundHeightAt(obstacle.x) - obstacle.height/2 + 
+                                Math.sin(obstacle.jumpOffset) * 8 * game.currentScale;
+                }
+                
+                // Анимация снежка
+                if (obstacle.type === 'snowball') {
+                    obstacle.rotation += 0.05;
+                }
+                
+                // Анимация дерева
+                if (obstacle.type === 'tree' && assets.treeImg) {
+                    obstacle.animationOffset += GAME_CONFIG.treeSprite.animationSpeed;
+                    obstacle.spriteFrame = Math.floor(obstacle.animationOffset) % GAME_CONFIG.treeSprite.totalFrames;
+                }
+                
+                // Удаляем препятствия за пределами экрана
+                if (obstacle.x < -100) {
+                    obstacles.splice(i, 1);
+                }
+            }
+        }
+
+        // Обновление частиц
+        function updateParticles(deltaTime) {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let particle = particles[i];
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.vy += 0.2; // Гравитация для частиц
+                particle.life -= deltaTime;
+                
+                if (particle.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        // Проверка коллизий
+        function checkCollisions() {
+            for (let obstacle of obstacles) {
+                if (checkPlayerObstacleCollision(player, obstacle)) {
+                    gameOver();
+                    return;
+                }
+            }
+        }
+
+        // Проверка коллизии между игроком и препятствием
+        function checkPlayerObstacleCollision(player, obstacle) {
+            let playerRect = {
+                x: player.x - player.width/2,
+                y: player.y - player.height/2,
+                width: player.width,
+                height: player.height
+            };
+            
+            // Применяем буфер игрока
+            if (GAME_CONFIG.collisionBuffer.enablePlayerBuffer) {
+                const playerBuffer = GAME_CONFIG.collisionBuffer.playerBuffer;
+                playerRect.x += playerBuffer;
+                playerRect.y += playerBuffer;
+                playerRect.width -= playerBuffer * 2;
+                playerRect.height -= playerBuffer * 2;
+            }
+            
+            let obstacleRect;
+            
+            // Разные типы коллизий для разных препятствий
+            switch(obstacle.type) {
+                case 'snowball':
+                    // Круглая коллизия для снежка
+                    const distance = Math.sqrt(
+                        Math.pow(player.x - obstacle.x, 2) + 
+                        Math.pow(player.y - obstacle.y, 2)
+                    );
+                    return distance < (player.width/2 + obstacle.radius);
+                    
+                default:
+                    // Прямоугольная коллизия
+                    obstacleRect = {
+                        x: obstacle.x - obstacle.width/2,
+                        y: obstacle.y - obstacle.height,
+                        width: obstacle.width,
+                        height: obstacle.height
+                    };
+                    
+                    // Применяем буфер препятствия
+                    if (GAME_CONFIG.collisionBuffer.enableObstacleBuffer) {
+                        const obstacleBuffer = GAME_CONFIG.collisionBuffer.customBuffers[obstacle.type] || 
+                                              GAME_CONFIG.collisionBuffer.obstacleBuffer;
+                        obstacleRect.x += obstacleBuffer;
+                        obstacleRect.y += obstacleBuffer;
+                        obstacleRect.width -= obstacleBuffer * 2;
+                        obstacleRect.height -= obstacleBuffer * 2;
+                    }
+                    
+                    return playerRect.x < obstacleRect.x + obstacleRect.width &&
+                           playerRect.x + playerRect.width > obstacleRect.x &&
+                           playerRect.y < obstacleRect.y + obstacleRect.height &&
+                           playerRect.y + playerRect.height > obstacleRect.y;
+            }
+        }
+
+        // Получение высоты земли в определённой точке
+        function getGroundHeightAt(x) {
+            for (let i = 0; i < terrainPoints.length - 1; i++) {
+                if (x >= terrainPoints[i].x && x <= terrainPoints[i + 1].x) {
+                    let t = (x - terrainPoints[i].x) / (terrainPoints[i + 1].x - terrainPoints[i].x);
+                    return terrainPoints[i].y * (1 - t) + terrainPoints[i + 1].y * t;
+                }
+            }
+            return game.gameHeight * GAME_CONFIG.terrainBaseHeight;
+        }
+
+        // Создание частиц
+        function createParticles(x, y, count, type) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x + (Math.random() - 0.5) * 20,
+                    y: y + (Math.random() - 0.5) * 20,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: Math.random() * -2 - 1,
+                    life: 1000 + Math.random() * 500,
+                    color: type === 'snow' ? '#ffffff' : '#4fc3f7',
+                    size: Math.random() * 3 + 1
+                });
+            }
+        }
+
+        // Игровой цикл
+        function gameLoop() {
+            const currentTime = Date.now();
+            let deltaTime = currentTime - game.lastFrameTime;
+            game.lastFrameTime = currentTime;
+            
+            // Нормализуем deltaTime для стабильной скорости на всех устройствах
+            const targetFrameTime = 1000 / 60; // 60 FPS
+            const normalizedDeltaTime = Math.min(deltaTime, targetFrameTime * 2); // Ограничиваем скачки
+            const speedMultiplier = normalizedDeltaTime / targetFrameTime;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (game.running) {
+                game.gameTime++;
+                game.score += game.speed * 0.1 * speedMultiplier;
+                
+                // Обновляем скорость с учётом буста
+                updateSpeedWithBoost();
+                
+                game.animationTime += normalizedDeltaTime * 0.001;
+                
+                // Обновляем анимации спрайтов
+                updateSpriteAnimation(normalizedDeltaTime);
+                updateTreeAnimation(normalizedDeltaTime);
+                
+                // Обновляем игровые объекты с нормализованным временем
+                updateStars();
+                updateClouds();
+                updateTerrain();
+                updatePlayer(normalizedDeltaTime);
+                updateObstacles();
+                updateParticles(normalizedDeltaTime);
+                
+                // Генерируем новые препятствия
+                generateObstacles();
+                
+                // Проверяем коллизии
+                checkCollisions();
+                
+                // Обновляем HUD
+                scoreElement.textContent = `Счёт: ${Math.floor(game.score)}`;
+                speedElement.textContent = `Скорость: ${game.speed.toFixed(1)}x`;
+            }
+            
+            // Рисуем всё
+            drawStars();
+            drawClouds();
+            drawMountains();
+            drawTerrain();
+            drawObstacles();
+            drawPlayer();
+            drawParticles();
+            
+            requestAnimationFrame(gameLoop);
         }
 
         // Изменение размера канваса
@@ -2408,31 +2528,36 @@
             initClouds();        // Переинициализируем облака при новой игре
             initTerrain();
             updateMountainsScale();
+            
+            // Настраиваем обработчики событий
+            setupEventListeners();
+            
+            console.log('Инициализация завершена, запуск игрового цикла...');
+            resizeCanvas();
+            requestAnimationFrame(gameLoop);
+            console.log('Игровой цикл запущен');
         }
 
-        // Конец игры
+        // Окончание игры
         function gameOver() {
             game.running = false;
             
-            let currentScore = Math.floor(game.score);
-            if (currentScore > game.highScore) {
-                game.highScore = currentScore;
+            // Обновляем лучший счёт
+            if (game.score > game.highScore) {
+                game.highScore = Math.floor(game.score);
                 localStorage.setItem('snowride_highscore', game.highScore);
-                highScoreElement.textContent = game.highScore;
-                bestScoreElement.textContent = game.highScore;
             }
             
-            finalScoreElement.textContent = currentScore;
+            // Обновляем отображение
+            finalScoreElement.textContent = Math.floor(game.score);
+            highScoreElement.textContent = game.highScore;
+            bestScoreElement.textContent = game.highScore;
+            
             gameOverScreen.style.display = 'flex';
-        }
-
-        // Перезапуск игры
-        function restartGame() {
-            startGame();
         }
 
         // Инициализация игры при загрузке страницы
         window.onload = init;
     </script>
 </body>
-</html>
+</html> 
