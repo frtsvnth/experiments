@@ -112,6 +112,91 @@
             padding: 20px;
         }
         
+        /* === СТИЛИ ВИДЕОФОНА ДЛЯ ГЛАВНОЙ СТРАНИЦЫ === */
+        /* Видеофон растягивается на весь экран и заполняет пространство */
+        .background-video {
+            /* Позиционирование - покрывает весь экран */
+            position: absolute;           /* Абсолютное позиционирование внутри startScreen */
+            top: 0;                      /* От верхнего края */
+            left: 0;                     /* От левого края */
+            width: 100%;                 /* На всю ширину */
+            height: 100%;                /* На всю высоту */
+            object-fit: cover;           /* Растягивается, сохраняя пропорции, заполняя весь экран */
+            z-index: 1;                  /* Самый нижний слой (под контентом) */
+            
+            /* Видео настройки */
+            pointer-events: none;       /* Видео не перехватывает клики */
+            opacity: 0.8;                /* Немного прозрачности для читаемости текста */
+            
+            /* Производительность */
+            will-change: transform;      /* Оптимизация для анимаций */
+            transform: translateZ(0);     /* Принудительное использование GPU */
+        }
+        
+        /* Fallback для браузеров без поддержки видео */
+        .video-fallback {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a2a, #1a1a4a, #2a2a6a);
+            z-index: 1;
+        }
+
+        /* Контент поверх видео */
+        #startScreen > *:not(.background-video):not(.video-fallback) {
+            position: relative;         /* Относительное позиционирование поверх видео */
+            z-index: 10;                 /* Высокий z-index для отображения поверх видео */
+        }
+
+        /* Заголовок с лучшей читаемостью на фоне видео */
+        #startScreen h1 {
+            text-shadow: 
+                0 0 20px rgba(79, 195, 247, 0.8),
+                0 0 40px rgba(79, 195, 247, 0.6),
+                0 0 60px rgba(79, 195, 247, 0.4),
+                2px 2px 4px rgba(0, 0, 0, 0.8); /* Дополнительная тень для контраста */
+        }
+
+        /* Текст с улучшенной читаемостью */
+        #startScreen p {
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Кнопки с улучшенной видимостью */
+        #startScreen .button {
+            box-shadow: 
+                0 5px 15px rgba(0, 0, 0, 0.5),
+                0 0 20px rgba(79, 195, 247, 0.3);
+        }
+
+        /* Управление видимостью видео */
+        #startScreen:not(.screen) .background-video {
+            display: none;              /* Скрыто когда startScreen не показан */
+        }
+
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 768px) {
+            .background-video {
+                opacity: 0.7;          /* Больше прозрачности на мобильных для лучшей читаемости */
+            }
+            
+            #startScreen h1 {
+                text-shadow: 
+                    0 0 15px rgba(79, 195, 247, 0.9),
+                    0 0 30px rgba(79, 195, 247, 0.7),
+                    2px 2px 4px rgba(0, 0, 0, 0.9);
+            }
+        }
+
+        /* Для очень маленьких экранов */
+        @media (max-width: 480px) {
+            .background-video {
+                opacity: 0.6;          /* Ещё больше прозрачности */
+            }
+        }
+        
         #gameOverScreen {
             display: none;
         }
@@ -213,67 +298,135 @@
             display: none;
         }
 
-        /* Стили для кнопки полноэкранного режима */
-        .fullscreen-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 45px;
-            height: 45px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* === СТИЛИ КНОПКИ ПОЛНОЭКРАННОГО РЕЖИМА ВЕБА-СТРАНИЦЫ === */
+        /* КНОПКА ПОЛНОЭКРАННОГО РЕЖИМА - АККУРАТНАЯ КНОПКА В ЛЕВОМ ВЕРХНЕМ УГЛУ */
+        .fullscreen-page-btn {
+            /* Позиционирование: левый верхний угол, поверх всего контента */
+            position: fixed;          /* Фиксированная позиция относительно окна */
+            top: 15px;               /* 15px от верхнего края */
+            left: 15px;              /* 15px от левого края */
+            z-index: 9999;           /* Очень высокий z-index, чтобы быть поверх всего */
+            
+            /* Размеры и внешний вид */
+            width: 44px;             /* Ширина кнопки */
+            height: 44px;            /* Высота кнопки */
+            background: rgba(0, 0, 0, 0.5); /* Полупрозрачный чёрный фон */
+            border: 2px solid rgba(255, 255, 255, 0.4); /* Светлая рамка */
+            border-radius: 8px;      /* Скруглённые углы */
+            
+            /* Цвета и эффекты */
+            color: white;            /* Цвет иконки */
+            cursor: pointer;         /* Курсор-рука при наведении */
+            transition: all 0.3s ease; /* Плавные анимации */
+            backdrop-filter: blur(8px); /* Эффект размытия фона */
+            
+            /* Компоновка */
+            display: flex;          /* Flexbox для центрирования иконки */
+            align-items: center;     /* Центрирование по вертикали */
+            justify-content: center; /* Центрирование по горизонтали */
+            padding: 0;              /* Убираем внутренние отступы */
+            margin: 0;               /* Убираем внешние отступы */
+            
+            /* Убираем стандартные стили кнопки */
+            outline: none;          /* Убираем контур при фокусе */
+            user-select: none;       /* Запрещаем выделение текста */
+            -webkit-tap-highlight-color: transparent; /* Убираем подсветку на мобильных */
         }
 
-        .fullscreen-btn:hover {
-            background: rgba(0, 0, 0, 0.8);
-            border-color: rgba(255, 255, 255, 0.6);
-            transform: scale(1.05);
+        /* Эффект при наведении мыши */
+        .fullscreen-page-btn:hover {
+            background: rgba(0, 0, 0, 0.9); /* Более тёмный фон */
+            border-color: rgba(255, 255, 255, 0.7); /* Более яркая рамка */
+            transform: scale(1.05); /* Лёгкое увеличение */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Тень */
         }
 
-        .fullscreen-btn:active {
-            transform: scale(0.95);
+        /* Эффект при нажатии */
+        .fullscreen-page-btn:active {
+            transform: scale(0.95); /* Лёгкое уменьшение при нажатии */
         }
 
-        /* Адаптивная кнопка для мобильных */
+        /* Стиль иконки внутри кнопки */
+        .fullscreen-page-btn .fullscreen-icon {
+            width: 22px;            /* Размер иконки */
+            height: 22px;
+            transition: opacity 0.3s ease; /* Плавное переключение видимости */
+        }
+
+        /* Показываем/скрываем части иконки в зависимости от состояния */
+        .fullscreen-page-btn .fullscreen-normal {
+            opacity: 1;             /* В обычном режиме видны все углы */
+        }
+
+        .fullscreen-page-btn .fullscreen-active {
+            opacity: 0;              /* В обычном режиме скрыты убранные углы */
+        }
+
+        /* В полноэкранном режиме меняем видимость частей иконки */
+        .fullscreen-page-btn.fullscreen-active .fullscreen-normal {
+            opacity: 0;              /* Скрываем все углы */
+        }
+
+        .fullscreen-page-btn.fullscreen-active .fullscreen-active {
+            opacity: 1;              /* Показываем убранные углы */
+        }
+
+        /* Цвет кнопки в полноэкранном режиме */
+        .fullscreen-page-btn.fullscreen-active {
+            background: rgba(76, 175, 79, 0.495); /* Зелёный цвет для полноэкранного режима */
+            border-color: rgba(255, 255, 255, 0.9); /* Яркая рамка */
+        }
+
+        .fullscreen-page-btn.fullscreen-active:hover {
+            background: rgba(76, 175, 80, 0.95); /* Ещё более яркий зелёный при наведении */
+        }
+
+        /* Адаптивность для мобильных устройств */
         @media (max-width: 768px) {
-            .fullscreen-btn {
-                width: 50px;
-                height: 50px;
-                font-size: 22px;
-                top: 10px;
-                right: 10px;
+            .fullscreen-page-btn {
+                width: 48px;        /* Немного больше на мобильных */
+                height: 48px;
+                top: 12px;          /* Чуть ближе к краю */
+                left: 12px;
+            }
+            
+            .fullscreen-page-btn .fullscreen-icon {
+                width: 24px;        /* Больше иконка на мобильных */
+                height: 24px;
             }
         }
 
-        /* Анимация при переключении полноэкранного режима */
-        .fullscreen-btn.fullscreen-active {
-            background: rgba(76, 175, 80, 0.8);
-            border-color: rgba(255, 255, 255, 0.8);
-        }
-
-        .fullscreen-btn.fullscreen-active:hover {
-            background: rgba(76, 175, 80, 0.9);
+        /* Адаптивность для очень маленьких экранов */
+        @media (max-width: 480px) {
+            .fullscreen-page-btn {
+                width: 50px;
+                height: 50px;
+                top: 10px;
+                left: 10px;
+            }
+            
+            .fullscreen-page-btn .fullscreen-icon {
+                width: 26px;
+                height: 26px;
+            }
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <canvas id="gameCanvas"></canvas>
+        <!-- КНОПКА ПОЛНОЭКРАННОГО РЕЖИМА ВЕБА-СТРАНИЦЫ -->
+        <!-- Расположена в левом верхнем углу, всегда поверх всего контента -->
+        <!--<button id="fullscreenPageBtn" class="fullscreen-page-btn" title="Полноэкранный режим страницы">-->
+            <!-- SVG иконка с двумя состояниями: обычный/полноэкранный -->
+           <!--  <svg class="fullscreen-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">-->
+                <!-- Обычный режим: показать полные квадраты по всем 4 углам -->
+          <!--      <path class="fullscreen-normal" d="M3 3H7V7H3V3Z M17 3H21V7H17V3Z M3 17H7V21H3V17Z M17 17H21V21H17V17Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> -->
+                <!-- Полноэкранный режим: показать L-образные углы (убрать внешние стороны) -->
+         <!--       <path class="fullscreen-active" d="M3 3H7V7H3V3Z M17 3H21V7H17V3Z M3 17H7V21H3V17Z M17 17H21V21H17V17Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> -->
+         <!--   </svg> -->
+       <!-- </button> -->
         
-        <!-- Кнопка полноэкранного режима -->
-        <button id="fullscreenBtn" class="fullscreen-btn" title="Полноэкранный режим">
-            <span class="fullscreen-icon">⛶</span>
-        </button>
+        <canvas id="gameCanvas"></canvas>
         
         <div id="hud">
             <div id="score">Счёт: 0</div>
@@ -283,7 +436,16 @@
         <button id="jumpButton">ПРЫЖОК</button>
         
         <div id="startScreen" class="screen">
-            <h1>❄️ Shashkin SnowRide ❄️</h1>
+            <!-- Видеофон для главной страницы -->
+            <video id="backgroundVideo" class="background-video" autoplay loop muted playsinline>
+                <source src="shsh.mp4" type="video/mp4">
+                <!-- Fallback для браузеров без поддержки видео -->
+                <div class="video-fallback"></div>
+            </video>
+            
+           
+            <h1>Shashkin SnowRide</h1>
+             <h2>❄️</h2>
             <p>Управляйте снегоходом, прыгайте через препятствия и старайтесь проехать как можно дальше!</p>
             <p style="color: #69f0ae; font-size: 16px;">Короткое нажатие - низкий прыжок<br>Длинное нажатие - высокий прыжок</p>
             <button id="startButton" class="button">СТАРТ</button>
@@ -318,7 +480,8 @@
         const highScoreElement = document.getElementById('highScore');
         const bestScoreElement = document.getElementById('bestScore');
         const loadingElement = document.getElementById('loading');
-        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const fullscreenPageBtn = document.getElementById('fullscreenPageBtn');
+        const backgroundVideo = document.getElementById('backgroundVideo');
 
         // === НАСТРАИВАЕМЫЕ ПАРАМЕТРЫ ===
         const SCALING_CONFIG = {
@@ -335,14 +498,9 @@
         // === УТИЛИТА ДЛЯ ОПРЕДЕЛЕНИЯ МОБИЛЬНОГО УСТРОЙСТВА ===
         // Используется во всех адаптивных настройках для единообразного определения
         function isMobileDevice() {
-            const result = (window.innerWidth && window.innerWidth <= 768) || 
-                          (navigator.userAgent && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) ||
-                          window.innerHeight > window.innerWidth;
-            
-            if (game.gameTime % 300 === 0) { // Проверяем каждые 5 секунд
-                console.log('isMobileDevice:', result, 'width:', window.innerWidth, 'height:', window.innerHeight);
-            }
-            return result;
+            return (window.innerWidth && window.innerWidth <= 768) || 
+                   (navigator.userAgent && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) ||
+                   window.innerHeight > window.innerWidth;
         }
 
         const GAME_CONFIG = {
@@ -456,8 +614,8 @@
             // Буферная зона предотвращает "мгновенную смерть" при малейшем касании
             // Увеличение значений делает игру легче, уменьшение - сложнее
             collisionBuffer: {
-                playerBuffer: 10,     // Увеличен буфер для мобильных устройств
-                obstacleBuffer: 6,   // Увеличен буфер для препятствий
+                playerBuffer: -10,     // Увеличен буфер для мобильных устройств
+                obstacleBuffer: -6,   // Увеличен буфер для препятствий
                 enablePlayerBuffer: true,   // Включить буфер для игрока
                 enableObstacleBuffer: true, // Включить буфер для препятствий
                 
@@ -475,6 +633,19 @@
                     rock: 5,         // Увеличен буфер для камней
                     log: 7           // Увеличен буфер для брёвен
                 }
+            },
+            
+            // === НАСТРОЙКИ ЗОЛОТЫХ МОНЕТОК ===
+            // Золотые монетки появляются на верхней точке прыжка и замедляют игру
+            goldCoin: {
+                spawnChance: 0.008,           // Шанс появления монетки при каждом кадре генерации (0.8%)
+                slowDownPercent: 0.20,        // Процент замедления скорости игры (20%)
+                slowDownDuration: 180,        // Длительность замедления в кадрах (3 секунды при 60 FPS)
+                baseRadius: 25,               // Базовый радиус монетки
+                glowIntensity: 0.8,           // Интенсивность свечения (0-1)
+                rotationSpeed: 0.05,          // Скорость вращения монетки
+                bobAmplitude: 8,              // Амплитуда вертикального покачивания
+                bobSpeed: 0.08                // Скорость покачивания
             }
         };
 
@@ -731,12 +902,23 @@
             treeSpriteFrame: 0,
             treeSpriteTimer: 0,
             
-            // Для рывка в воздухе (плавная анимация)
+            // Для рывка в воздухе (плавная анимация с возвратом)
             airBoostUsed: false,       // Использован ли рывок в воздухе
             airBoostRotation: 0,       // Текущий угол поворота при рывке
             airBoostVx: 0,             // Вектор движения вперёд при рывке
             airBoostVxDecay: 0.92,     // Затухание вектора (чем меньше, тем быстрее)
-            airBoostDuration: 15       // Количество кадров для завершения рывка
+            airBoostDuration: 20,     // Увеличено время буста для лучшего эффекта
+            
+            // Система возврата в исходную позицию (ИСПРАВЛЕНИЕ СМЕЩЕНИЯ)
+            airBoostOriginalX: 0,      // Исходная позиция X игрока
+            airBoostMaxOffset: 80,     // Максимальное смещение от исходной позиции (пиксели)
+            airBoostReturnPhase: false, // Фаза возврата в исходную позицию
+            airBoostReturnSpeed: 2,    // Скорость возврата (пикселей за кадр)
+            airBoostOffset: 0,         // Текущее смещение от исходной позиции
+            
+            // Система замедления скорости от золотых монеток
+            slowDownTimer: 0,          // Таймер замедления (кадры)
+            baseSpeedBeforeSlowDown: 0 // Базовая скорость до замедления
         };
 
         // Игрок
@@ -770,6 +952,9 @@
 
         // Препятствия
         let obstacles = [];
+
+        // Золотые монетки
+        let goldCoins = [];
 
         // Частицы
         let particles = [];
@@ -829,14 +1014,6 @@
 
         // Инициализация
         async function init() {
-            console.log('Инициализация игры началась...');
-            
-            // Проверяем наличие необходимых элементов
-            if (!canvas || !ctx) {
-                console.error('Не найдены canvas или ctx');
-                return;
-            }
-            
             // Загрузка ресурсов
             await loadAssets();
             
@@ -1319,6 +1496,239 @@
             }
         }
 
+        // === ГЕНЕРАЦИЯ ЗОЛОТЫХ МОНЕТОК ===
+        function generateGoldCoins() {
+            // Проверяем шанс появления монетки
+            if (Math.random() < GAME_CONFIG.goldCoin.spawnChance) {
+                let x = game.gameWidth + 100;
+                
+                // Вычисляем максимальную высоту прыжка для позиционирования монетки
+                const jumpForces = GAME_CONFIG.jumpForce;
+                const maxJumpHeight = Math.abs(jumpForces.long * jumpForces.long) / (2 * GAME_CONFIG.gravity);
+                
+                // Получаем высоту земли на позиции монетки
+                let groundY = getGroundHeightAt(x);
+                
+                // Позиционируем монетку на верхней точке возможного прыжка
+                // с небольшим разбросом для разнообразия
+                let yOffset = maxJumpHeight * 0.85 + (Math.random() - 0.5) * 50;
+                let y = groundY - yOffset;
+                
+                // Ограничиваем, чтобы монетка не улетела слишком высоко
+                y = Math.max(game.gameHeight * 0.15, Math.min(y, game.gameHeight * 0.5));
+                
+                let coin = createGoldCoin(x, y);
+                if (coin) {
+                    goldCoins.push(coin);
+                }
+            }
+        }
+            
+        // === СОЗДАНИЕ ЗОЛОТОЙ МОНЕТКИ ===
+        function createGoldCoin(x, y) {
+            let baseSize = SCALING_CONFIG.obstacleScale * game.currentScale;
+            
+            return {
+                type: 'goldCoin',
+                x: x,
+                y: y,
+                baseRadius: GAME_CONFIG.goldCoin.baseRadius,
+                get radius() { return this.baseRadius * baseSize; },
+                rotation: 0,
+                bobOffset: Math.random() * Math.PI * 2, // Случайный фазовый сдвиг для покачивания
+                collected: false
+            };
+        }
+
+        // === ОБНОВЛЕНИЕ ЗОЛОТЫХ МОНЕТОК ===
+        function updateGoldCoins() {
+            generateGoldCoins();
+            
+            for (let i = goldCoins.length - 1; i >= 0; i--) {
+                let coin = goldCoins[i];
+                
+                // Движение монетки влево
+                coin.x -= game.speed;
+                
+                // Вращение монетки
+                coin.rotation += GAME_CONFIG.goldCoin.rotationSpeed;
+                
+                // Покачивание монетки по вертикали
+                coin.bobOffset += GAME_CONFIG.goldCoin.bobSpeed;
+                
+                // Удаляем монетку, если она ушла за экран
+                if (coin.x < -100) {
+                    goldCoins.splice(i, 1);
+                    continue;
+                }
+                
+                // Проверка коллизии с игроком
+                if (checkGoldCoinCollision(player, coin)) {
+                    // Создаём эффект частиц при сборе
+                    createGoldCoinParticles(coin.x, coin.y);
+                    
+                    // Применяем замедление скорости
+                    applySpeedSlowDown();
+                    
+                    // Удаляем монетку
+                    goldCoins.splice(i, 1);
+                }
+            }
+        }
+
+        // === ПРОВЕРКА КОЛЛИЗИИ С ЗОЛОТОЙ МОНЕТКОЙ ===
+        function checkGoldCoinCollision(player, coin) {
+            // Используем круговую коллизию для монетки
+            let dx = player.x - coin.x;
+            let dy = player.y - coin.y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // Радиус коллизии игрока (меньше визуального размера для более удобного сбора)
+            let playerRadius = player.width / 2;
+            
+            // Монетка собрана, если расстояние меньше суммы радиусов
+            return distance < (playerRadius + coin.radius);
+        }
+
+        // === ПРИМЕНЕНИЕ ЗАМЕДЛЕНИЯ СКОРОСТИ ===
+        function applySpeedSlowDown() {
+            // Сохраняем текущую скорость как базовую для восстановления
+            game.baseSpeedBeforeSlowDown = game.speed;
+            
+            // Уменьшаем скорость на заданный процент
+            game.speed = game.speed * (1 - GAME_CONFIG.goldCoin.slowDownPercent);
+            
+            // Устанавливаем таймер замедления
+            game.slowDownTimer = GAME_CONFIG.goldCoin.slowDownDuration;
+            
+            console.log(`Золотая монетка собрана! Скорость уменьшена с ${game.baseSpeedBeforeSlowDown.toFixed(2)} до ${game.speed.toFixed(2)}`);
+        }
+
+        // === ОБНОВЛЕНИЕ ЗАМЕДЛЕНИЯ СКОРОСТИ ===
+        function updateSpeedSlowDown() {
+            // Если активен таймер замедления
+            if (game.slowDownTimer > 0) {
+                game.slowDownTimer--;
+                
+                // Когда таймер истёк, восстанавливаем скорость
+                if (game.slowDownTimer <= 0) {
+                    game.speed = game.baseSpeedBeforeSlowDown;
+                    game.slowDownTimer = 0;
+                    console.log(`Замедление закончено. Скорость восстановлена до ${game.speed.toFixed(2)}`);
+                }
+            }
+        }
+
+        // === СОЗДАНИЕ ЧАСТИЦ ПРИ СБОРЕ ЗОЛОТОЙ МОНЕТКИ ===
+        function createGoldCoinParticles(x, y) {
+            let particleCount = 15;
+            
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: x + (Math.random() - 0.5) * 20 * game.currentScale,
+                    y: y + (Math.random() - 0.5) * 20 * game.currentScale,
+                    vx: (Math.random() - 0.5) * 6 * game.currentScale,
+                    vy: (Math.random() - 0.5) * 6 * game.currentScale,
+                    baseRadius: Math.random() * 4 + 2,
+                    get radius() { return this.baseRadius * SCALING_CONFIG.particleScale * game.currentScale; },
+                    color: Math.random() > 0.5 ? '#FFD700' : '#FFA500', // Золотые и оранжевые частицы
+                    life: 35
+                });
+            }
+        }
+
+        // === ПРИМЕНЕНИЕ ЗАМЕДЛЕНИЯ СКОРОСТИ ===
+        function applySpeedSlowDown() {
+            // Сохраняем текущую скорость как базовую для восстановления
+            game.baseSpeedBeforeSlowDown = game.speed;
+            
+            // Уменьшаем скорость на заданный процент
+            game.speed = game.speed * (1 - GAME_CONFIG.goldCoin.slowDownPercent);
+            
+            // Устанавливаем таймер замедления
+            game.slowDownTimer = GAME_CONFIG.goldCoin.slowDownDuration;
+            
+            console.log(`Золотая монетка собрана! Скорость уменьшена с ${game.baseSpeedBeforeSlowDown.toFixed(2)} до ${game.speed.toFixed(2)}`);
+        }
+
+        // === ОБНОВЛЕНИЕ ЗАМЕДЛЕНИЯ СКОРОСТИ ===
+        function updateSpeedSlowDown() {
+            // Если активен таймер замедления
+            if (game.slowDownTimer > 0) {
+                game.slowDownTimer--;
+                
+                // Когда таймер истёк, восстанавливаем скорость
+                if (game.slowDownTimer <= 0) {
+                    game.speed = game.baseSpeedBeforeSlowDown;
+                    game.slowDownTimer = 0;
+                    console.log(`Замедление закончено. Скорость восстановлена до ${game.speed.toFixed(2)}`);
+                }
+            }
+        }
+
+        // === ОТРИСОВКА ЗОЛОТЫХ МОНЕТОК ===
+        function drawGoldCoins() {
+            for (let coin of goldCoins) {
+                ctx.save();
+                
+                // Вычисляем текущую позицию с учётом покачивания
+                let bobY = Math.sin(coin.bobOffset) * GAME_CONFIG.goldCoin.bobAmplitude * game.currentScale;
+                let displayY = coin.y + bobY;
+                
+                // Рисуем свечение вокруг монетки
+                const glowRadius = coin.radius * (1 + GAME_CONFIG.goldCoin.glowIntensity);
+                const glowGradient = ctx.createRadialGradient(
+                    coin.x, displayY, coin.radius * 0.5,
+                    coin.x, displayY, glowRadius
+                );
+                glowGradient.addColorStop(0, 'rgba(255, 215, 0, 0.6)');
+                glowGradient.addColorStop(0.5, 'rgba(255, 215, 0, 0.3)');
+                glowGradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+                
+                ctx.beginPath();
+                ctx.arc(coin.x, displayY, glowRadius, 0, Math.PI * 2);
+                ctx.fillStyle = glowGradient;
+                ctx.fill();
+                
+                // Рисуем основную монетку
+                ctx.translate(coin.x, displayY);
+                ctx.rotate(coin.rotation);
+                
+                // Внешний круг монетки (более светлый)
+                ctx.beginPath();
+                ctx.arc(0, 0, coin.radius, 0, Math.PI * 2);
+                const coinGradient = ctx.createRadialGradient(
+                    -coin.radius * 0.3, -coin.radius * 0.3, 0,
+                    0, 0, coin.radius
+                );
+                coinGradient.addColorStop(0, '#FFF8DC'); // Космический жёлтый (светлый)
+                coinGradient.addColorStop(0.5, '#FFD700'); // Золотой
+                coinGradient.addColorStop(1, '#DAA520'); // Золотой тень
+                ctx.fillStyle = coinGradient;
+                ctx.fill();
+                
+                // Внутренний круг (тёмный контур)
+                ctx.strokeStyle = '#B8860B';
+                ctx.lineWidth = 2 * game.currentScale;
+                ctx.stroke();
+                
+                // Рисуем символ "$" в центре монетки
+                ctx.fillStyle = '#B8860B';
+                ctx.font = `bold ${coin.radius * 1.2}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('$', 0, 0);
+                
+                // Добавляем блеск (отражение света)
+                ctx.beginPath();
+                ctx.arc(-coin.radius * 0.3, -coin.radius * 0.3, coin.radius * 0.15, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+
         // === УЛУЧШЕННАЯ ПРОВЕРКА КОЛЛИЗИЙ С БУФЕРНЫМИ ЗОНАМИ ===
         // Буферные зоны предотвращают "мгновенную смерть" при малейшем касании
         // Игрок и препятствия могут "чуть-чуть" наезжать друг на друга без поражения
@@ -1456,7 +1866,13 @@
                 player.vy = 0;
                 player.isJumping = false;
                 player.isJumpHeld = false;
-                game.airBoostUsed = false; // Сбрасываем флаг рывка при приземлении
+                
+                // Сбрасываем всю систему airBoost при приземлении
+                game.airBoostUsed = false;
+                game.airBoostReturnPhase = false;
+                game.airBoostVx = 0;
+                game.airBoostOffset = 0;
+                console.log('AirBoost: сброшен при приземлении');
                 
                 if (Math.abs(player.vy) > 5) {
                     createLandingParticles(player.x, player.y + player.height / 2);
@@ -1467,7 +1883,7 @@
             if (player.isJumping) {
                 if (game.airBoostUsed && game.airBoostRotation < Math.PI * 2) {
                     // Плавный поворот при рывке в воздухе
-                    game.airBoostRotation += 0.15;
+                    game.airBoostRotation += 0.25;
                     player.rotation = Math.sin(game.airBoostRotation) * 0.8;
                 } else {
                     // Обычное вращение при прыжке
@@ -1477,21 +1893,57 @@
                 player.rotation = Math.min(0.3, (player.y - (groundY - player.height / 2)) * 0.05);
             }
             
-            // === ПРИМЕНЕНИЕ ВЕКТОРА ДВИЖЕНИЯ ПРИ РЫВКЕ ===
-            if (game.airBoostVx > 0.1) {
-                // Применяем вектор движения вперёд
-                player.x += game.airBoostVx;
+            // === ИСПРАВЛЕННАЯ СИСТЕМА AIRBOOST С ВОЗВРАТОМ ===
+            if (game.airBoostUsed) {
+                game.airBoostDuration--;
                 
-                // Уменьшаем вектор для плавного затухания
-                game.airBoostVx *= game.airBoostVxDecay;
-                
-                // Сбрасываем вектор когда он становится очень маленьким
-                if (game.airBoostVx < 0.1) {
+                // ФАЗА 1: Активный буст (движение вперёд)
+                if (game.airBoostDuration > 0) {
+                    if (game.airBoostVx > 0.1) {
+                        // Применяем вектор движения вперёд
+                        player.x += game.airBoostVx;
+                        
+                        // Отслеживаем текущее смещение от исходной позиции
+                        game.airBoostOffset = player.x - game.airBoostOriginalX;
+                        
+                        // Ограничиваем максимальное смещение
+                        if (game.airBoostOffset > game.airBoostMaxOffset) {
+                            player.x = game.airBoostOriginalX + game.airBoostMaxOffset;
+                            game.airBoostOffset = game.airBoostMaxOffset;
+                        }
+                        
+                        // Уменьшаем вектор для плавного затухания
+                        game.airBoostVx *= game.airBoostVxDecay;
+                    }
+                } 
+                // ФАЗА 2: Завершение буста и начало возврата
+                else if (game.airBoostVx <= 0.1 && !game.airBoostReturnPhase) {
                     game.airBoostVx = 0;
+                    game.airBoostReturnPhase = true;
+                    console.log('AirBoost: начинаем возврат к исходной позиции');
+                }
+                // ФАЗА 3: Возврат в исходную позицию
+                else if (game.airBoostReturnPhase) {
+                    // Плавно возвращаемся к исходной позиции
+                    const returnDirection = game.airBoostOriginalX - player.x;
+                    const returnStep = Math.sign(returnDirection) * game.airBoostReturnSpeed;
+                    
+                    if (Math.abs(returnDirection) <= game.airBoostReturnSpeed) {
+                        // Достигли исходной позиции
+                        player.x = game.airBoostOriginalX;
+                        game.airBoostReturnPhase = false;
+                        game.airBoostUsed = false;
+                        game.airBoostOffset = 0;
+                        console.log('AirBoost: возврат завершён');
+                    } else {
+                        // Продолжаем возврат
+                        player.x += returnStep;
+                        game.airBoostOffset = player.x - game.airBoostOriginalX;
+                    }
                 }
             }
         }
-            
+
         // Создание частиц при рывке в воздухе
         function createAirBoostParticles(x, y) {
             let particleCount = 8; // Меньше частиц чем при приземлении
@@ -1554,7 +2006,12 @@
                 player.jumpStartTime = Date.now();
                 player.jumpHoldTime = 0;
                 player.jumpType = 'short';
-                game.airBoostUsed = false; // Сбрасываем флаг рывка
+                
+                // Сбрасываем всю систему airBoost при начале нового прыжка
+                game.airBoostUsed = false;
+                game.airBoostReturnPhase = false;
+                game.airBoostVx = 0;
+                game.airBoostOffset = 0;
                 
                 // Начинаем прыжок с короткой силой (адаптивной)
                 const jumpForces = GAME_CONFIG.jumpForce;
@@ -1567,13 +2024,21 @@
                 // Рывок в воздухе - короткий прыжок с переворотом
                 game.airBoostUsed = true;
                 game.airBoostRotation = 0; // Начинаем поворот
+                game.airBoostReturnPhase = false; // Сбрасываем фазу возврата
+                
+                // Сохраняем исходную позицию для возврата
+                game.airBoostOriginalX = player.x;
+                game.airBoostOffset = 0;
                 
                 // Увеличиваем импульс вверх (больше чем обычный прыжок, адаптивный)
                 const jumpForces = GAME_CONFIG.jumpForce;
                 player.vy = Math.min(player.vy, jumpForces.short * 0.5);
                 
                 // Добавляем плавное движение вперёд через вектор скорости
-                game.airBoostVx = 1.5 * game.currentScale; // Вектор движения вперёд
+                game.airBoostVx = 2.0 * game.currentScale; // Увеличена сила буста
+                game.airBoostDuration = 20; // Время активного буста
+                
+                console.log(`AirBoost: начат от позиции ${game.airBoostOriginalX.toFixed(1)}`);
                 
                 // Создаем частицы при рывке
                 createAirBoostParticles(player.x, player.y);
@@ -1597,11 +2062,6 @@
         // Игровой цикл
         function gameLoop() {
             const currentTime = Date.now();
-            
-            // Отладочный вывод каждый 60 кадров (1 раз в секунду при 60 FPS)
-            if (game.gameTime % 60 === 0) {
-                console.log('Игровой цикл работает, время:', game.gameTime, 'скорость:', game.speed);
-            }
             let deltaTime = currentTime - game.lastFrameTime;
             game.lastFrameTime = currentTime;
             
@@ -1631,11 +2091,20 @@
                 updateTerrain();
                 updatePlayer(normalizedDeltaTime);
                 updateObstacles();
+                updateGoldCoins();  // Обновляем золотые монетки
+                updateSpeedSlowDown();  // Обновляем замедление скорости
                 updateParticles(normalizedDeltaTime);
                 
                 // Обновляем HUD
                 scoreElement.textContent = `Счёт: ${Math.floor(game.score)}`;
                 speedElement.textContent = `Скорость: ${game.speed.toFixed(1)}x`;
+                
+                // Отладочная информация airBoost (можно убрать в продакшене)
+                if (game.airBoostUsed || game.airBoostReturnPhase) {
+                    const offset = (player.x - game.airBoostOriginalX).toFixed(1);
+                    const phase = game.airBoostUsed ? 'АКТИВЕН' : (game.airBoostReturnPhase ? 'ВОЗВРАТ' : 'ОЖИДАНИЕ');
+                    console.log(`AirBoost: ${phase}, смещение: ${offset}px, позиция: ${player.x.toFixed(1)}`);
+                }
             }
             
             // Отрисовка фона и игровых объектов
@@ -1645,10 +2114,23 @@
             drawMountains();    // Горы
             drawTerrain();      // Земля
             drawObstacles();    // Препятствия
+            drawGoldCoins();    // Золотые монетки
             drawPlayer();       // Игрок
             drawParticles();    // Частицы
             
             requestAnimationFrame(gameLoop);
+        }
+
+        // === ОТРИСОВКА ЧАСТИЦ ===
+        function drawParticles() {
+            for (let p of particles) {
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life / 40;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
         }
 
         // === ОТРИСОВКА ГРАДИЕНТА НЕБА ===
@@ -2027,16 +2509,6 @@
                 fullscreenBtn.title = 'Полноэкранный режим';
                 icon.textContent = '⛶'; // Символ "развернуть"
             }
-        }
-
-        // Обработчик изменения полноэкранного режима
-        function onFullscreenChange() {
-            updateFullscreenButton();
-            
-            // Пересчитываем размеры после изменения режима
-            setTimeout(() => {
-                resizeCanvas();
-            }, 100);
         }
 
         // === НАСТРОЙКА ОБРАБОТЧИКОВ СОБЫТИЙ ===
@@ -2560,4 +3032,4 @@
         window.onload = init;
     </script>
 </body>
-</html> 
+</html>
