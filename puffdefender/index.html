@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Кальян против Чертят</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #8B0000, #4A0000);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            max-width: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        /* HUD */
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 20px;
+            margin: 0 auto;
+            max-width: 600px;
+            z-index: 100;
+        }
+
+        .hud-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        #smoke-bar {
+            width: 120px;
+            height: 25px;
+            background: #444;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #888;
+        }
+
+        #smoke-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #87CEEB, #4682B4, #1E90FF);
+            transition: width 0.1s;
+        }
+
+        /* Player */
+        #player {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .emoji {
+            font-size: 48px;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
+        }
+
+        #hookah {
+            font-size: 32px;
+            transform: rotate(45deg);
+        }
+
+        /* Smoke Cloud - ВИДИМАЯ АНИМАЦИЯ */
+        #smoke-cloud {
+            position: absolute;
+            width: 0;
+            height: 0;
+            background: rgba(135, 206, 235, 0.6);
+            border-radius: 50%;
+            filter: blur(15px);
+            opacity: 0;
+            z-index: 5;
+            pointer-events: none;
+            box-shadow: 0 0 30px rgba(30, 144, 255, 0.8);
+        }
+
+        /* Enemies */
+        #enemies-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .enemy {
+            position: absolute;
+            font-size: 32px;
+            pointer-events: none;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        /* Start Screen */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+            z-index: 200;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #start-screen h1 {
+            font-size: 32px;
+            color: #FF4500;
+            text-shadow: 0 0 20px rgba(255, 69, 0, 0.8);
+            text-align: center;
+        }
+
+        #start-screen p {
+            font-size: 18px;
+            max-width: 90%;
+            line-height: 1.5;
+        }
+
+        #start-screen button {
+            background: linear-gradient(135deg, #FF4500, #FF6347);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(255, 69, 0, 0.6);
+            transition: all 0.3s;
+            width: 80%;
+            max-width: 300px;
+        }
+
+        #start-screen button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(255, 69, 0, 0.8);
+        }
+
+        /* Game Over */
+        #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            z-index: 200;
+            text-align: center;
+        }
+
+        #game-over.hidden {
+            display: none;
+        }
+
+        #game-over h2 {
+            font-size: 36px;
+            color: #FF4500;
+            text-shadow: 0 0 20px rgba(255, 69, 0, 0.8);
+        }
+
+        #game-over p {
+            font-size: 24px;
+            color: white;
+            margin: 10px 0;
+        }
+
+        #game-over button {
+            background: linear-gradient(135deg, #32CD32, #228B22);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(50, 205, 50, 0.6);
+            transition: all 0.3s;
+            width: 80%;
+            max-width: 300px;
+        }
+
+        #game-over button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(50, 205, 50, 0.8);
+        }
+
+        /* Health hearts */
+        #health {
+            font-size: 32px;
+            letter-spacing: 5px;
+        }
+
+        /* Touch Controls */
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .control-btn {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 3px solid white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            pointer-events: auto;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .control-btn:active {
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0.95);
+        }
+
+        #btn-left {
+            margin-right: 20px;
+        }
+
+        #btn-right {
+            margin-left: 20px;
+        }
+
+        #btn-blow {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, rgba(135, 206, 235, 0.7), rgba(30, 144, 255, 0.7));
+            border: 4px solid white;
+        }
+
+        #btn-blow:active {
+            background: linear-gradient(135deg, rgba(135, 206, 235, 0.9), rgba(30, 144, 255, 0.9));
+            transform: scale(0.9);
+            box-shadow: 0 0 30px rgba(30, 144, 255, 0.8);
+        }
+
+        /* Tutorial */
+        #tutorial {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 150;
+            max-width: 90%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 69, 0, 0.7); }
+            50% { box-shadow: 0 0 0 15px rgba(255, 69, 0, 0); }
+        }
+
+        #tutorial p {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        #tutorial button {
+            background: #FF4500;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            font-size: 18px;
+            border-radius: 25px;
+            cursor: pointer;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .hud-item {
+                font-size: 20px;
+                gap: 5px;
+            }
+            
+            #smoke-bar {
+                width: 100px;
+                height: 20px;
+            }
+            
+            .emoji {
+                font-size: 40px;
+            }
+            
+            #hookah {
+                font-size: 28px;
+            }
+            
+            .control-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 28px;
+            }
+            
+            #btn-blow {
+                width: 80px;
+                height: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <!-- HUD -->
+        <div id="hud">
+            <div class="hud-item">
+                <span class="emoji">💨</span>
+                <div id="smoke-bar">
+                    <div id="smoke-fill"></div>
+                </div>
+            </div>
+            <div class="hud-item">
+                <span class="emoji">👹</span>
+                <span id="score">0</span>
+            </div>
+            <div class="hud-item">
+                <span id="health"></span>
+            </div>
+        </div>
+
+        <!-- Player -->
+        <div id="player">
+            <span class="emoji player">😌</span>
+            <span id="hookah" class="emoji">🪶</span>
+            <div id="smoke-cloud"></div>
+        </div>
+
+        <!-- Enemies container -->
+        <div id="enemies-container"></div>
+
+        <!-- Game Over -->
+        <div id="game-over" class="hidden">
+            <h2>ИГРА ОКОНЧЕНА!</h2>
+            <p>Убито чертей: <span id="final-score">0</span></p>
+            <button onclick="location.reload()">Начать заново</button>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen">
+          <h3>Puff Defender</h3>  
+          <h1>💨 КАЛЬЯН ПРОТИВ ЧЕРТЕЙ 👹</h1>
+            <p>Касайся кнопок, чтобы управлять героем и дуть дымом!</p>
+            <button onclick="startGame()">НАЧАТЬ ИГРУ</button>
+            <div class="controls">
+                <p style="color: #aaa; font-size: 14px;">Игра для мобильных устройств</p>
+            </div>
+        </div>
+
+        <!-- Controls (initially hidden) -->
+        <div id="controls" style="display: none;">
+            <div id="btn-left" class="control-btn">⬅️</div>
+            <div id="btn-blow" class="control-btn">💨</div>
+            <div id="btn-right" class="control-btn">➡️</div>
+        </div>
+
+        <!-- Tutorial -->
+        <div id="tutorial" style="display: none;">
+            <p><strong>КАК ИГРАТЬ:</strong></p>
+            <p>⬅️ ➡️ — двигайся влево и вправо</p>
+            <p>💨 — дуй дымом, чтобы убивать чертей!</p>
+            <p>Не дай чертям коснуться тебя!</p>
+            <button onclick="hideTutorial()">ПОНЯЛ!</button>
+        </div>
+    </div>
+
+    <script>
+        // Игровые переменные
+        let score = 0;
+        let health = 3;
+        let smokeLevel = 100;
+        let isBlowing = false;
+        let gameActive = false;
+        let enemies = [];
+        let playerX = window.innerWidth / 2;
+        let playerSpeed = 8;
+        let enemySpawnRate = 1200; // мс
+        let movingLeft = false;
+        let movingRight = false;
+        let tutorialShown = false;
+        let gameWidth = 0;
+        let gameHeight = 0;
+        let lastSmokeTime = 0;
+        let smokeParticles = [];
+
+        // DOM элементы
+        const player = document.getElementById('player');
+        const smokeCloud = document.getElementById('smoke-cloud');
+        const smokeFill = document.getElementById('smoke-fill');
+        const scoreDisplay = document.getElementById('score');
+        const healthDisplay = document.getElementById('health');
+        const startScreen = document.getElementById('start-screen');
+        const gameOver = document.getElementById('game-over');
+        const finalScore = document.getElementById('final-score');
+        const enemiesContainer = document.getElementById('enemies-container');
+        const controls = document.getElementById('controls');
+        const tutorial = document.getElementById('tutorial');
+        const btnLeft = document.getElementById('btn-left');
+        const btnRight = document.getElementById('btn-right');
+        const btnBlow = document.getElementById('btn-blow');
+
+        // Инициализация размеров
+        function initSizes() {
+            const container = document.getElementById('game-container');
+            gameWidth = container.offsetWidth;
+            gameHeight = container.offsetHeight;
+            playerX = gameWidth / 2;
+        }
+
+        // Запуск игры
+        function startGame() {
+            startScreen.style.display = 'none';
+            controls.style.display = 'flex';
+            gameActive = true;
+            initSizes();
+            updateHealthDisplay();
+            
+            // Показать туториал при первом запуске
+            if (!tutorialShown) {
+                tutorial.style.display = 'block';
+            }
+            
+            // Основной игровой цикл
+            requestAnimationFrame(gameLoop);
+            
+            // Спавн врагов
+            setInterval(spawnEnemy, enemySpawnRate);
+            
+            // Регенерация дыма
+            setInterval(() => {
+                if (gameActive && !isBlowing && smokeLevel < 100) {
+                    smokeLevel += 3;
+                    updateSmokeBar();
+                }
+            }, 100);
+        }
+
+        // Скрыть туториал
+        function hideTutorial() {
+            tutorial.style.display = 'none';
+            tutorialShown = true;
+        }
+
+        // Основной игровой цикл
+        function gameLoop() {
+            if (!gameActive) return;
+            
+            // Движение игрока
+            movePlayer();
+            
+            // Обновление врагов
+            updateEnemies();
+            
+            // Обновление частиц дыма
+            updateSmokeParticles();
+            
+            // Проверка столкновений
+            checkCollisions();
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Движение игрока
+        function movePlayer() {
+            const playerWidth = 60; // примерная ширина игрока
+            
+            if (movingLeft && playerX > playerWidth / 2) {
+                playerX -= playerSpeed;
+            }
+            if (movingRight && playerX < gameWidth - playerWidth / 2) {
+                playerX += playerSpeed;
+            }
+            
+            player.style.left = `${playerX}px`;
+            player.style.transform = 'translateX(-50%)';
+        }
+
+        // Спавн врагов - ТОЛЬКО СВЕРХУ, СЛЕВА И СПРАВА (НЕ СНИЗУ!)
+        function spawnEnemy() {
+            if (!gameActive) return;
+            
+            const enemy = document.createElement('div');
+            enemy.className = 'enemy';
+            
+            // Случайный тип чёртика
+            const demons = ['👹', '👺', '👻', '👽', '💀'];
+            const type = Math.floor(Math.random() * demons.length);
+            enemy.textContent = demons[type];
+            
+            // Случайная позиция спавна (ТОЛЬКО сверху, слева, справа - НЕТ снизу!)
+            // 0 = сверху, 1 = слева, 2 = справа
+            const side = Math.floor(Math.random() * 3);
+            
+            let x, y, speedX = 0, speedY = 0;
+            
+            switch(side) {
+                case 0: // сверху
+                    x = Math.random() * gameWidth;
+                    y = -50;
+                    speedY = 2.5 + Math.random() * 2.5;
+                    break;
+                case 1: // слева
+                    x = -50;
+                    y = 50 + Math.random() * (gameHeight - 200); // избегаем нижней части
+                    speedX = 2.5 + Math.random() * 2.5;
+                    break;
+                case 2: // справа
+                    x = gameWidth + 50;
+                    y = 50 + Math.random() * (gameHeight - 200); // избегаем нижней части
+                    speedX = -(2.5 + Math.random() * 2.5);
+                    break;
+            }
+            
+            enemy.style.left = `${x}px`;
+            enemy.style.top = `${y}px`;
+            
+            enemiesContainer.appendChild(enemy);
+            
+            enemies.push({
+                element: enemy,
+                x: x,
+                y: y,
+                speedX: speedX,
+                speedY: speedY,
+                size: 32,
+                health: type === 4 ? 3 : 1 // 💀 сложнее
+            });
+        }
+
+        // Обновление врагов
+        function updateEnemies() {
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const enemy = enemies[i];
+                
+                // Движение
+                enemy.x += enemy.speedX;
+                enemy.y += enemy.speedY;
+                
+                // Обновление позиции
+                enemy.element.style.left = `${enemy.x}px`;
+                enemy.element.style.top = `${enemy.y}px`;
+                
+                // Удаление если вышел за экран
+                if (enemy.x < -100 || enemy.x > gameWidth + 100 || 
+                    enemy.y < -100 || enemy.y > gameHeight + 100) {
+                    enemy.element.remove();
+                    enemies.splice(i, 1);
+                }
+            }
+        }
+
+        // Создание частиц дыма для анимации
+        function createSmokeParticle(x, y) {
+            const particle = document.createElement('div');
+            particle.className = 'smoke-particle';
+            particle.style.position = 'absolute';
+            particle.style.left = `${x}px`;
+            particle.style.top = `${y}px`;
+            particle.style.width = '20px';
+            particle.style.height = '20px';
+            particle.style.background = 'rgba(135, 206, 235, 0.8)';
+            particle.style.borderRadius = '50%';
+            particle.style.filter = 'blur(5px)';
+            particle.style.zIndex = '4';
+            particle.style.pointerEvents = 'none';
+            
+            document.getElementById('game-container').appendChild(particle);
+            
+            smokeParticles.push({
+                element: particle,
+                x: x,
+                y: y,
+                size: 20,
+                alpha: 0.8,
+                speedX: (Math.random() - 0.5) * 4,
+                speedY: (Math.random() - 0.5) * 2 - 3, // вверх
+                life: 100
+            });
+        }
+
+        // Обновление частиц дыма
+        function updateSmokeParticles() {
+            for (let i = smokeParticles.length - 1; i >= 0; i--) {
+                const p = smokeParticles[i];
+                
+                p.x += p.speedX;
+                p.y += p.speedY;
+                p.size += 0.3;
+                p.alpha -= 0.02;
+                p.life--;
+                
+                p.element.style.left = `${p.x}px`;
+                p.element.style.top = `${p.y}px`;
+                p.element.style.width = `${p.size}px`;
+                p.element.style.height = `${p.size}px`;
+                p.element.style.opacity = p.alpha;
+                
+                if (p.life <= 0 || p.alpha <= 0) {
+                    p.element.remove();
+                    smokeParticles.splice(i, 1);
+                }
+            }
+        }
+
+        // Проверка столкновений
+        function checkCollisions() {
+            const playerRect = {
+                x: playerX - 30,
+                y: gameHeight - 130,
+                width: 60,
+                height: 60
+            };
+            
+            // Столкновение с игроком
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const enemy = enemies[i];
+                const enemyRect = {
+                    x: enemy.x - 16,
+                    y: enemy.y - 16,
+                    width: 32,
+                    height: 32
+                };
+                
+                // Проверка столкновения с игроком
+                if (checkCollision(playerRect, enemyRect)) {
+                    takeDamage();
+                    enemy.element.remove();
+                    enemies.splice(i, 1);
+                    continue;
+                }
+                
+                // Проверка столкновения с частицами дыма
+                for (let j = smokeParticles.length - 1; j >= 0; j--) {
+                    const smoke = smokeParticles[j];
+                    const smokeRect = {
+                        x: smoke.x - smoke.size / 2,
+                        y: smoke.y - smoke.size / 2,
+                        width: smoke.size,
+                        height: smoke.size
+                    };
+                    
+                    if (checkCollision(smokeRect, enemyRect)) {
+                        enemy.health--;
+                        if (enemy.health <= 0) {
+                            score += 1; // ИСПРАВЛЕНО: +1 вместо +10
+                            scoreDisplay.textContent = score;
+                            enemy.element.remove();
+                            enemies.splice(i, 1);
+                            break;
+                        }
+                        // Удалить частицу после попадания
+                        smoke.element.remove();
+                        smokeParticles.splice(j, 1);
+                    }
+                }
+            }
+        }
+
+        // Проверка коллизии
+        function checkCollision(rect1, rect2) {
+            return !(
+                rect1.x + rect1.width < rect2.x ||
+                rect1.x > rect2.x + rect2.width ||
+                rect1.y + rect1.height < rect2.y ||
+                rect1.y > rect2.y + rect2.height
+            );
+        }
+
+        // Урон
+        function takeDamage() {
+            health--;
+            updateHealthDisplay();
+            
+            // Эффект потряхивания
+            player.style.animation = 'shake 0.5s';
+            setTimeout(() => {
+                player.style.animation = '';
+            }, 500);
+            
+            if (health <= 0) {
+                gameOverGame();
+            }
+        }
+
+        // Обновление здоровья
+        function updateHealthDisplay() {
+            healthDisplay.textContent = '❤️'.repeat(health);
+        }
+
+        // Обновление шкалы дыма
+        function updateSmokeBar() {
+            smokeFill.style.width = `${smokeLevel}%`;
+        }
+
+        // Удар дымом
+        function blowSmoke() {
+            if (!gameActive || smokeLevel <= 0) return;
+            
+            isBlowing = true;
+            
+            // Создаем частицы дыма для анимации
+            const now = Date.now();
+            if (now - lastSmokeTime > 50) { // ограничение частоты
+                const playerRect = player.getBoundingClientRect();
+                const containerRect = document.getElementById('game-container').getBoundingClientRect();
+                
+                const smokeX = playerRect.left - containerRect.left + playerRect.width / 2;
+                const smokeY = playerRect.top - containerRect.top + 30;
+                
+                // Создаем несколько частиц
+                for (let i = 0; i < 3; i++) {
+                    createSmokeParticle(
+                        smokeX + (Math.random() - 0.5) * 20,
+                        smokeY + (Math.random() - 0.5) * 20
+                    );
+                }
+                
+                lastSmokeTime = now;
+            }
+            
+            // Расход дыма - ИСПРАВЛЕНО: 8% вместо 2%
+            smokeLevel -= 8;
+            if (smokeLevel < 0) smokeLevel = 0;
+            updateSmokeBar();
+        }
+
+        // Остановка дыма
+        function stopBlowing() {
+            isBlowing = false;
+        }
+
+        // Конец игры
+        function gameOverGame() {
+            gameActive = false;
+            finalScore.textContent = score;
+            gameOver.style.display = 'flex';
+        }
+
+        // Обработчики кнопок
+        btnLeft.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            movingLeft = true;
+        });
+
+        btnLeft.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            movingLeft = false;
+        });
+
+        btnLeft.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            movingLeft = true;
+        });
+
+        btnLeft.addEventListener('mouseup', (e) => {
+            e.preventDefault();
+            movingLeft = false;
+        });
+
+        btnRight.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            movingRight = true;
+        });
+
+        btnRight.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            movingRight = false;
+        });
+
+        btnRight.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            movingRight = true;
+        });
+
+        btnRight.addEventListener('mouseup', (e) => {
+            e.preventDefault();
+            movingRight = false;
+        });
+
+        // Непрерывное создание дыма при удержании кнопки
+        let blowInterval = null;
+
+        btnBlow.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (blowInterval) clearInterval(blowInterval);
+            blowInterval = setInterval(blowSmoke, 100);
+        });
+
+        btnBlow.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (blowInterval) clearInterval(blowInterval);
+            stopBlowing();
+        });
+
+        btnBlow.addEventListener('touchcancel', (e) => {
+            e.preventDefault();
+            if (blowInterval) clearInterval(blowInterval);
+            stopBlowing();
+        });
+
+        btnBlow.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            if (blowInterval) clearInterval(blowInterval);
+            blowInterval = setInterval(blowSmoke, 100);
+        });
+
+        btnBlow.addEventListener('mouseup', (e) => {
+            e.preventDefault();
+            if (blowInterval) clearInterval(blowInterval);
+            stopBlowing();
+        });
+
+        btnBlow.addEventListener('mouseleave', (e) => {
+            e.preventDefault();
+            if (blowInterval) clearInterval(blowInterval);
+            stopBlowing();
+        });
+
+        // Адаптация под изменение размера
+        window.addEventListener('resize', () => {
+            initSizes();
+            if (gameActive) {
+                playerX = Math.min(Math.max(playerX, 50), gameWidth - 50);
+            }
+        });
+
+        // Добавляем анимацию потряхивания
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(-50%) rotate(0deg); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-50%) rotate(-5deg); }
+                20%, 40%, 60%, 80% { transform: translateX(-50%) rotate(5deg); }
+            }
+            #player {
+                animation-fill-mode: forwards;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
