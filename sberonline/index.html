@@ -128,6 +128,23 @@
       border-bottom: 1px solid #D8D8D8;
     }
 
+    .field-value-input {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-size: 18px;
+      color: #1D1D1D;
+      font-weight: 600;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #D8D8D8;
+      background: transparent;
+      font-family: inherit;
+    }
+
+    .field-value-input:focus {
+      border-bottom-color: #32AA46;
+    }
+
     /* Переключатели */
     .toggle-group {
       display: flex;
@@ -210,27 +227,10 @@
       color: #8E8E93;
     }
 
-    /* Курсор */
-    .cursor {
-      display: inline-block;
-      width: 2px;
-      height: 20px;
-      background-color: #32AA46;
-      margin-left: 2px;
-      margin-right: 4px;
-      animation: blink 1s infinite;
-      vertical-align: middle;
-    }
-
     #currency {
       font-size: 20px;
       font-weight: 600;
       color: #1D1D1D;
-    }
-
-    @keyframes blink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0; }
     }
 
     .clear-button {
@@ -429,7 +429,7 @@
       <!-- Поле "На что собираете" -->
       <div class="field">
         <div class="field-label">Комментарий</div>
-        <div class="field-value" id="commentValue">С днём рождения! Обнимаю крепко!</div>
+        <input type="text" class="field-value-input" id="commentValue" value="С днём рождения! Обнимаю крепко!">
       </div>
 
       <!-- Поле "Нужно собрать" -->
@@ -448,11 +448,9 @@
         <div class="amount-field-wrapper">
           <div class="amount-input-container">
             <div class="amount-input-wrapper">
-              <input type="text" class="amount-input" id="amountInput" value="1 000" placeholder="0" oninput="formatAmount(this)" onfocus="showCursor()" onblur="hideCursor()">
-              <span class="cursor" id="cursor"></span>
+              <input type="text" class="amount-input" id="amountInput" value="1 000" placeholder="0" oninput="formatAmount(this)">
               <span id="currency">₽</span>
             </div>
-            <button class="clear-button" onclick="clearAmount()" id="clearBtn" style="display: none;">×</button>
           </div>
         </div>
       </div>
@@ -547,34 +545,13 @@
       if (value) {
         value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
         input.value = value;
-        document.getElementById('clearBtn').style.display = 'block';
-      } else {
-        document.getElementById('clearBtn').style.display = 'none';
       }
-    }
-
-    // Показать курсор
-    function showCursor() {
-      document.getElementById('cursor').style.display = 'inline-block';
-    }
-
-    // Скрыть курсор
-    function hideCursor() {
-      document.getElementById('cursor').style.display = 'none';
-    }
-
-    // Очистить поле суммы
-    function clearAmount() {
-      const input = document.getElementById('amountInput');
-      input.value = '';
-      input.focus();
-      document.getElementById('clearBtn').style.display = 'none';
     }
 
     // Обработка кнопки "ПРОДОЛЖИТЬ"
     function handleContinue() {
       var purpose = document.getElementById('purposeText').textContent.trim();
-      var comment = document.getElementById('commentValue').textContent.trim();
+      var comment = document.getElementById('commentValue').value.trim();
       var periodBtn = document.querySelector('.screen-1 .toggle-button.active');
       var period = periodBtn ? periodBtn.textContent.trim() : '';
       var amountRaw = document.getElementById('amountInput').value.trim();
@@ -600,17 +577,6 @@
       document.getElementById('screen1').classList.remove('hidden');
     }
 
-    // Показать курсор при загрузке страницы (поле уже заполнено)
-    window.addEventListener('load', function() {
-      const input = document.getElementById('amountInput');
-      if (input.value) {
-        document.getElementById('clearBtn').style.display = 'block';
-      }
-      // Симулируем фокус для демонстрации курсора
-      setTimeout(() => {
-        input.focus();
-      }, 500);
-    });
   </script>
 </body>
 </html>
