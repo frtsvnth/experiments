@@ -1,0 +1,2563 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shashkin SnowRide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        
+        body, html {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            background: #0a0a2a;
+            font-family: 'Arial', sans-serif;
+            color: white;
+            /* Предотвращаем зум на мобильных устройствах */
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #gameCanvas {
+            display: block;
+            background: #0a0a2a;
+            border-radius: 4px;
+        }
+        
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            z-index: 10;
+        }
+        
+        #score {
+            color: #4fc3f7;
+        }
+        
+        #speed {
+            color: #69f0ae;
+            font-size: 18px;
+            margin-top: 5px;
+        }
+        
+        #jumpButton {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(79, 195, 247, 0.7);
+            border: 4px solid white;
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transition: all 0.1s;
+            box-shadow: 0 0 20px rgba(79, 195, 247, 0.5);
+            opacity: 0.9;
+            touch-action: manipulation;
+        }
+        
+        #jumpButton:active {
+            transform: scale(0.95);
+            background: rgba(79, 195, 247, 1);
+        }
+        
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(10, 10, 42, 0.95);
+            z-index: 20;
+        }
+        
+        #startScreen {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        #gameOverScreen {
+            display: none;
+        }
+        
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #4fc3f7;
+            text-shadow: 0 0 10px rgba(79, 195, 247, 0.7);
+        }
+        
+        h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #ff5252;
+        }
+        
+        .screen p {
+            font-size: 20px;
+            margin-bottom: 30px;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+        
+        .button {
+            padding: 15px 40px;
+            font-size: 22px;
+            font-weight: bold;
+            background: linear-gradient(to bottom, #4fc3f7, #0288d1);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .button:active {
+            transform: translateY(1px);
+        }
+        
+        .controls {
+            margin-top: 30px;
+            font-size: 18px;
+            color: #bbbbbb;
+        }
+        
+        #highScore {
+            color: #ffeb3b;
+            font-size: 28px;
+            margin-top: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 36px; }
+            h2 { font-size: 28px; }
+            #hud { font-size: 20px; }
+            #jumpButton {
+                width: 100px;
+                height: 100px;
+                font-size: 18px;
+            }
+        }
+        
+        @media (max-height: 600px) {
+            #jumpButton {
+                bottom: 15px;
+                right: 15px;
+                width: 80px;
+                height: 80px;
+                font-size: 16px;
+            }
+        }
+        
+        /* Портретный режим */
+        @media (orientation: portrait) {
+            #jumpButton {
+                bottom: 10vh;
+                width: 80px;
+                height: 80px;
+                font-size: 16px;
+            }
+        }
+        
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 20px;
+            color: #4fc3f7;
+            z-index: 30;
+            display: none;
+        }
+
+        /* Стили для кнопки полноэкранного режима */
+        .fullscreen-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 45px;
+            height: 45px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(0, 0, 0, 0.8);
+            border-color: rgba(255, 255, 255, 0.6);
+            transform: scale(1.05);
+        }
+
+        .fullscreen-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Адаптивная кнопка для мобильных */
+        @media (max-width: 768px) {
+            .fullscreen-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 22px;
+                top: 10px;
+                right: 10px;
+            }
+        }
+
+        /* Анимация при переключении полноэкранного режима */
+        .fullscreen-btn.fullscreen-active {
+            background: rgba(76, 175, 80, 0.8);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .fullscreen-btn.fullscreen-active:hover {
+            background: rgba(76, 175, 80, 0.9);
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Кнопка полноэкранного режима -->
+        <button id="fullscreenBtn" class="fullscreen-btn" title="Полноэкранный режим">
+            <span class="fullscreen-icon">⛶</span>
+        </button>
+        
+        <div id="hud">
+            <div id="score">Счёт: 0</div>
+            <div id="speed">Скорость: 1.0x</div>
+        </div>
+        
+        <button id="jumpButton">ПРЫЖОК</button>
+        
+        <div id="startScreen" class="screen">
+            <h1>❄️ Shashkin SnowRide ❄️</h1>
+            <p>Управляйте снегоходом, прыгайте через препятствия и старайтесь проехать как можно дальше!</p>
+            <p style="color: #69f0ae; font-size: 16px;">Короткое нажатие - низкий прыжок<br>Длинное нажатие - высокий прыжок</p>
+            <button id="startButton" class="button">СТАРТ</button>
+            <div class="controls">
+                Управление: ПРОБЕЛ, СТРЕЛКА ВВЕРХ, КЛИК или КНОПКА ПРЫЖКА<br>
+                Лучший счёт: <span id="bestScore">0</span>
+            </div>
+        </div>
+        
+        <div id="gameOverScreen" class="screen">
+            <h2>ИГРА ОКОНЧЕНА</h2>
+            <p>Ваш счёт: <span id="finalScore">0</span></p>
+            <p>Лучший счёт: <span id="highScore">0</span></p>
+            <button id="restartButton" class="button">ИГРАТЬ СНОВА</button>
+        </div>
+        
+        <div id="loading" class="loading">Загрузка ресурсов...</div>
+    </div>
+
+    <script>
+        // Получаем элементы DOM
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const speedElement = document.getElementById('speed');
+        const jumpButton = document.getElementById('jumpButton');
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const startButton = document.getElementById('startButton');
+        const restartButton = document.getElementById('restartButton');
+        const finalScoreElement = document.getElementById('finalScore');
+        const highScoreElement = document.getElementById('highScore');
+        const bestScoreElement = document.getElementById('bestScore');
+        const loadingElement = document.getElementById('loading');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+        // === НАСТРАИВАЕМЫЕ ПАРАМЕТРЫ ===
+        const SCALING_CONFIG = {
+            baseWidth: 1000,
+            baseHeight: 600,
+            playerScale: 1.7,
+            obstacleScale: 1.0,
+            particleScale: 1.0,
+            autoScale: true,
+            minScale: 0.7,
+            maxScale: 1.5,
+        };
+
+        // === УТИЛИТА ДЛЯ ОПРЕДЕЛЕНИЯ МОБИЛЬНОГО УСТРОЙСТВА ===
+        // Используется во всех адаптивных настройках для единообразного определения
+        function isMobileDevice() {
+            const result = (window.innerWidth && window.innerWidth <= 768) || 
+                          (navigator.userAgent && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) ||
+                          window.innerHeight > window.innerWidth;
+            
+            if (game.gameTime % 300 === 0) { // Проверяем каждые 5 секунд
+                console.log('isMobileDevice:', result, 'width:', window.innerWidth, 'height:', window.innerHeight);
+            }
+            return result;
+        }
+
+        const GAME_CONFIG = {
+            // Адаптивная позиция игрока (15% от ширины экрана)
+            get playerX() { 
+                return (game && game.gameWidth) ? game.gameWidth * 0.15 : 150; 
+            },
+            gravity: 0.6,
+            // Адаптивная сила прыжка для мобильных устройств
+            get jumpForce() {
+                const isMobile = isMobileDevice();
+                if (isMobile) {
+                    return {
+                        short: -7,     // Ещё больше уменьшена для предотвращения вылета за экран
+                        long: -10      // Ещё больше уменьшена для предотвращения вылета за экран
+                    };
+                } else {
+                    return {
+                        short: -12,
+                        long: -18
+                    };
+                }
+            },
+            maxJumpHoldTime: 50, // Уменьшено для более отзывчивого управления на мобильных
+            baseSpeed: 6,
+            speedIncreaseRate: 0.0005, // Увеличена базовая скорость набора сложности
+            terrainSegmentLength: 70,
+            // Адаптивная высота неровностей для мобильных устройств
+            get terrainHeightVariation() {
+                const isMobile = isMobileDevice();
+                return isMobile ? 50 : 80; // Уменьшено для мобильных для более плавного геймплея
+            },
+            // Адаптивная высота земли для мобильных устройств
+            get terrainBaseHeight() {
+                const isMobile = isMobileDevice();
+                return isMobile ? 0.80 : 0.75; // Ещё выше для мобильных для лучшей видимости
+            },
+            
+            // Настройки сложности (оптимизировано для мобильных устройств)
+            difficulty: {
+                initialObstacleChance: 0.010,  // Чуть больше препятствий для динамики
+                maxObstacleChance: 0.030,      // Увеличен максимум
+                initialMinDistance: 450,      // Уменьшено расстояние для лучшего темпа
+                finalMinDistance: 250,        // Уменьшено финальное расстояние
+                difficultyIncreaseDistance: 5000,
+                obstacleTypes: ['snowHeap', 'snowball', 'tree', 'hare', 'rock', 'log']
+            },
+            
+            // Увеличение скорости каждые 100 очков
+            speedBoostInterval: 100,
+            speedBoostMultiplier: 1.15, // Коэффициент ускорения увеличения скорости (умеренный)
+            
+            // === УЛУЧШЕННЫЕ НАСТРОЙКИ ФОНОВОЙ ГРАФИКИ ===
+            starCount: 100,                    // Оптимизировано для мобильных
+            mountainLayers: 3,                // Уменьшено для производительности
+            mountainsPerLayer: 5,             // Уменьшено для производительности
+            
+            // Настройки звёзд
+            starsConfig: {
+                size: {
+                    min: 0.3,                   // Уменьшено с 0.5 до 0.3 (более мелкие звёзды)
+                    max: 1.2                    // Уменьшено с 2.5 до 1.2 (более деликатные яркие звёзды)
+                },
+                brightness: {
+                    min: 0.15,                  // Уменьшено с 0.3 до 0.15 (менее яркие)
+                    max: 0.6                     // Уменьшено с 1.0 до 0.6 (более приглушённые)
+                },
+                skyArea: 0.3,                   // Уменьшено с 0.5 до 0.3 (только верхние 30% экрана)
+                twinkleIntensity: 0.15          // Уменьшено мерцание с 0.3 до 0.15
+            },
+            
+            // Настройки гор (адаптировано для мобильных экранов)
+            mountainsConfig: {
+                colors: [
+                    'rgba(35, 70, 120, 0.8)',   // Ближние горы - более контрастные
+                    'rgba(85, 110, 150, 0.7)',  // Второй слой - более видимый
+                    'rgba(140, 160, 190, 0.6)', // Третий слой - более заметный
+                    'rgba(200, 215, 240, 0.5)'  // Дальние горы - менее прозрачные
+                ],
+                speedFactors: [0.02, 0.015, 0.01, 0.005], // Параллакс
+                baseHeights: [350, 280, 210, 140], // Значительно увеличенные высоты для видимости
+                heightVariations: [80, 70, 60, 50], // Увеличенные вариации
+                // Адаптивная настройка высот для мобильных
+                getMobileAdjustedHeights() {
+                    const isMobile = isMobileDevice();
+                    if (isMobile) {
+                        return [450, 360, 270, 180]; // Значительно выше для мобильных для лучшей видимости
+                    }
+                    return this.baseHeights;
+                }
+            },
+            
+            // Настройки спрайта снегохода
+            snowmobileSprite: {
+                columns: 4,
+                rows: 6,
+                totalFrames: 24,
+                frameDuration: 40 // мс на кадр (25 FPS)
+            },
+            
+            // Настройки анимированного спрайта дерева (4x4 матрица)
+            treeSprite: {
+                columns: 4,
+                rows: 4,
+                totalFrames: 16,
+                frameDuration: 80, // мс на кадр (12.5 FPS) - медленная анимация
+                animationSpeed: 0.015 // Скорость анимации
+            },
+            
+            // === НАСТРОЙКИ БУФЕРНОЙ ЗОНЫ ДЛЯ КОЛЛИЗИЙ (МОБИЛЬНАЯ ВЕРСИЯ) ===
+            // Буферная зона предотвращает "мгновенную смерть" при малейшем касании
+            // Увеличение значений делает игру легче, уменьшение - сложнее
+            collisionBuffer: {
+                playerBuffer: 10,     // Увеличен буфер для мобильных устройств
+                obstacleBuffer: 6,   // Увеличен буфер для препятствий
+                enablePlayerBuffer: true,   // Включить буфер для игрока
+                enableObstacleBuffer: true, // Включить буфер для препятствий
+                
+                // Инструкция по настройке:
+                // playerBuffer: Добавляет "невидимую зону" вокруг игрока
+                // obstacleBuffer: Уменьшает размер препятствий для коллизий
+                // Рекомендуемые значения: 5-15 пикселей для комфортной игры
+                
+                // Для разных типов препятствий можно задать индивидуальные буферы (оптимизировано для мобильных):
+                customBuffers: {
+                    snowHeap: 8,     // Увеличен буфер для сугробов
+                    snowball: 10,    // Увеличен буфер для снежков (круглые)
+                    tree: 6,         // Увеличен буфер для деревьев
+                    hare: 12,        // Увеличен буфер для зайцев (животные)
+                    rock: 5,         // Увеличен буфер для камней
+                    log: 7           // Увеличен буфер для брёвен
+                }
+            }
+        };
+
+        // === ПОДРОБНАЯ ДОКУМЕНТАЦИЯ И ИНСТРУКЦИИ ПО НАСТРОЙКЕ ===
+        
+        /*
+        ╔══════════════════════════════════════════════════════════════════════════════╗
+        ║                           SNOWRIDE - РУКОВОДСТВО ПО НАСТРОЙКЕ                    ║
+        ╚══════════════════════════════════════════════════════════════════════════════╝
+        
+        Добро пожаловать в SnowRide! Эта игра представляет собой настраиваемый 
+        бесконечный раннер про снегоход с богатой системой конфигурации.
+        
+        ┌──────────────────────────────────────────────────────────────────────────────┐
+        │                              ОСНОВНЫЕ НАСТРОЙКИ                              │
+        └──────────────────────────────────────────────────────────────────────────────┘
+        
+        1. НАСТРОЙКИ МАСШТАБИРОВАНИЯ (SCALING_CONFIG)
+        
+        • baseWidth, baseHeight: Базовые размеры игрового поля (1000x600)
+        • playerScale, obstacleScale, particleScale: Масштабирование объектов
+        • autoScale: Автоматическое масштабирование под размер экрана
+        • minScale, maxScale: Минимальный и максимальный масштаб (0.7-1.5)
+        
+        РЕКОМЕНДАЦИИ:
+        - Для мобильных устройств рекомендуется autoScale: true
+        - Для десктопа можно установить autoScale: false для фиксированного размера
+        - Изменение baseWidth/baseHeight влияет на общую геометрию игры
+        
+        2. НАСТРОЙКИ ИГРОВОЙ МЕХАНИКИ (GAME_CONFIG)
+        
+        ┌─ ДВИЖЕНИЕ И ФИЗИКА ─────────────────────────────────────────────────────────┐
+        │ playerX: X-координата игрока (250)                                         │
+        │ gravity: Гравитация (0.6) - больше = быстрее падение                     │
+        │ baseSpeed: Базовая скорость игры (6)                                       │
+        │ speedIncreaseRate: Скорость увеличения сложности (0.0005)                 │
+        └─────────────────────────────────────────────────────────────────────────────┘
+        
+        ┌─ СИСТЕМА ПРЫЖКОВ ───────────────────────────────────────────────────────────┐
+        │ jumpForce.short: Сила короткого прыжка (-12)                               │
+        │ jumpForce.long: Сила длинного прыжка (-18)                                │
+        │ maxJumpHoldTime: Макс. время удержания прыжка (70мс)                      │
+        │                                                                             │
+        │ МЕХАНИКА ПРЫЖКОВ:                                                          │
+        │ • Короткое нажатие (< 200мс) = короткий прыжок                            │
+        │ • Длинное нажатие (> 200мс) = высокий прыжок                             │
+        │ • Удержание до maxJumpHoldTime = максимальный прыжок                     │
+        └─────────────────────────────────────────────────────────────────────────────┘
+        
+        ┌─ ГЕНЕРАЦИЯ ПРЕПЯТСТВИЙ ────────────────────────────────────────────────────┐
+        │ obstacleTypes: ['snowHeap', 'snowball', 'tree', 'hare', 'rock', 'log']     │
+        │                                                                             │
+        │ difficulty:                                                                 │
+        │ • initialObstacleChance: Начальная частота препятствий (0.008)             │
+        │ • maxObstacleChance: Максимальная частота (0.025)                          │
+        │ • initialMinDistance: Нач. минимальное расстояние между препятствиями (500) │
+        │ • finalMinDistance: Конечное минимальное расстояние (300)                  │
+        │ • difficultyIncreaseDistance: Дистанция для полного усложнения (5000)      │
+        └─────────────────────────────────────────────────────────────────────────────┘
+        
+        ┌─ СКОРОСТНЫЕ БУСТЫ ─────────────────────────────────────────────────────────┐
+        │ speedBoostInterval: Интервал для буста скорости (100 очков)                │
+        │ speedBoostMultiplier: Множитель ускорения (1.15)                          │
+        │                                                                             │
+        │ КАЖДЫЕ 300 ОЧКОВ: скорость увеличения растёт в 1.3 раза                    │
+        └─────────────────────────────────────────────────────────────────────────────┘
+        
+        ┌─ БУФЕРНАЯ ЗОНА ДЛЯ КОЛЛИЗИЙ ───────────────────────────────────────────────┐
+        │ collisionBuffer:                                                            │
+        │ • playerBuffer: Буфер игрока (8px) - "невидимая зона" вокруг снегохода    │
+        │ • obstacleBuffer: Буфер препятствий (4px) - уменьшает размер коллизий     │
+        │ • enablePlayerBuffer: Включить буфер игрока (true)                        │
+        │ • enableObstacleBuffer: Включить буфер препятствий (true)                 │
+        │                                                                             │
+        │ customBuffers - индивидуальные буферы для типов препятствий:              │
+        │ • snowHeap: 6px (сугробы)                                                  │
+        │ • snowball: 8px (снежки - круглые, больше буфер)                         │
+        │ • tree: 4px (деревья)                                                      │
+        │ • hare: 10px (зайцы - живые, большой буфер)                               │
+        │ • rock: 3px (камни)                                                        │
+        │ • log: 5px (бревна)                                                        │
+        │                                                                             │
+        │ НАСТРОЙКА СЛОЖНОСТИ:                                                       │
+        │ • УВЕЛИЧИТЬ буферы = игра легче (больше "прощения")                      │
+        │ • УМЕНЬШИТЬ буферы = игра сложнее (точные коллизии)                      │
+        │ • 0px = точные коллизии без "прощения"                                    │
+        │ • 10-15px = очень лёгкая игра                                            │
+        └─────────────────────────────────────────────────────────────────────────────┘
+        
+        ┌─ ВИЗУАЛЬНЫЕ ЭФФЕКТЫ ──────────────────────────────────────────────────────┐
+        │ starCount: Количество звёзд (200)                                          │
+        │ mountainLayers: Слоёв гор (4)                                              │
+        │ mountainsPerLayer: Гор в каждом слое (6)                                   │
+        │                                                                             │
+        │ snowmobileSprite: Настройки анимации спрайта                               │
+        │ • columns, rows: Размеры спрайтшита (4x6)                                  │
+        │ • totalFrames: Общее количество кадров (24)                                │
+        │ • frameDuration: Время кадра в мс (40 = 25 FPS)                           │
+        └─────────────────────────────────────────────────────────────────────────────┘
+        
+        ┌──────────────────────────────────────────────────────────────────────────────┐
+        │                            ПРАКТИЧЕСКИЕ СОВЕТЫ                             │
+        └──────────────────────────────────────────────────────────────────────────────┘
+        
+        🎮 ДЛЯ НАЧИНАЮЩИХ ИГРОКОВ:
+        • Увеличьте playerBuffer до 12-15
+        • Увеличьте customBuffers на 2-3 для всех препятствий  
+        • Уменьшите speedIncreaseRate до 0.0001
+        • Уменьшите initialObstacleChance до 0.01
+        
+        🎯 ДЛЯ ОПЫТНЫХ ИГРОКОВ:
+        • Уменьшите playerBuffer до 4-6
+        • Установите enablePlayerBuffer: false для максимальной точности
+        • Увеличьте speedIncreaseRate до 0.0003
+        • Увеличьте maxObstacleChance до 0.04
+        
+        📱 ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ (АВТОМАТИЧЕСКИ АДАПТИРОВАНЫ):
+        • jumpForce.short: -7, jumpForce.long: -10 (ещё больше уменьшены для предотвращения вылета за экран)
+        • maxJumpHoldTime: 50мс для более отзывчивого управления
+        • playerBuffer: 10 (пальцы менее точны)
+        • terrainHeightVariation: 50px (уменьшено для более плавного геймплея на маленьких экранах)
+        • terrainBaseHeight: 0.80 (поднято для лучшей видимости)
+        • Горы: значительно увеличены в высоте для лучшей видимости (450, 360, 270, 180px)
+        • Производительность: уменьшено количество звёзд и гор для плавной работы
+        
+        ⚡ ДЛЯ ВЫСОКОЙ СЛОЖНОСТИ:
+        • Установите все буферы в 0
+        • Увеличьте speedIncreaseRate до 0.0005
+        • Уменьшите minDistance до 150
+        • Увеличьте obstacleChance до 0.05
+        
+        🔧 ТЕХНИЧЕСКИЕ НАСТРОЙКИ:
+        • terrainSegmentLength: Длина сегмента земли (70px)
+        • terrainHeightVariation: Вы variation земли (80px) 
+        • terrainBaseHeight: Базовая высота земли (0.75-0.78 = адаптивно для мобильных)
+        
+        ┌──────────────────────────────────────────────────────────────────────────────┐
+        │                              ТИПЫ ПРЕПЯТСТВИЙ                              │
+        └──────────────────────────────────────────────────────────────────────────────┘
+        
+        🏔️  SNOWHEAP (Сугроб): Прямоугольное препятствие, средняя сложность
+        ⚪ SNOWBALL (Снежок): Круглое препятствие, катится и вращается  
+        🌲 TREE (Дерево): Высокое препятствие с кроной и стволом
+        🐰 HARE (Заяц): Живое препятствие, прыгает и двигается
+        🪨 ROCK (Камень): Небольшое прочное препятствие
+        🪵 LOG (Бревно): Длинное препятствие на земле
+        
+        ┌──────────────────────────────────────────────────────────────────────────────┐
+        │                              ПРОИЗВОДИТЕЛЬНОСТЬ                             │
+        └──────────────────────────────────────────────────────────────────────────────┘
+        
+        Для слабых устройств рекомендуется:
+        • Уменьшить starCount до 100
+        • Уменьшить mountainLayers до 2
+        • Увеличить frameDuration до 60 (16 FPS)
+        • Отключить сложные визуальные эффекты
+        
+        ╔══════════════════════════════════════════════════════════════════════════════╗
+        ║  Удачной настройки и приятной игры! 🚗❄️                                  ║
+        ║  Изменяйте параметры постепенно и тестируйте результат                      ║
+        ╚══════════════════════════════════════════════════════════════════════════════╝
+        */
+
+        // === РАСЧЁТ ТЕКУЩЕГО МАСШТАБА С УЛУЧШЕННЫМ МОБИЛЬНЫМ МАСШТАБИРОВАНИЕМ ===
+        function calculateCurrentScale() {
+            if (!SCALING_CONFIG.autoScale) {
+                return {
+                    scale: 1.0,
+                    width: SCALING_CONFIG.baseWidth,
+                    height: SCALING_CONFIG.baseHeight
+                };
+            }
+            
+            const container = document.getElementById('gameContainer');
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+            
+            // Определяем мобильное устройство
+            const isMobile = isMobileDevice();
+            
+            // На мобильных устройствах приоритет по высоте, на десктопе - по ширине
+            let scale;
+            if (isMobile) {
+                // Для мобильных: масштабируем по высоте, но не превышаем базовую ширину
+                scale = Math.min(containerHeight / SCALING_CONFIG.baseHeight, containerWidth / SCALING_CONFIG.baseWidth);
+            } else {
+                // Для десктопа: масштабируем по ширине
+                scale = containerWidth / SCALING_CONFIG.baseWidth;
+            }
+            
+            // Ограничиваем масштаб
+            scale = Math.max(
+                SCALING_CONFIG.minScale,
+                Math.min(SCALING_CONFIG.maxScale, scale)
+            );
+            
+            // Вычисляем финальные размеры
+            const finalWidth = Math.min(SCALING_CONFIG.baseWidth * scale, containerWidth);
+            const finalHeight = Math.min(SCALING_CONFIG.baseHeight * scale, containerHeight);
+            
+            // Корректируем масштаб с учётом финальных размеров
+            const finalScale = Math.min(finalWidth / SCALING_CONFIG.baseWidth, finalHeight / SCALING_CONFIG.baseHeight);
+            
+            return { 
+                scale: finalScale, 
+                width: finalWidth, 
+                height: finalHeight 
+            };
+        }
+
+        // Ресурсы игры
+        const assets = {
+            snowmobileSprite: null, // Спрайтшит снегохода
+            snowmobileStatic: null, // Статичное изображение (fallback)
+            snowHeapImg: null,
+            snowballImg: null,
+            treeImg: null,
+            hareImg: null,
+            rockImg: null,
+            logImg: null,
+            loaded: 0,
+            total: 0
+        };
+
+        // Игровые переменные
+        let game = {
+            running: false,
+            score: 0,
+            speed: GAME_CONFIG.baseSpeed,
+            gameTime: 0,
+            highScore: localStorage.getItem('snowride_highscore') || 0,
+            distanceSinceLastObstacle: 0,
+            currentScale: 1.0,
+            gameWidth: SCALING_CONFIG.baseWidth,
+            gameHeight: SCALING_CONFIG.baseHeight,
+            animationTime: 0,
+            lastFrameTime: 0,
+            
+            // Для увеличения скорости
+            baseSpeedIncreaseRate: GAME_CONFIG.speedIncreaseRate,
+            currentSpeedIncreaseRate: GAME_CONFIG.speedIncreaseRate,
+            
+            // Параметры сложности
+            currentDifficulty: {
+                obstacleChance: GAME_CONFIG.difficulty.initialObstacleChance,
+                minDistance: GAME_CONFIG.difficulty.initialMinDistance
+            },
+            
+            // Для анимации спрайта снегохода
+            spriteFrame: 0,
+            spriteTimer: 0,
+            
+            // Для анимации дерева
+            treeSpriteFrame: 0,
+            treeSpriteTimer: 0,
+            
+            // Для рывка в воздухе (плавная анимация)
+            airBoostUsed: false,       // Использован ли рывок в воздухе
+            airBoostRotation: 0,       // Текущий угол поворота при рывке
+            airBoostVx: 0,             // Вектор движения вперёд при рывке
+            airBoostVxDecay: 0.92,     // Затухание вектора (чем меньше, тем быстрее)
+            airBoostDuration: 15       // Количество кадров для завершения рывка
+        };
+
+        // Игрок
+        let player = {
+            x: GAME_CONFIG.playerX,
+            y: 0,
+            baseWidth: 80,
+            baseHeight: 40,
+            get width() { return this.baseWidth * SCALING_CONFIG.playerScale * game.currentScale; },
+            get height() { return this.baseHeight * SCALING_CONFIG.playerScale * game.currentScale; },
+            vy: 0,
+            isJumping: false,
+            rotation: 0,
+            
+            // Для управления прыжком
+            isJumpHeld: false,
+            jumpStartTime: 0,
+            jumpHoldTime: 0,
+            jumpType: 'short'
+        };
+
+        // Ландшафт
+        let terrain = [];
+        let terrainPoints = [];
+
+        // Звёзды для неба
+        let stars = [];
+
+        // Облака для более красивого неба
+        let clouds = [];
+
+        // Препятствия
+        let obstacles = [];
+
+        // Частицы
+        let particles = [];
+
+        // Параллакс-слои (горы) - без снежных шапок
+        let mountains = [];
+
+        // Функция загрузки изображений
+        function loadImage(src, name) {
+            return new Promise((resolve, reject) => {
+                assets.total++;
+                const img = new Image();
+                
+                img.onload = () => {
+                    assets[name] = img;
+                    assets.loaded++;
+                    console.log(`Загружен: ${src}`);
+                    resolve(img);
+                };
+                img.onerror = () => {
+                    console.log(`Изображение ${src} не найдено`);
+                    assets.loaded++;
+                    resolve(null);
+                };
+                img.src = src;
+            });
+        }
+
+        // Загрузка всех ресурсов
+        async function loadAssets() {
+            loadingElement.style.display = 'block';
+            
+            try {
+                // Сначала пробуем загрузить спрайтшит
+                await Promise.all([
+                    loadImage('snowride-sheet.png', 'snowmobileSprite').then((sprite) => {
+                        if (!sprite) {
+                            // Если спрайтшит не найден, пробуем статичное изображение
+                            return loadImage('snowride.png', 'snowmobileStatic');
+                        }
+                        return sprite;
+                    }),
+                    loadImage('snowheap.png', 'snowHeapImg'),
+                    loadImage('snowball.png', 'snowballImg'),
+                    loadImage('tree.png', 'treeImg'),
+                    loadImage('tree-sheet.png', 'treeImg'),
+                    loadImage('hare.png', 'hareImg'),
+                    loadImage('rock.png', 'rockImg'),
+                    loadImage('log.png', 'logImg')
+                ]);
+            } catch (error) {
+                console.log('Ошибка загрузки ресурсов:', error);
+            }
+            
+            loadingElement.style.display = 'none';
+        }
+
+        // Инициализация
+        async function init() {
+            console.log('Инициализация игры началась...');
+            
+            // Проверяем наличие необходимых элементов
+            if (!canvas || !ctx) {
+                console.error('Не найдены canvas или ctx');
+                return;
+            }
+            
+            // Загрузка ресурсов
+            await loadAssets();
+            
+            // Установка лучшего счета
+            bestScoreElement.textContent = game.highScore;
+            highScoreElement.textContent = game.highScore;
+            
+            // Инициализация звёзд
+            initStars();
+            
+            // Инициализация облаков
+            initClouds();
+            
+            // Инициализация ландшафта
+            initTerrain();
+            
+            // Проверка спрайтшита дерева
+            if (assets.treeImg) {
+                const expectedFrameWidth = assets.treeImg.width / GAME_CONFIG.treeSprite.columns;
+                const expectedFrameHeight = assets.treeImg.height / GAME_CONFIG.treeSprite.rows;
+                console.log(`Tree sprite loaded: ${assets.treeImg.width}x${assets.treeImg.height}, frame: ${expectedFrameWidth}x${expectedFrameHeight}`);
+            }
+            
+            // Инициализация параллакс-гор
+            initMountains();
+            
+            // Установка начальной позиции игрока
+            player.y = game.gameHeight * 0.65 - player.height / 2;
+            
+            // Настройка обработчиков событий
+            setupEventListeners();
+            
+            // Адаптивный размер канваса
+            resizeCanvas();
+            
+            // Запуск игрового цикла
+            game.lastFrameTime = Date.now();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // === ИСПРАВЛЕННАЯ ИНИЦИАЛИЗАЦИЯ ЗВЁЗД ===
+        function initStars() {
+            stars = [];
+            const starsConfig = GAME_CONFIG.starsConfig;
+            
+            for (let i = 0; i < GAME_CONFIG.starCount; i++) {
+                stars.push({
+                    // Равномерно распределяем по всей ширине экрана
+                    x: Math.random() * (game.gameWidth + 200) - 100, // +200/-100 для плавного появления
+                    // Только верхняя часть неба
+                    y: Math.random() * game.gameHeight * starsConfig.skyArea,
+                    size: Math.random() * (starsConfig.size.max - starsConfig.size.min) + starsConfig.size.min,
+                    speed: Math.random() * 0.12 + 0.03,     // Более медленное движение
+                    brightness: Math.random() * (starsConfig.brightness.max - starsConfig.brightness.min) + starsConfig.brightness.min,
+                    twinkleSpeed: Math.random() * 0.03 + 0.01, // Более медленное мерцание
+                    twinkleOffset: Math.random() * Math.PI * 2,
+                    // Более разнообразные цвета звёзд
+                    color: Math.random() > 0.8 ? '#b3e5fc' :  // Голубоватые звёзды
+                           Math.random() > 0.6 ? '#fff8dc' :  // Тёплые звёзды  
+                           Math.random() > 0.4 ? '#e6e6fa' :  // Лавандовые звёзды
+                           '#ffffff'                         // Белые звёзды
+                });
+            }
+        }
+
+        // === ИНИЦИАЛИЗАЦИЯ ОБЛАКОВ ===
+        function initClouds() {
+            clouds = [];
+            const cloudCount = Math.floor(GAME_CONFIG.starCount * 0.15); // 15% от количества звёзд
+            
+            for (let i = 0; i < cloudCount; i++) {
+                clouds.push({
+                    x: Math.random() * game.gameWidth,
+                    y: Math.random() * game.gameHeight * 0.25, // Верхняя четверть экрана
+                    width: Math.random() * 80 + 40, // 40-120px
+                    height: Math.random() * 30 + 20, // 20-50px
+                    speed: Math.random() * 0.8 + 0.2, // 0.2-1.0
+                    opacity: Math.random() * 0.3 + 0.1, // 0.1-0.4
+                    puffs: Math.floor(Math.random() * 3) + 2 // 2-4 комка облака
+                });
+            }
+        }
+
+        // Инициализация ландшафта (старый вариант)
+        function initTerrain() {
+            terrainPoints = [];
+            
+            for (let x = -GAME_CONFIG.terrainSegmentLength; x <= game.gameWidth + GAME_CONFIG.terrainSegmentLength * 20; x += GAME_CONFIG.terrainSegmentLength) {
+                let baseY = game.gameHeight * GAME_CONFIG.terrainBaseHeight;
+                let variation = Math.sin(x * 0.01) * GAME_CONFIG.terrainHeightVariation * 0.5;
+                let randomY = (Math.random() - 0.5) * GAME_CONFIG.terrainHeightVariation * 0.2;
+                let y = baseY + variation + randomY;
+                
+                // Ограничиваем высоту
+                let minHeight = game.gameHeight * 0.35;
+                let maxHeight = game.gameHeight * 0.8;
+                y = Math.max(minHeight, Math.min(maxHeight, y));
+                
+                terrainPoints.push({x, y});
+            }
+            
+            updateTerrain();
+        }
+
+        // === УЛУЧШЕННАЯ ИНИЦИАЛИЗАЦИЯ ГОР (АДАПТИВНАЯ ДЛЯ МОБИЛЬНЫХ) ===
+        function initMountains() {
+            mountains = [];
+            
+            const mountainsConfig = GAME_CONFIG.mountainsConfig;
+            const isMobile = isMobileDevice();
+            
+            // Получаем адаптивные высоты
+            const baseHeights = isMobile ? mountainsConfig.getMobileAdjustedHeights() : mountainsConfig.baseHeights;
+            
+            for (let layer = 0; layer < GAME_CONFIG.mountainLayers; layer++) {
+                let layerMountains = [];
+                let count = GAME_CONFIG.mountainsPerLayer;
+                let speedFactor = mountainsConfig.speedFactors[layer] || (0.02 + layer * 0.01);
+                
+                // Адаптивные высоты для текущего слоя
+                let baseHeight = baseHeights[layer] * game.currentScale;
+                
+                for (let i = 0; i < count; i++) {
+                    let width = (game.gameWidth / count) * (1.5 + Math.random() * 0.5);
+                    // Улучшенное позиционирование для полного покрытия
+                    let x = (game.gameWidth / count) * i - width * 0.1 + Math.random() * 30;
+                    
+                    // Больше вариаций высоты для лучшей видимости
+                    let height = baseHeight * (0.7 + Math.random() * 0.6);
+                    
+                    layerMountains.push({
+                        x, 
+                        width, 
+                        height, 
+                        speedFactor, 
+                        color: mountainsConfig.colors[layer] || 'rgba(60, 100, 160, 0.7)',
+                        baseWidth: width,
+                        baseHeight: height
+                    });
+                }
+                
+                // Добавляем дополнительные горы для полного покрытия экрана
+                for (let i = 0; i < 3; i++) { // Увеличено до 3 для лучшего покрытия
+                    let extraWidth = (game.gameWidth / count) * (1.2 + Math.random() * 0.4);
+                    let extraX = -extraWidth + i * (game.gameWidth + extraWidth);
+                    let extraHeight = baseHeight * (0.6 + Math.random() * 0.6);
+                    
+                    layerMountains.push({
+                        x: extraX, 
+                        width: extraWidth, 
+                        height: extraHeight, 
+                        speedFactor, 
+                        color: mountainsConfig.colors[layer] || 'rgba(60, 100, 160, 0.7)',
+                        baseWidth: extraWidth,
+                        baseHeight: extraHeight
+                    });
+                }
+                
+                mountains.push(layerMountains);
+            }
+        }
+
+        // Обновление размеров гор при изменении масштаба (адаптивное)
+        function updateMountainsScale() {
+            const mountainsConfig = GAME_CONFIG.mountainsConfig;
+            const isMobile = isMobileDevice();
+            const baseHeights = isMobile ? mountainsConfig.getMobileAdjustedHeights() : mountainsConfig.baseHeights;
+            
+            for (let layer = 0; layer < mountains.length; layer++) {
+                let layerMountains = mountains[layer];
+                const originalBaseHeight = baseHeights[layer];
+                
+                for (let mountain of layerMountains) {
+                    mountain.width = mountain.baseWidth * (game.gameWidth / SCALING_CONFIG.baseWidth);
+                    
+                    // Адаптивное обновление высоты
+                    const heightRatio = mountain.baseHeight / (originalBaseHeight * (isMobile ? 1.0 : 1.0));
+                    mountain.height = originalBaseHeight * game.currentScale * heightRatio * (0.8 + Math.random() * 0.4);
+                }
+            }
+        }
+
+        // Обновление сложности игры
+        function updateDifficulty() {
+            let progress = Math.min(game.score / GAME_CONFIG.difficulty.difficultyIncreaseDistance, 1.0);
+            
+            game.currentDifficulty.obstacleChance = 
+                GAME_CONFIG.difficulty.initialObstacleChance + 
+                (GAME_CONFIG.difficulty.maxObstacleChance - GAME_CONFIG.difficulty.initialObstacleChance) * progress;
+            
+            game.currentDifficulty.minDistance = 
+                GAME_CONFIG.difficulty.initialMinDistance - 
+                (GAME_CONFIG.difficulty.initialMinDistance - GAME_CONFIG.difficulty.finalMinDistance) * progress;
+        }
+
+        // Обновление скорости с учётом буста каждые 300 очков
+        function updateSpeedWithBoost() {
+            // Каждые 300 очков увеличиваем коэффициент увеличения скорости
+            const boostLevel = Math.floor(game.score / GAME_CONFIG.speedBoostInterval);
+            game.currentSpeedIncreaseRate = game.baseSpeedIncreaseRate * 
+                Math.pow(GAME_CONFIG.speedBoostMultiplier, boostLevel);
+            
+            // Увеличиваем скорость с учётом текущего коэффициента
+            game.speed = GAME_CONFIG.baseSpeed + game.gameTime * game.currentSpeedIncreaseRate;
+        }
+
+        // Обновление анимации спрайта снегохода
+        function updateSpriteAnimation(deltaTime) {
+            if (!assets.snowmobileSprite) return;
+            
+            game.spriteTimer += deltaTime;
+            if (game.spriteTimer >= GAME_CONFIG.snowmobileSprite.frameDuration) {
+                game.spriteTimer = 0;
+                game.spriteFrame = (game.spriteFrame + 1) % GAME_CONFIG.snowmobileSprite.totalFrames;
+            }
+        }
+
+        // === ОБНОВЛЕНИЕ АНИМАЦИИ ДЕРЕВА ===
+        function updateTreeAnimation(deltaTime) {
+            if (!assets.treeImg) return;
+            
+            game.treeSpriteTimer += deltaTime;
+            if (game.treeSpriteTimer >= GAME_CONFIG.treeSprite.frameDuration) {
+                game.treeSpriteTimer = 0;
+                game.treeSpriteFrame = (game.treeSpriteFrame + 1) % GAME_CONFIG.treeSprite.totalFrames;
+            }
+        }
+            
+        // Обновление ландшафта
+        function updateTerrain() {
+            for (let i = 0; i < terrainPoints.length; i++) {
+                terrainPoints[i].x -= game.speed;
+            }
+            
+            while (terrainPoints.length > 0 && terrainPoints[0].x < -GAME_CONFIG.terrainSegmentLength * 2) {
+                terrainPoints.shift();
+            }
+            
+            let lastPoint = terrainPoints[terrainPoints.length - 1];
+            while (lastPoint.x < game.gameWidth + GAME_CONFIG.terrainSegmentLength * 10) {
+                let x = lastPoint.x + GAME_CONFIG.terrainSegmentLength;
+                let baseY = game.gameHeight * GAME_CONFIG.terrainBaseHeight;
+                let variation = Math.sin(x * 0.01) * GAME_CONFIG.terrainHeightVariation * 0.5;
+                let randomY = (Math.random() - 0.5) * GAME_CONFIG.terrainHeightVariation * 0.2;
+                let y = baseY + variation + randomY;
+                
+                let minHeight = game.gameHeight * 0.35;
+                let maxHeight = game.gameHeight * 0.8;
+                y = Math.max(minHeight, Math.min(maxHeight, y));
+                
+                terrainPoints.push({x, y});
+                lastPoint = terrainPoints[terrainPoints.length - 1];
+            }
+            
+            terrain = [];
+            terrain.push({x: -100, y: game.gameHeight + 100});
+            
+            for (let point of terrainPoints) {
+                terrain.push({x: point.x, y: point.y});
+            }
+            
+            terrain.push({x: terrainPoints[terrainPoints.length - 1].x, y: game.gameHeight + 100});
+        }
+
+        // === ИСПРАВЛЕННОЕ ОБНОВЛЕНИЕ ЗВЁЗД ===
+        function updateStars() {
+            game.animationTime += 0.01;
+            const starsConfig = GAME_CONFIG.starsConfig;
+            
+            for (let star of stars) {
+                star.x -= star.speed;
+                star.twinkleOffset += star.twinkleSpeed;
+                
+                // Звезда полностью ушла за левый край
+                if (star.x < -50) {
+                    // Появляется справа с новыми параметрами
+                    star.x = game.gameWidth + 50;
+                    star.y = Math.random() * game.gameHeight * starsConfig.skyArea;
+                    star.size = Math.random() * (starsConfig.size.max - starsConfig.size.min) + starsConfig.size.min;
+                    star.speed = Math.random() * 0.12 + 0.03;
+                    star.brightness = Math.random() * (starsConfig.brightness.max - starsConfig.brightness.min) + starsConfig.brightness.min;
+                    star.twinkleSpeed = Math.random() * 0.03 + 0.01;
+                    star.twinkleOffset = Math.random() * Math.PI * 2;
+                    star.color = Math.random() > 0.8 ? '#b3e5fc' :
+                                Math.random() > 0.6 ? '#fff8dc' :
+                                Math.random() > 0.4 ? '#e6e6fa' :
+                                '#ffffff';
+                }
+            }
+        }
+
+        // === ОБНОВЛЕНИЕ ОБЛАКОВ ===
+        function updateClouds() {
+            for (let cloud of clouds) {
+                cloud.x -= cloud.speed;
+                
+                if (cloud.x + cloud.width < -50) {
+                    cloud.x = game.gameWidth + 50;
+                    cloud.y = Math.random() * game.gameHeight * 0.25;
+                    cloud.width = Math.random() * 80 + 40;
+                    cloud.height = Math.random() * 30 + 20;
+                    cloud.speed = Math.random() * 0.8 + 0.2;
+                    cloud.opacity = Math.random() * 0.3 + 0.1;
+                    cloud.puffs = Math.floor(Math.random() * 3) + 2;
+                }
+            }
+        }
+
+        // Генерация препятствий
+        function generateObstacles() {
+            game.distanceSinceLastObstacle += game.speed;
+            
+            updateDifficulty();
+            
+            if (game.distanceSinceLastObstacle > game.currentDifficulty.minDistance) {
+                let chance = game.currentDifficulty.obstacleChance * 
+                            (game.distanceSinceLastObstacle / game.currentDifficulty.minDistance);
+                
+                if (Math.random() < chance) {
+                    let x = game.gameWidth + 100;
+                    let groundY = getGroundHeightAt(x);
+                    
+                    let obstacleType = GAME_CONFIG.difficulty.obstacleTypes[
+                        Math.floor(Math.random() * GAME_CONFIG.difficulty.obstacleTypes.length)
+                    ];
+                    
+                    let obstacle = createObstacle(obstacleType, x, groundY);
+                    
+                    if (obstacle) {
+                        obstacles.push(obstacle);
+                        game.distanceSinceLastObstacle = 0;
+                    }
+                }
+                
+                if (game.distanceSinceLastObstacle > game.currentDifficulty.minDistance * 2) {
+                    let x = game.gameWidth + 100;
+                    let groundY = getGroundHeightAt(x);
+                    let obstacleType = GAME_CONFIG.difficulty.obstacleTypes[
+                        Math.floor(Math.random() * GAME_CONFIG.difficulty.obstacleTypes.length)
+                    ];
+                    let obstacle = createObstacle(obstacleType, x, groundY);
+                    
+                    if (obstacle) {
+                        obstacles.push(obstacle);
+                        game.distanceSinceLastObstacle = 0;
+                    }
+                }
+            }
+        }
+
+        // Создание препятствия
+        function createObstacle(type, x, groundY) {
+            let baseSize = 1.0 * SCALING_CONFIG.obstacleScale * game.currentScale;
+            
+            switch(type) {
+                case 'snowHeap':
+                    return {
+                        type: 'snowHeap',
+                        x: x,
+                        y: groundY,
+                        baseWidth: 60,
+                        baseHeight: 40,
+                        get width() { return this.baseWidth * baseSize; },
+                        get height() { return this.baseHeight * baseSize; },
+                        color: '#ffffff',
+                        hasImage: assets.snowHeapImg !== null
+                    };
+                case 'snowball':
+                    return {
+                        type: 'snowball',
+                        x: x,
+                        y: groundY - 30 * game.currentScale,
+                        baseRadius: 30,
+                        get radius() { return this.baseRadius * baseSize; },
+                        color: '#f0f8ff',
+                        hasImage: assets.snowballImg !== null,
+                        rotation: Math.random() * Math.PI * 2
+                    };
+                case 'tree':
+                    return {
+                        type: 'tree',
+                        x: x,
+                        y: groundY,
+                        baseWidth: 40,
+                        baseHeight: 80,
+                        get width() { return this.baseWidth * baseSize; },
+                        get height() { return this.baseHeight * baseSize; },
+                        trunkColor: '#8B4513',
+                        foliageColor: '#228B22',
+                        hasImage: assets.treeImg !== null,
+                        // Добавляем поля для анимации
+                        spriteFrame: Math.floor(Math.random() * GAME_CONFIG.treeSprite.totalFrames),
+                        animationOffset: Math.random() * 1000 // Разный старт анимации для разных деревьев
+                    };
+                case 'hare':
+                    return {
+                        type: 'hare',
+                        x: x,
+                        y: groundY - 20 * game.currentScale,
+                        baseWidth: 40,
+                        baseHeight: 30,
+                        get width() { return this.baseWidth * baseSize; },
+                        get height() { return this.baseHeight * baseSize; },
+                        color: '#f5f5f5',
+                        jumpOffset: Math.random() * Math.PI * 2,
+                        jumpSpeed: 0.05 + Math.random() * 0.03,
+                        hasImage: assets.hareImg !== null
+                    };
+                case 'rock':
+                    return {
+                        type: 'rock',
+                        x: x,
+                        y: groundY - 20 * game.currentScale,
+                        baseWidth: 50,
+                        baseHeight: 30,
+                        get width() { return this.baseWidth * baseSize; },
+                        get height() { return this.baseHeight * baseSize; },
+                        color: '#777777',
+                        hasImage: assets.rockImg !== null
+                    };
+                case 'log':
+                    return {
+                        type: 'log',
+                        x: x,
+                        y: groundY - 15 * game.currentScale,
+                        baseWidth: 80,
+                        baseHeight: 20,
+                        get width() { return this.baseWidth * baseSize; },
+                        get height() { return this.baseHeight * baseSize; },
+                        color: '#8B4513',
+                        hasImage: assets.logImg !== null
+                    };
+                default:
+                    return null;
+            }
+        }
+
+        // Получение высоты земли
+        function getGroundHeightAt(x) {
+            for (let i = 0; i < terrainPoints.length - 1; i++) {
+                let p1 = terrainPoints[i];
+                let p2 = terrainPoints[i + 1];
+                
+                if (x >= p1.x && x <= p2.x) {
+                    let t = (x - p1.x) / (p2.x - p1.x);
+                    return p1.y + (p2.y - p1.y) * t;
+                }
+            }
+            
+            return terrainPoints[terrainPoints.length - 1].y;
+        }
+
+        // Обновление препятствий
+        function updateObstacles() {
+            generateObstacles();
+            
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let obstacle = obstacles[i];
+                obstacle.x -= game.speed;
+                
+                if (obstacle.type === 'hare') {
+                    obstacle.jumpOffset += obstacle.jumpSpeed;
+                    obstacle.y = getGroundHeightAt(obstacle.x) - 20 * game.currentScale + 
+                                Math.sin(obstacle.jumpOffset) * 15 * game.currentScale;
+                }
+                
+                if (obstacle.type === 'snowball') {
+                    obstacle.rotation += 0.05;
+                }
+                
+                if (obstacle.x < -100) {
+                    obstacles.splice(i, 1);
+                    continue;
+                }
+                
+                if (checkCollision(player, obstacle)) {
+                    gameOver();
+                    return;
+                }
+            }
+        }
+
+        // === УЛУЧШЕННАЯ ПРОВЕРКА КОЛЛИЗИЙ С БУФЕРНЫМИ ЗОНАМИ ===
+        // Буферные зоны предотвращают "мгновенную смерть" при малейшем касании
+        // Игрок и препятствия могут "чуть-чуть" наезжать друг на друга без поражения
+        
+        /**
+         * Проверяет коллизию между игроком и препятствием с учётом буферных зон
+         * @param {Object} player - объект игрока
+         * @param {Object} obstacle - объект препятствия
+         * @returns {boolean} true если есть коллизия, false иначе
+         */
+        function checkCollision(player, obstacle) {
+            // Получаем настройки буферов из конфигурации
+            const bufferConfig = GAME_CONFIG.collisionBuffer;
+            
+            // Вычисляем буферы с учётом масштаба игры
+            const scaleAdjustedPlayerBuffer = bufferConfig.enablePlayerBuffer ? 
+                bufferConfig.playerBuffer * game.currentScale : 0;
+            
+            // Индивидуальный буфер для типа препятствия
+            const obstacleSpecificBuffer = bufferConfig.customBuffers[obstacle.type] || 0;
+            const scaleAdjustedObstacleBuffer = bufferConfig.enableObstacleBuffer ? 
+                (obstacleSpecificBuffer + bufferConfig.obstacleBuffer) * game.currentScale : 0;
+            
+            // Границы игрока с буфером
+            let playerLeft = player.x - player.width / 2 - scaleAdjustedPlayerBuffer;
+            let playerRight = player.x + player.width / 2 + scaleAdjustedPlayerBuffer;
+            let playerTop = player.y - player.height / 2 - scaleAdjustedPlayerBuffer;
+            let playerBottom = player.y + player.height / 2 + scaleAdjustedPlayerBuffer;
+            
+            switch(obstacle.type) {
+                case 'snowHeap':
+                case 'rock':
+                case 'log':
+                    // Прямоугольные препятствия с буфером
+                    let left = obstacle.x - obstacle.width / 2 + scaleAdjustedObstacleBuffer;
+                    let right = obstacle.x + obstacle.width / 2 - scaleAdjustedObstacleBuffer;
+                    let top = obstacle.y - obstacle.height / 2 + scaleAdjustedObstacleBuffer;
+                    let bottom = obstacle.y + obstacle.height / 2 - scaleAdjustedObstacleBuffer;
+                    
+                    return !(playerRight < left || 
+                            playerLeft > right || 
+                            playerBottom < top || 
+                            playerTop > bottom);
+                
+                case 'snowball':
+                    // Круглые препятствия (снежки) - буфер применяется к радиусу
+                    let dx = player.x - obstacle.x;
+                    let dy = player.y - obstacle.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    let effectivePlayerRadius = player.width / 2 + scaleAdjustedPlayerBuffer;
+                    let effectiveObstacleRadius = obstacle.radius + scaleAdjustedObstacleBuffer;
+                    
+                    return distance < (effectivePlayerRadius + effectiveObstacleRadius);
+                
+                case 'tree':
+                    // Деревья - особая форма с стволом и кроной
+                    let treeLeft = obstacle.x - obstacle.width / 2 + scaleAdjustedObstacleBuffer;
+                    let treeRight = obstacle.x + obstacle.width / 2 - scaleAdjustedObstacleBuffer;
+                    let treeTop = obstacle.y - obstacle.height + scaleAdjustedObstacleBuffer;
+                    let treeBottom = obstacle.y - scaleAdjustedObstacleBuffer;
+                    
+                    return !(playerRight < treeLeft || 
+                            playerLeft > treeRight || 
+                            playerBottom < treeTop || 
+                            playerTop > treeBottom);
+                
+                case 'hare':
+                    // Зайцы - прямоугольные, но живые (больший буфер)
+                    let hareLeft = obstacle.x - obstacle.width / 2 + scaleAdjustedObstacleBuffer;
+                    let hareRight = obstacle.x + obstacle.width / 2 - scaleAdjustedObstacleBuffer;
+                    let hareTop = obstacle.y - obstacle.height / 2 + scaleAdjustedObstacleBuffer;
+                    let hareBottom = obstacle.y + obstacle.height / 2 - scaleAdjustedObstacleBuffer;
+                    
+                    return !(playerRight < hareLeft || 
+                            playerLeft > hareRight || 
+                            playerBottom < hareTop || 
+                            playerTop > hareBottom);
+                    
+                default:
+                    // Для неизвестных типов препятствий используем прямоугольную коллизию
+                    let defaultLeft = obstacle.x - obstacle.width / 2 + scaleAdjustedObstacleBuffer;
+                    let defaultRight = obstacle.x + obstacle.width / 2 - scaleAdjustedObstacleBuffer;
+                    let defaultTop = obstacle.y - obstacle.height / 2 + scaleAdjustedObstacleBuffer;
+                    let defaultBottom = obstacle.y + obstacle.height / 2 - scaleAdjustedObstacleBuffer;
+                    
+                    return !(playerRight < defaultLeft || 
+                            playerLeft > defaultRight || 
+                            playerBottom < defaultTop || 
+                            playerTop > defaultBottom);
+            }
+        }
+
+        // Обновление игрока с новой механикой прыжков
+        function updatePlayer(deltaTime) {
+            const currentTime = Date.now();
+            
+            // Обновление прыжка
+            if (player.isJumpHeld && player.isJumping) {
+                player.jumpHoldTime = currentTime - player.jumpStartTime;
+                
+                // Если время удержания превысило максимальное, отпускаем прыжок
+                if (player.jumpHoldTime > GAME_CONFIG.maxJumpHoldTime) {
+                    player.isJumpHeld = false;
+                    player.jumpType = 'long'; // Максимальный прыжок
+                } else {
+                    // Определяем тип прыжка на основе времени удержания
+                    if (player.jumpHoldTime > 200) {
+                        player.jumpType = 'long';
+                    } else {
+                        player.jumpType = 'short';
+                    }
+                }
+                
+                // При удержании прыжка продолжаем двигаться вверх
+                // Скорость зависит от типа прыжка (адаптивная)
+                const jumpForces = GAME_CONFIG.jumpForce;
+                if (player.jumpType === 'long') {
+                    player.vy = jumpForces.long;
+                } else {
+                    player.vy = jumpForces.short;
+                }
+            } else {
+                // Если прыжок не удерживается, применяем гравитацию
+                player.vy += GAME_CONFIG.gravity;
+            }
+            
+            // Обновление позиции
+            player.y += player.vy;
+            
+            // Проверка земли
+            let groundY = getGroundHeightAt(player.x);
+            
+            if (player.y > groundY - player.height / 2) {
+                player.y = groundY - player.height / 2;
+                player.vy = 0;
+                player.isJumping = false;
+                player.isJumpHeld = false;
+                game.airBoostUsed = false; // Сбрасываем флаг рывка при приземлении
+                
+                if (Math.abs(player.vy) > 5) {
+                    createLandingParticles(player.x, player.y + player.height / 2);
+                }
+            }
+            
+            // === ОБНОВЛЕНИЕ ВРАЩЕНИЯ И ДВИЖЕНИЯ С ПОДДЕРЖКОЙ РЫВКА ===
+            if (player.isJumping) {
+                if (game.airBoostUsed && game.airBoostRotation < Math.PI * 2) {
+                    // Плавный поворот при рывке в воздухе
+                    game.airBoostRotation += 0.15;
+                    player.rotation = Math.sin(game.airBoostRotation) * 0.8;
+                } else {
+                    // Обычное вращение при прыжке
+                    player.rotation = Math.max(-0.3, player.vy * 0.02);
+                }
+            } else {
+                player.rotation = Math.min(0.3, (player.y - (groundY - player.height / 2)) * 0.05);
+            }
+            
+            // === ПРИМЕНЕНИЕ ВЕКТОРА ДВИЖЕНИЯ ПРИ РЫВКЕ ===
+            if (game.airBoostVx > 0.1) {
+                // Применяем вектор движения вперёд
+                player.x += game.airBoostVx;
+                
+                // Уменьшаем вектор для плавного затухания
+                game.airBoostVx *= game.airBoostVxDecay;
+                
+                // Сбрасываем вектор когда он становится очень маленьким
+                if (game.airBoostVx < 0.1) {
+                    game.airBoostVx = 0;
+                }
+            }
+        }
+            
+        // Создание частиц при рывке в воздухе
+        function createAirBoostParticles(x, y) {
+            let particleCount = 8; // Меньше частиц чем при приземлении
+            
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: x + (Math.random() - 0.5) * 30 * game.currentScale,
+                    y: y + (Math.random() - 0.5) * 20 * game.currentScale,
+                    vx: (Math.random() - 0.5) * 8 * game.currentScale,
+                    vy: -Math.random() * 10 * game.currentScale,
+                    baseRadius: Math.random() * 3 + 1,
+                    get radius() { return this.baseRadius * SCALING_CONFIG.particleScale * game.currentScale; },
+                    color: '#ffffff',
+                    life: 30
+                });
+            }
+        }
+
+        // Создание частиц при приземлении
+        function createLandingParticles(x, y) {
+            let particleCount = player.jumpType === 'long' ? 20 : 10;
+            
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: x + (Math.random() - 0.5) * 40 * game.currentScale,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 10 * game.currentScale,
+                    vy: -Math.random() * (player.jumpType === 'long' ? 15 : 8) * game.currentScale,
+                    baseRadius: Math.random() * 5 + 2,
+                    get radius() { return this.baseRadius * SCALING_CONFIG.particleScale * game.currentScale; },
+                    color: '#ffffff',
+                    life: 40
+                });
+            }
+        }
+
+        // Обновление частиц
+        function updateParticles(deltaTime) {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.2 * game.currentScale;
+                p.life--;
+                
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        // === НАЧАЛО ПРЫЖКА ИЛИ РЫВОК В ВОЗДУХЕ ===
+        function startJump() {
+            if (!game.running) return;
+            
+            if (!player.isJumping) {
+                // Обычный прыжок с земли
+                player.isJumping = true;
+                player.isJumpHeld = true;
+                player.jumpStartTime = Date.now();
+                player.jumpHoldTime = 0;
+                player.jumpType = 'short';
+                game.airBoostUsed = false; // Сбрасываем флаг рывка
+                
+                // Начинаем прыжок с короткой силой (адаптивной)
+                const jumpForces = GAME_CONFIG.jumpForce;
+                player.vy = jumpForces.short;
+                
+                // Создаем частицы при начале прыжка
+                createLandingParticles(player.x, player.y + player.height / 2);
+                
+            } else if (player.isJumping && !game.airBoostUsed) {
+                // Рывок в воздухе - короткий прыжок с переворотом
+                game.airBoostUsed = true;
+                game.airBoostRotation = 0; // Начинаем поворот
+                
+                // Увеличиваем импульс вверх (больше чем обычный прыжок, адаптивный)
+                const jumpForces = GAME_CONFIG.jumpForce;
+                player.vy = Math.min(player.vy, jumpForces.short * 0.5);
+                
+                // Добавляем плавное движение вперёд через вектор скорости
+                game.airBoostVx = 1.5 * game.currentScale; // Вектор движения вперёд
+                
+                // Создаем частицы при рывке
+                createAirBoostParticles(player.x, player.y);
+            }
+        }
+
+        // Завершение прыжка (отпускание кнопки)
+        function endJump() {
+            if (player.isJumpHeld && game.running) {
+                player.isJumpHeld = false;
+                
+                // Если прыжок был очень коротким, всё равно оставляем короткий прыжок (адаптивный)
+                if (player.jumpHoldTime < 50) {
+                    player.jumpType = 'short';
+                    const jumpForces = GAME_CONFIG.jumpForce;
+                    player.vy = jumpForces.short;
+                }
+            }
+        }
+
+        // Игровой цикл
+        function gameLoop() {
+            const currentTime = Date.now();
+            
+            // Отладочный вывод каждый 60 кадров (1 раз в секунду при 60 FPS)
+            if (game.gameTime % 60 === 0) {
+                console.log('Игровой цикл работает, время:', game.gameTime, 'скорость:', game.speed);
+            }
+            let deltaTime = currentTime - game.lastFrameTime;
+            game.lastFrameTime = currentTime;
+            
+            // Нормализуем deltaTime для стабильной скорости на всех устройствах
+            const targetFrameTime = 1000 / 60; // 60 FPS
+            const normalizedDeltaTime = Math.min(deltaTime, targetFrameTime * 2); // Ограничиваем скачки
+            const speedMultiplier = normalizedDeltaTime / targetFrameTime;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (game.running) {
+                game.gameTime++;
+                game.score += game.speed * 0.1 * speedMultiplier;
+                
+                // Обновляем скорость с учётом буста
+                updateSpeedWithBoost();
+                
+                game.animationTime += normalizedDeltaTime * 0.001;
+                
+                // Обновляем анимации спрайтов
+                updateSpriteAnimation(normalizedDeltaTime);
+                updateTreeAnimation(normalizedDeltaTime);
+                
+                // Обновляем игровые объекты с нормализованным временем
+                updateStars();
+                updateClouds();
+                updateTerrain();
+                updatePlayer(normalizedDeltaTime);
+                updateObstacles();
+                updateParticles(normalizedDeltaTime);
+                
+                // Обновляем HUD
+                scoreElement.textContent = `Счёт: ${Math.floor(game.score)}`;
+                speedElement.textContent = `Скорость: ${game.speed.toFixed(1)}x`;
+            }
+            
+            // Отрисовка фона и игровых объектов
+            drawSkyGradient();  // Градиент неба
+            drawClouds();       // Облака (медленно движущиеся)
+            drawStars();        // Звёзды
+            drawMountains();    // Горы
+            drawTerrain();      // Земля
+            drawObstacles();    // Препятствия
+            drawPlayer();       // Игрок
+            drawParticles();    // Частицы
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        // === ОТРИСОВКА ГРАДИЕНТА НЕБА ===
+        function drawSkyGradient() {
+            const gradient = ctx.createLinearGradient(0, 0, 0, game.gameHeight);
+            gradient.addColorStop(0, '#0a0e2a');      // Тёмно-синее вверху
+            gradient.addColorStop(0.3, '#1a237e');    // Глубокий синий
+            gradient.addColorStop(0.6, '#283593');    // Средний синий
+            gradient.addColorStop(0.8, '#3949ab');    // Светлее к горизонту
+            gradient.addColorStop(1, '#5c6bc0');      // Самый светлый у горизонта
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, game.gameWidth, game.gameHeight);
+        }
+
+        // === ОТРИСОВКА ОБЛАКОВ ===
+        function drawClouds() {
+            for (let cloud of clouds) {
+                ctx.globalAlpha = cloud.opacity;
+                ctx.fillStyle = '#ffffff';
+                
+                // Рисуем облако из нескольких кругов
+                for (let i = 0; i < cloud.puffs; i++) {
+                    const puffX = cloud.x + (i * cloud.width / cloud.puffs) - cloud.width / 4;
+                    const puffY = cloud.y + Math.sin(i * 0.8) * 8;
+                    const puffSize = cloud.height * (0.7 + Math.sin(i) * 0.3);
+                    
+                    ctx.beginPath();
+                    ctx.arc(puffX, puffY, puffSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Добавляем тень под облаком для объёма
+                ctx.globalAlpha = cloud.opacity * 0.3;
+                ctx.fillStyle = '#e3f2fd';
+                ctx.beginPath();
+                ctx.ellipse(cloud.x + cloud.width / 2, cloud.y + cloud.height / 2, 
+                           cloud.width / 2, cloud.height / 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            ctx.globalAlpha = 1;
+        }
+
+        // === УЛУЧШЕННАЯ ОТРИСОВКА ЗВЁЗД ===
+        function drawStars() {
+            const starsConfig = GAME_CONFIG.starsConfig;
+            
+            for (let star of stars) {
+                let brightness = star.brightness + Math.sin(star.twinkleOffset + game.animationTime) * starsConfig.twinkleIntensity;
+                brightness = Math.max(0.1, Math.min(starsConfig.brightness.max, brightness));
+                
+                // Основная звезда
+                ctx.fillStyle = star.color.replace(')', `, ${brightness})`).replace('rgb', 'rgba');
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Только для самых ярких звёзд - очень деликатное свечение
+                if (star.size > 0.8 && brightness > 0.4) {
+                    ctx.fillStyle = star.color.replace(')', `, ${brightness * 0.1})`).replace('rgb', 'rgba');
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.size * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+
+        // === УЛУЧШЕННАЯ ОТРИСОВКА ГОР (ПОЛНОЕ ПОКРЫТИЕ) ===
+        function drawMountains() {
+            for (let layer = 0; layer < mountains.length; layer++) {
+                let layerMountains = mountains[layer];
+                let speedFactor = layerMountains[0].speedFactor;
+                
+                for (let mountain of layerMountains) {
+                    mountain.x -= game.speed * speedFactor;
+                    
+                    // Условие регенерации - когда гора полностью ушла за левый край
+                    if (mountain.x + mountain.width < -50) {
+                        mountain.x = game.gameWidth + mountain.width * 0.2;
+                        mountain.height = mountain.baseHeight * game.currentScale * (0.6 + Math.random() * 0.8);
+                    }
+                    
+                    // Улучшенное условие видимости - рисуем гору если она хотя бы частично видна
+                    if (mountain.x < game.gameWidth + 100 && mountain.x + mountain.width > -100) {
+                        ctx.fillStyle = mountain.color;
+                        ctx.beginPath();
+                        ctx.moveTo(mountain.x, game.gameHeight);
+                        ctx.lineTo(mountain.x + mountain.width / 2, game.gameHeight - mountain.height);
+                        ctx.lineTo(mountain.x + mountain.width, game.gameHeight);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                }
+            }
+        }
+                    
+        // Отрисовка ландшафта
+        function drawTerrain() {
+            // Основной снег
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.moveTo(terrain[0].x, terrain[0].y);
+            
+            for (let i = 1; i < terrain.length; i++) {
+                ctx.lineTo(terrain[i].x, terrain[i].y);
+            }
+            
+            ctx.closePath();
+            ctx.fill();
+            
+            // Тени и текстура снега
+            ctx.fillStyle = 'rgba(200, 220, 255, 0.1)';
+            for (let i = 0; i < terrainPoints.length - 1; i += 3) {
+                let p = terrainPoints[i];
+                if (p.x > -50 && p.x < game.gameWidth + 50) {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 8 * game.currentScale, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+
+        // Отрисовка препятствий
+        function drawObstacles() {
+            for (let obstacle of obstacles) {
+                let img = null;
+                
+                switch(obstacle.type) {
+                    case 'snowHeap': img = assets.snowHeapImg; break;
+                    case 'snowball': img = assets.snowballImg; break;
+                    case 'tree': img = assets.treeImg; break;
+                    case 'hare': img = assets.hareImg; break;
+                    case 'rock': img = assets.rockImg; break;
+                    case 'log': img = assets.logImg; break;
+                }
+                
+                if (img && obstacle.hasImage) {
+                    let drawWidth = obstacle.width;
+                    let drawHeight = obstacle.height;
+                    
+                    ctx.save();
+                    
+                    if (obstacle.type === 'hare') {
+                        ctx.drawImage(img, obstacle.x - drawWidth/2, obstacle.y - drawHeight/2, drawWidth, drawHeight);
+                    } else if (obstacle.type === 'snowball') {
+                        ctx.save();
+                        ctx.translate(obstacle.x, obstacle.y);
+                        ctx.rotate(obstacle.rotation);
+                        ctx.drawImage(img, -obstacle.radius, -obstacle.radius, 
+                                    obstacle.radius * 2, obstacle.radius * 2);
+                        ctx.restore();
+                    } else if (obstacle.type === 'tree' && assets.treeImg) {
+                        // === ЧИСТАЯ ОТРИСОВКА ДЕРЕВА ИЗ СПРАЙТШИТА ===
+                        const sprite = assets.treeImg;
+                        
+                        // Размеры одного кадра - вычисляем точно один раз
+                        const frameW = Math.floor(sprite.width / GAME_CONFIG.treeSprite.columns);
+                        const frameH = Math.floor(sprite.height / GAME_CONFIG.treeSprite.rows);
+                        
+                        // Текущий кадр анимации
+                        const animFrame = (game.treeSpriteFrame + Math.floor(obstacle.animationOffset)) % GAME_CONFIG.treeSprite.totalFrames;
+                        
+                        // Колонка и ряд - целые числа
+                        const col = animFrame % GAME_CONFIG.treeSprite.columns;
+                        const row = Math.floor(animFrame / GAME_CONFIG.treeSprite.columns);
+                        
+                        // Координаты кадра в спрайтшите - точно
+                        const srcX = col * frameW;
+                        const srcY = row * frameH;
+                        
+                        // Рисуем кадр точно в нужном месте
+                        ctx.drawImage(
+                            sprite,
+                            srcX, srcY, frameW, frameH,
+                            obstacle.x - drawWidth/2, obstacle.y - drawHeight, drawWidth, drawHeight
+                        );
+                    } else {
+                        ctx.drawImage(img, obstacle.x - drawWidth/2, obstacle.y - drawHeight/2, drawWidth, drawHeight);
+                    }
+                    
+                    ctx.restore();
+                } else {
+                    drawObstaclePrimitive(obstacle);
+                }
+            }
+        }
+
+        // Отрисовка препятствий примитивами
+        function drawObstaclePrimitive(obstacle) {
+            switch(obstacle.type) {
+                case 'snowHeap':
+                    ctx.fillStyle = obstacle.color;
+                    ctx.beginPath();
+                    ctx.ellipse(obstacle.x, obstacle.y - obstacle.height/2, 
+                               obstacle.width/2, obstacle.height/2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                    
+                case 'snowball':
+                    ctx.fillStyle = obstacle.color;
+                    ctx.beginPath();
+                    ctx.arc(obstacle.x, obstacle.y, obstacle.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                    ctx.beginPath();
+                    ctx.arc(obstacle.x - obstacle.radius*0.3, obstacle.y - obstacle.radius*0.3, 
+                           obstacle.radius*0.15, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                    
+                case 'tree':
+                    ctx.fillStyle = obstacle.trunkColor;
+                    ctx.fillRect(obstacle.x - obstacle.width/4, obstacle.y - obstacle.height/4, 
+                               obstacle.width/2, obstacle.height/4);
+                    
+                    ctx.fillStyle = obstacle.foliageColor;
+                    ctx.beginPath();
+                    ctx.moveTo(obstacle.x - obstacle.width/2, obstacle.y - obstacle.height/4);
+                    ctx.lineTo(obstacle.x + obstacle.width/2, obstacle.y - obstacle.height/4);
+                    ctx.lineTo(obstacle.x, obstacle.y - obstacle.height);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(obstacle.x - obstacle.width/2.5, obstacle.y - obstacle.height/2);
+                    ctx.lineTo(obstacle.x + obstacle.width/2.5, obstacle.y - obstacle.height/2);
+                    ctx.lineTo(obstacle.x, obstacle.y - obstacle.height*0.8);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(obstacle.x - obstacle.width/3.5, obstacle.y - obstacle.height*0.75);
+                    ctx.lineTo(obstacle.x + obstacle.width/3.5, obstacle.y - obstacle.height*0.75);
+                    ctx.lineTo(obstacle.x, obstacle.y - obstacle.height*0.95);
+                    ctx.closePath();
+                    ctx.fill();
+                    break;
+                    
+                case 'hare':
+                    ctx.fillStyle = obstacle.color;
+                    ctx.beginPath();
+                    ctx.ellipse(obstacle.x, obstacle.y, obstacle.width/2, obstacle.height/2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.ellipse(obstacle.x + obstacle.width/3, obstacle.y - obstacle.height/3, 
+                               obstacle.width/4, obstacle.height/3, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.ellipse(obstacle.x + obstacle.width/2.5, obstacle.y - obstacle.height/1.5, 
+                               obstacle.width/8, obstacle.height/2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.ellipse(obstacle.x + obstacle.width/1.8, obstacle.y - obstacle.height/1.5, 
+                               obstacle.width/8, obstacle.height/2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = '#000000';
+                    ctx.beginPath();
+                    ctx.arc(obstacle.x + obstacle.width/2.2, obstacle.y - obstacle.height/3, 
+                           obstacle.width/12, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                    
+                case 'rock':
+                    ctx.fillStyle = obstacle.color;
+                    ctx.beginPath();
+                    ctx.ellipse(obstacle.x, obstacle.y, obstacle.width/2, obstacle.height/2, 
+                               Math.PI/4, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                    
+                case 'log':
+                    ctx.fillStyle = obstacle.color;
+                    ctx.fillRect(obstacle.x - obstacle.width/2, obstacle.y - obstacle.height/2, 
+                               obstacle.width, obstacle.height);
+                    
+                    ctx.fillStyle = '#5D4037';
+                    for (let i = -obstacle.width/2 + 10; i < obstacle.width/2; i += 15 * game.currentScale) {
+                        ctx.fillRect(obstacle.x + i, obstacle.y - obstacle.height/2, 
+                                    5 * game.currentScale, obstacle.height);
+                    }
+                    break;
+            }
+        }
+
+        // Отрисовка игрока со спрайтом
+        function drawPlayer() {
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.rotate(player.rotation);
+            
+            if (assets.snowmobileSprite) {
+                // Рисуем спрайт из спрайтшита
+                const sprite = assets.snowmobileSprite;
+                const frameWidth = sprite.width / GAME_CONFIG.snowmobileSprite.columns;
+                const frameHeight = sprite.height / GAME_CONFIG.snowmobileSprite.rows;
+                
+                // Вычисляем координаты текущего кадра
+                const col = game.spriteFrame % GAME_CONFIG.snowmobileSprite.columns;
+                const row = Math.floor(game.spriteFrame / GAME_CONFIG.snowmobileSprite.columns);
+                const frameX = col * frameWidth;
+                const frameY = row * frameHeight;
+                
+                // Рисуем текущий кадр
+                ctx.drawImage(
+                    sprite,
+                    frameX, frameY, frameWidth, frameHeight,
+                    -player.width/2, -player.height/2, player.width, player.height
+                );
+            } else if (assets.snowmobileStatic) {
+                // Рисуем статичное изображение
+                ctx.drawImage(assets.snowmobileStatic, -player.width/2, -player.height/2, player.width, player.height);
+            } else {
+                // Рисуем снегоход примитивами
+                ctx.fillStyle = '#e53935';
+                ctx.fillRect(-player.width/2, -player.height/2, player.width, player.height);
+                
+                ctx.fillStyle = '#1e88e5';
+                ctx.fillRect(-player.width/4, -player.height/2 - 10 * game.currentScale, 
+                           player.width/2, 15 * game.currentScale);
+                
+                ctx.fillStyle = '#4fc3f7';
+                ctx.fillRect(-player.width/2 - 10 * game.currentScale, -player.height/4, 
+                           15 * game.currentScale, 5 * game.currentScale);
+                ctx.fillRect(player.width/2 - 5 * game.currentScale, -player.height/4, 
+                           15 * game.currentScale, 5 * game.currentScale);
+            }
+            
+            ctx.restore();
+        }
+
+        // === ФУНКЦИИ ДЛЯ ПОЛНОЭКРАННОГО РЕЖИМА ===
+        
+        // Переключение полноэкранного режима
+        function toggleFullscreen() {
+            const gameContainer = document.getElementById('gameContainer');
+            
+            if (!document.fullscreenElement) {
+                // Входим в полноэкранный режим
+                if (gameContainer.requestFullscreen) {
+                    gameContainer.requestFullscreen();
+                } else if (gameContainer.webkitRequestFullscreen) {
+                    gameContainer.webkitRequestFullscreen();
+                } else if (gameContainer.msRequestFullscreen) {
+                    gameContainer.msRequestFullscreen();
+                }
+            } else {
+                // Выходим из полноэкранного режима
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            }
+        }
+
+        // Обновление состояния кнопки полноэкранного режима
+        function updateFullscreenButton() {
+            const icon = fullscreenBtn.querySelector('.fullscreen-icon');
+            
+            if (document.fullscreenElement) {
+                // В полноэкранном режиме
+                fullscreenBtn.classList.add('fullscreen-active');
+                fullscreenBtn.title = 'Выйти из полноэкранного режима';
+                icon.textContent = '⛶'; // Символ "свернуть"
+            } else {
+                // Обычный режим
+                fullscreenBtn.classList.remove('fullscreen-active');
+                fullscreenBtn.title = 'Полноэкранный режим';
+                icon.textContent = '⛶'; // Символ "развернуть"
+            }
+        }
+
+        // Обработчик изменения полноэкранного режима
+        function onFullscreenChange() {
+            updateFullscreenButton();
+            
+            // Пересчитываем размеры после изменения режима
+            setTimeout(() => {
+                resizeCanvas();
+            }, 100);
+        }
+
+        // === НАСТРОЙКА ОБРАБОТЧИКОВ СОБЫТИЙ ===
+        function setupEventListeners() {
+            console.log('Настройка обработчиков событий...');
+            
+            // Клавиатура
+            document.addEventListener('keydown', (e) => {
+                if (!game.running) return;
+                
+                if (e.code === 'Space' || e.code === 'ArrowUp') {
+                    e.preventDefault();
+                    startJump();
+                }
+            });
+
+            // Клавиатура для завершения прыжка
+            document.addEventListener('keyup', (e) => {
+                if (!game.running) return;
+                
+                if (e.code === 'Space' || e.code === 'ArrowUp') {
+                    e.preventDefault();
+                    endJump();
+                }
+            });
+
+            // События мыши для прыжка
+            document.addEventListener('mousedown', (e) => {
+                if (!game.running) return;
+                if (e.target === jumpButton || e.target === canvas) {
+                    e.preventDefault();
+                    startJump();
+                }
+            });
+
+            document.addEventListener('mouseup', (e) => {
+                if (!game.running) return;
+                if (e.target === jumpButton || e.target === canvas) {
+                    e.preventDefault();
+                    endJump();
+                }
+            });
+
+            // События касаний для мобильных устройств
+            document.addEventListener('touchstart', (e) => {
+                if (!game.running) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                
+                if (target === jumpButton || target === canvas) {
+                    startJump();
+                }
+            }, { passive: false });
+
+            document.addEventListener('touchend', (e) => {
+                if (!game.running) return;
+                e.preventDefault();
+                endJump();
+            }, { passive: false });
+
+            // Кнопки старта и рестарта
+            startButton.addEventListener('click', startGame);
+            restartButton.addEventListener('click', startGame);
+
+            // Обработчик изменения размера окна
+            window.addEventListener('resize', resizeCanvas);
+
+            // Обработчик изменения ориентации для мобильных
+            window.addEventListener('orientationchange', () => {
+                setTimeout(resizeCanvas, 100);
+            });
+
+            // Кнопка полноэкранного режима
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+            // Слушатели изменений полноэкранного режима
+            document.addEventListener('fullscreenchange', onFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+            document.addEventListener('msfullscreenchange', onFullscreenChange);
+            
+            // Обновляем состояние кнопки при загрузке
+            updateFullscreenButton();
+        }
+
+        // === ОБНОВЛЕНИЕ ИГРОКА ===
+        function updatePlayer(deltaTime) {
+            // Применяем гравитацию
+            player.vy += GAME_CONFIG.gravity;
+            player.y += player.vy;
+
+            // Получаем высоту земли под игроком
+            const groundY = getGroundHeightAt(player.x);
+            
+            // Проверяем коллизию с землёй
+            if (player.y + player.height/2 >= groundY) {
+                player.y = groundY - player.height/2;
+                player.vy = 0;
+                
+                // Завершаем прыжок при приземлении
+                if (player.isJumping) {
+                    endJump();
+                }
+                
+                // Сброс поворота при приземлении
+                player.rotation = Math.max(player.rotation - 0.1, 0);
+                
+                // Завершаем рывок в воздухе
+                if (game.airBoostUsed) {
+                    game.airBoostUsed = false;
+                    game.airBoostRotation = 0;
+                    game.airBoostVx = 0;
+                }
+            }
+
+            // Обновляем время удержания прыжка
+            if (player.isJumpHeld) {
+                player.jumpHoldTime = Date.now() - player.jumpStartTime;
+                
+                // Ограничиваем время удержания
+                if (player.jumpHoldTime >= GAME_CONFIG.maxJumpHoldTime) {
+                    endJump();
+                }
+            }
+
+            // Поворот игрока в зависимости от скорости и позиции
+            if (!player.isJumping && player.vy > 0) {
+                // Падение - наклон назад
+                player.rotation = Math.min(player.rotation + 0.05, Math.PI / 6);
+            } else if (player.isJumping && player.vy < 0) {
+                // Прыжок вверх - наклон вперёд
+                player.rotation = Math.max(player.rotation - 0.03, -Math.PI / 12);
+            } else if (!player.isJumping && player.vy === 0) {
+                // На земле - постепенно выпрямляемся
+                player.rotation = Math.max(player.rotation - 0.1, 0);
+            }
+
+            // Проверяем границы экрана
+            if (player.y - player.height/2 < 0) {
+                player.y = player.height/2;
+                player.vy = 0;
+            }
+
+            // Применяем рывок в воздухе
+            if (game.airBoostUsed) {
+                player.x += game.airBoostVx;
+                game.airBoostVx *= game.airBoostVxDecay;
+                game.airBoostRotation += 0.1;
+                
+                if (game.airBoostRotation > Math.PI / 3) {
+                    game.airBoostRotation = Math.PI / 3;
+                }
+                
+                player.rotation = -game.airBoostRotation;
+                
+                game.airBoostDuration--;
+                if (game.airBoostDuration <= 0) {
+                    game.airBoostUsed = false;
+                }
+            }
+        }
+
+        // Начало прыжка
+        function startJump() {
+            if (player.isJumping) return;
+            
+            player.isJumping = true;
+            player.isJumpHeld = true;
+            player.jumpStartTime = Date.now();
+            player.jumpHoldTime = 0;
+            player.jumpType = 'short';
+            
+            // Начинаем прыжок с короткой силой (адаптивной)
+            const jumpForces = GAME_CONFIG.jumpForce;
+            player.vy = jumpForces.short;
+        }
+
+        // Завершение прыжка
+        function endJump() {
+            if (!player.isJumping) return;
+            
+            player.isJumpHeld = false;
+            
+            // Определяем тип прыжка по времени удержания
+            if (player.jumpHoldTime >= 200) {
+                player.jumpType = 'long';
+                // Дополнительная сила для длинного прыжка (адаптивная)
+                const jumpForces = GAME_CONFIG.jumpForce;
+                player.vy += jumpForces.long - jumpForces.short;
+            } else {
+                player.jumpType = 'short';
+            }
+            
+            // Если прыжок был очень коротким, всё равно оставляем короткий прыжок (адаптивный)
+            if (player.jumpHoldTime < 50) {
+                player.jumpType = 'short';
+                const jumpForces = GAME_CONFIG.jumpForce;
+                player.vy = jumpForces.short;
+            }
+            
+            // Рывок в воздухе при длинном прыжке
+            if (player.jumpType === 'long' && !game.airBoostUsed && player.vy < -5) {
+                game.airBoostUsed = true;
+                game.airBoostDuration = 15;
+                game.airBoostRotation = 0;
+                
+                // Увеличиваем импульс вверх (больше чем обычный прыжок, адаптивный)
+                const jumpForces = GAME_CONFIG.jumpForce;
+                player.vy = Math.min(player.vy, jumpForces.short * 0.5);
+                
+                // Добавляем движение вперёд
+                game.airBoostVx = 3 * game.currentScale;
+            }
+        }
+
+        // Обновление препятствий
+        function updateObstacles() {
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let obstacle = obstacles[i];
+                obstacle.x -= game.speed;
+                
+                // Анимация зайца
+                if (obstacle.type === 'hare') {
+                    obstacle.jumpOffset += obstacle.jumpSpeed;
+                    obstacle.y = getGroundHeightAt(obstacle.x) - obstacle.height/2 + 
+                                Math.sin(obstacle.jumpOffset) * 8 * game.currentScale;
+                }
+                
+                // Анимация снежка
+                if (obstacle.type === 'snowball') {
+                    obstacle.rotation += 0.05;
+                }
+                
+                // Анимация дерева
+                if (obstacle.type === 'tree' && assets.treeImg) {
+                    obstacle.animationOffset += GAME_CONFIG.treeSprite.animationSpeed;
+                    obstacle.spriteFrame = Math.floor(obstacle.animationOffset) % GAME_CONFIG.treeSprite.totalFrames;
+                }
+                
+                // Удаляем препятствия за пределами экрана
+                if (obstacle.x < -100) {
+                    obstacles.splice(i, 1);
+                }
+            }
+        }
+
+        // Обновление частиц
+        function updateParticles(deltaTime) {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let particle = particles[i];
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.vy += 0.2; // Гравитация для частиц
+                particle.life -= deltaTime;
+                
+                if (particle.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        // Проверка коллизий
+        function checkCollisions() {
+            for (let obstacle of obstacles) {
+                if (checkPlayerObstacleCollision(player, obstacle)) {
+                    gameOver();
+                    return;
+                }
+            }
+        }
+
+        // Проверка коллизии между игроком и препятствием
+        function checkPlayerObstacleCollision(player, obstacle) {
+            let playerRect = {
+                x: player.x - player.width/2,
+                y: player.y - player.height/2,
+                width: player.width,
+                height: player.height
+            };
+            
+            // Применяем буфер игрока
+            if (GAME_CONFIG.collisionBuffer.enablePlayerBuffer) {
+                const playerBuffer = GAME_CONFIG.collisionBuffer.playerBuffer;
+                playerRect.x += playerBuffer;
+                playerRect.y += playerBuffer;
+                playerRect.width -= playerBuffer * 2;
+                playerRect.height -= playerBuffer * 2;
+            }
+            
+            let obstacleRect;
+            
+            // Разные типы коллизий для разных препятствий
+            switch(obstacle.type) {
+                case 'snowball':
+                    // Круглая коллизия для снежка
+                    const distance = Math.sqrt(
+                        Math.pow(player.x - obstacle.x, 2) + 
+                        Math.pow(player.y - obstacle.y, 2)
+                    );
+                    return distance < (player.width/2 + obstacle.radius);
+                    
+                default:
+                    // Прямоугольная коллизия
+                    obstacleRect = {
+                        x: obstacle.x - obstacle.width/2,
+                        y: obstacle.y - obstacle.height,
+                        width: obstacle.width,
+                        height: obstacle.height
+                    };
+                    
+                    // Применяем буфер препятствия
+                    if (GAME_CONFIG.collisionBuffer.enableObstacleBuffer) {
+                        const obstacleBuffer = GAME_CONFIG.collisionBuffer.customBuffers[obstacle.type] || 
+                                              GAME_CONFIG.collisionBuffer.obstacleBuffer;
+                        obstacleRect.x += obstacleBuffer;
+                        obstacleRect.y += obstacleBuffer;
+                        obstacleRect.width -= obstacleBuffer * 2;
+                        obstacleRect.height -= obstacleBuffer * 2;
+                    }
+                    
+                    return playerRect.x < obstacleRect.x + obstacleRect.width &&
+                           playerRect.x + playerRect.width > obstacleRect.x &&
+                           playerRect.y < obstacleRect.y + obstacleRect.height &&
+                           playerRect.y + playerRect.height > obstacleRect.y;
+            }
+        }
+
+        // Получение высоты земли в определённой точке
+        function getGroundHeightAt(x) {
+            for (let i = 0; i < terrainPoints.length - 1; i++) {
+                if (x >= terrainPoints[i].x && x <= terrainPoints[i + 1].x) {
+                    let t = (x - terrainPoints[i].x) / (terrainPoints[i + 1].x - terrainPoints[i].x);
+                    return terrainPoints[i].y * (1 - t) + terrainPoints[i + 1].y * t;
+                }
+            }
+            return game.gameHeight * GAME_CONFIG.terrainBaseHeight;
+        }
+
+        // Создание частиц
+        function createParticles(x, y, count, type) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x + (Math.random() - 0.5) * 20,
+                    y: y + (Math.random() - 0.5) * 20,
+                    vx: (Math.random() - 0.5) * 4,
+                    vy: Math.random() * -2 - 1,
+                    life: 1000 + Math.random() * 500,
+                    color: type === 'snow' ? '#ffffff' : '#4fc3f7',
+                    size: Math.random() * 3 + 1
+                });
+            }
+        }
+
+        // Игровой цикл
+        function gameLoop() {
+            const currentTime = Date.now();
+            let deltaTime = currentTime - game.lastFrameTime;
+            game.lastFrameTime = currentTime;
+            
+            // Нормализуем deltaTime для стабильной скорости на всех устройствах
+            const targetFrameTime = 1000 / 60; // 60 FPS
+            const normalizedDeltaTime = Math.min(deltaTime, targetFrameTime * 2); // Ограничиваем скачки
+            const speedMultiplier = normalizedDeltaTime / targetFrameTime;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (game.running) {
+                game.gameTime++;
+                game.score += game.speed * 0.1 * speedMultiplier;
+                
+                // Обновляем скорость с учётом буста
+                updateSpeedWithBoost();
+                
+                game.animationTime += normalizedDeltaTime * 0.001;
+                
+                // Обновляем анимации спрайтов
+                updateSpriteAnimation(normalizedDeltaTime);
+                updateTreeAnimation(normalizedDeltaTime);
+                
+                // Обновляем игровые объекты с нормализованным временем
+                updateStars();
+                updateClouds();
+                updateTerrain();
+                updatePlayer(normalizedDeltaTime);
+                updateObstacles();
+                updateParticles(normalizedDeltaTime);
+                
+                // Генерируем новые препятствия
+                generateObstacles();
+                
+                // Проверяем коллизии
+                checkCollisions();
+                
+                // Обновляем HUD
+                scoreElement.textContent = `Счёт: ${Math.floor(game.score)}`;
+                speedElement.textContent = `Скорость: ${game.speed.toFixed(1)}x`;
+            }
+            
+            // Рисуем всё
+            drawStars();
+            drawClouds();
+            drawMountains();
+            drawTerrain();
+            drawObstacles();
+            drawPlayer();
+            drawParticles();
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Изменение размера канваса
+        function resizeCanvas() {
+            const container = document.getElementById('gameContainer');
+            
+            const scaleInfo = calculateCurrentScale();
+            game.currentScale = scaleInfo.scale;
+            game.gameWidth = scaleInfo.width;
+            game.gameHeight = scaleInfo.height;
+            
+            canvas.width = game.gameWidth;
+            canvas.height = game.gameHeight;
+            
+            canvas.style.width = `${game.gameWidth}px`;
+            canvas.style.height = `${game.gameHeight}px`;
+            
+            updateMountainsScale();
+            
+            // Обновляем позицию игрока при изменении размеров
+            player.x = GAME_CONFIG.playerX; // Используем getter для адаптивной позиции
+            
+            if (player.y === 0 || !game.running) {
+                player.y = game.gameHeight * 0.65 - player.height / 2;
+            } else {
+                // Корректируем Y позицию при изменении высоты экрана
+                const groundY = getGroundHeightAt(player.x);
+                if (player.y > groundY - player.height / 2) {
+                    player.y = groundY - player.height / 2;
+                }
+            }
+            
+            // Адаптивная кнопка прыжка для мобильных устройств
+            const isMobile = isMobileDevice();
+            
+            if (isMobile || window.innerHeight > window.innerWidth) {
+                jumpButton.style.bottom = '10vh';
+                jumpButton.style.width = '80px';
+                jumpButton.style.height = '80px';
+                jumpButton.style.fontSize = '16px';
+            } else {
+                jumpButton.style.bottom = '30px';
+                jumpButton.style.right = '30px';
+                jumpButton.style.width = '120px';
+                jumpButton.style.height = '120px';
+                jumpButton.style.fontSize = '22px';
+            }
+        }
+
+        // Начало игры
+        function startGame() {
+            game.running = true;
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            
+            game.score = 0;
+            game.speed = GAME_CONFIG.baseSpeed;
+            game.gameTime = 0;
+            game.distanceSinceLastObstacle = 0;
+            game.animationTime = 0;
+            game.currentSpeedIncreaseRate = GAME_CONFIG.speedIncreaseRate;
+            game.spriteFrame = 0;
+            game.spriteTimer = 0;
+            
+            game.currentDifficulty.obstacleChance = GAME_CONFIG.difficulty.initialObstacleChance;
+            game.currentDifficulty.minDistance = GAME_CONFIG.difficulty.initialMinDistance;
+            
+            // Адаптивная позиция игрока
+            player.x = GAME_CONFIG.playerX;
+            player.y = game.gameHeight * 0.65 - player.height / 2;
+            player.vy = 0;
+            player.isJumping = false;
+            player.isJumpHeld = false;
+            player.rotation = 0;
+            player.jumpType = 'short';
+            
+            obstacles = [];
+            particles = [];
+            
+            initStars();         // Переинициализируем звёзды для полного покрытия экрана
+            initClouds();        // Переинициализируем облака при новой игре
+            initTerrain();
+            updateMountainsScale();
+            
+            // Настраиваем обработчики событий
+            setupEventListeners();
+            
+            console.log('Инициализация завершена, запуск игрового цикла...');
+            resizeCanvas();
+            requestAnimationFrame(gameLoop);
+            console.log('Игровой цикл запущен');
+        }
+
+        // Окончание игры
+        function gameOver() {
+            game.running = false;
+            
+            // Обновляем лучший счёт
+            if (game.score > game.highScore) {
+                game.highScore = Math.floor(game.score);
+                localStorage.setItem('snowride_highscore', game.highScore);
+            }
+            
+            // Обновляем отображение
+            finalScoreElement.textContent = Math.floor(game.score);
+            highScoreElement.textContent = game.highScore;
+            bestScoreElement.textContent = game.highScore;
+            
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // Инициализация игры при загрузке страницы
+        window.onload = init;
+    </script>
+</body>
+</html> 
