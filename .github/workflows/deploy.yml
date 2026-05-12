@@ -1,0 +1,34 @@
+name: Deploy focusrandomize
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'focusrandomize/src/**'
+      - 'focusrandomize/package.json'
+      - 'focusrandomize/vite.config.ts'
+      - 'focusrandomize/tsconfig.json'
+      - 'focusrandomize/index.html'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+        working-directory: focusrandomize
+
+      - run: npm run build
+        working-directory: focusrandomize
+
+      - run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add focusrandomize/index.html focusrandomize/assets/
+          git diff --cached --quiet || git commit -m "deploy: rebuild focusrandomize"
+          git push
