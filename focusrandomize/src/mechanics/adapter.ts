@@ -16,7 +16,7 @@ export const MECHANIC_META: Record<
   plinko: { label: 'Плинко', description: 'Бросьте шарик' },
   pinball: { label: 'Пинбол', description: 'Запустите шар' },
   slot: { label: 'Автомат', description: 'Дёрните рычаг' },
-  race: { label: 'Ракетная гонка', description: 'Кто первым до финиша' },
+  race: { label: 'Скачки', description: 'Кто первым к финишу' },
   claw: { label: 'Хватайка', description: 'Захватите капсулу' },
   cards: { label: 'Тайные карты', description: 'Откройте одну' },
 };

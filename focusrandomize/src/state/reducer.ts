@@ -227,15 +227,6 @@ export function appReducer(state: AppState, action: Action): AppState {
           activeTeamIds: next.session.activeTeamIds.filter(
             (id) => id !== result.team.id
           ),
-          history: [
-            ...next.session.history,
-            {
-              teamId: result.team.id,
-              reason: result.reason,
-              timestamp: Date.now(),
-              stepIndex: next.session.history.length,
-            },
-          ],
         },
         ui: {
           ...next.ui,
@@ -249,7 +240,23 @@ export function appReducer(state: AppState, action: Action): AppState {
       return { ...state, ui: { ...state.ui, isRevealing: true } };
     }
     case 'CLEAR_REVEAL': {
-      return { ...state, ui: { ...state.ui, isRevealing: false } };
+      const lastResult = state.ui.lastResult;
+      const newHistory = lastResult
+        ? [
+            ...state.session.history,
+            {
+              teamId: lastResult.team.id,
+              reason: lastResult.reason,
+              timestamp: Date.now(),
+              stepIndex: state.session.history.length,
+            },
+          ]
+        : state.session.history;
+      return {
+        ...state,
+        session: { ...state.session, history: newHistory },
+        ui: { ...state.ui, isRevealing: false, lastResult: undefined },
+      };
     }
     case 'SET_SETTINGS': {
       return {
