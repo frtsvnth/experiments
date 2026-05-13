@@ -1,34 +1,38 @@
-name: Deploy focusrandomize
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [main]
-    paths:
-      - 'focusrandomize/src/**'
-      - 'focusrandomize/package.json'
-      - 'focusrandomize/vite.config.ts'
-      - 'focusrandomize/tsconfig.json'
-      - 'focusrandomize/index.html'
+
+permissions:
+  contents: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./focusrandomize
+
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ./focusrandomize/package-lock.json
 
       - run: npm ci
-        working-directory: focusrandomize
 
       - run: npm run build
-        working-directory: focusrandomize
 
-      - run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add focusrandomize/index.html focusrandomize/assets/
-          git diff --cached --quiet || git commit -m "deploy: rebuild focusrandomize"
-          git push
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./focusrandomize/dist
+          force_orphan: true
