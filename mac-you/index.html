@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mac-You — персональный анализ совместимости</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23D6A95F'/%3E%3Cstop offset='100%25' stop-color='%23B87333'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='2' y='2' width='28' height='28' rx='6' fill='url(%23g)'/%3E%3Cpath d='M10 14l6-8 6 8-6 8z' fill='%23090909' opacity='0.15'/%3E%3Cpath d='M8 13l8-6 8 6-8 6z' fill='none' stroke='%23090909' stroke-width='1.5' opacity='0.25'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-state="hero">
+
+<div id="app">
+
+<section id="hero" class="screen">
+  <div class="hero-bg-layer"></div>
+  <div class="hero-container">
+    <div class="hero-badge">Анализ совместимости · v3.0</div>
+    <h1 class="hero-headline">Нужен ли тебе<br>MacBook?</h1>
+    <p class="hero-subheadline">Не гадание, не реклама, а честный и красивый разговор с самим собой.<br>Несколько вопросов — и ты узнаешь, насколько MacBook действительно твой.</p>
+    <ul class="hero-bullets">
+      <li>Разберём, где заканчивается рабочий инструмент и начинается красивая мечта</li>
+      <li>Покажем твой архетип владения техникой — их у нас десять</li>
+      <li>Расскажем, стоит ли разрешить себе эту покупку (спойлер: иногда стоит)</li>
+      <li>Сформируем персональное досье с десятками инсайтов</li>
+    </ul>
+    <button class="btn-primary" data-action="start">Начать разговор</button>
+    <p class="disclaimer">Не персональная экспертная консультация. Только аналитический опыт — красивый и честный.</p>
+  </div>
+</section>
+
+<section id="mode" class="screen">
+  <div class="screen-header">
+    <span class="step-indicator">Шаг 1 · Выбери глубину</span>
+  </div>
+  <div class="mode-container">
+    <h2 class="section-title">Насколько глубоко копаем?</h2>
+    <p class="section-desc">Чем глубже анализ — тем больше про тебя поймём. Но и базовый режим не подведёт.</p>
+    <div class="mode-cards">
+      <div class="mode-card" data-mode="quick">
+        <div class="mode-card-badge">Базовый</div>
+        <h3 class="mode-card-title">Быстрый взгляд</h3>
+        <p class="mode-card-desc">Пять главных вопросов. Компактный вердикт и основные инсайты. Результат через полминуты.</p>
+        <ul class="mode-card-features">
+          <li>Базовый скоринг</li>
+          <li>Основной архетип</li>
+          <li>Краткие выводы</li>
+        </ul>
+      </div>
+      <div class="mode-card active" data-mode="full">
+        <div class="mode-card-badge recommended">Рекомендуем</div>
+        <h3 class="mode-card-title">Полное досье</h3>
+        <p class="mode-card-desc">Десять параметров, глубинный анализ, десятки инсайтов, narrative-отчёт и личная рекомендация. Минута — и ты всё узнаешь.</p>
+        <ul class="mode-card-features">
+          <li>Полный мультифакторный скоринг</li>
+          <li>Основной + вторичный архетип</li>
+          <li>Narrative-отчёт из 8 разделов</li>
+          <li>40+ персонализированных инсайтов</li>
+          <li>Матрица альтернатив</li>
+        </ul>
+      </div>
+    </div>
+    <div class="mode-actions">
+      <button class="btn-secondary" data-action="back-hero">Назад</button>
+      <button class="btn-primary" data-action="start-form">К вопросам</button>
+    </div>
+  </div>
+</section>
+
+<section id="form" class="screen">
+  <div class="screen-header">
+    <span class="step-indicator">Шаг 2 · Коротко о себе</span>
+  </div>
+  <div class="form-container">
+    <h2 class="section-title">Несколько вопросов</h2>
+    <p class="section-desc">Честно ответь — система сама разберётся. Все данные остаются у тебя в браузере.</p>
+    <form id="userForm" novalidate>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Рост <span class="hint">чтобы понимать масштаб личности</span></label>
+          <div class="slider-group">
+            <input type="range" id="height" min="140" max="220" value="175" class="form-slider">
+            <div class="slider-value"><span id="heightVal">175</span> см</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Вес <span class="hint">чисто для статистики, честно</span></label>
+          <div class="slider-group">
+            <input type="range" id="weight" min="40" max="180" value="75" class="form-slider">
+            <div class="slider-value"><span id="weightVal">75</span> кг</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Когда родился? <span class="hint">это влияет на понимание жизненного этапа</span></label>
+          <div class="birth-group">
+            <input type="date" id="birthDate" class="form-input">
+            <label class="birth-toggle-label">
+              <input type="checkbox" id="birthYearOnly"> Лень вводить полностью — только год
+            </label>
+            <div class="birth-year-only" id="birthYearGroup" style="display:none">
+              <input type="number" id="birthYear" min="1950" max="2010" placeholder="Год рождения" class="form-input">
+            </div>
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label">Чем занимаешься по жизни? <span class="hint">выбери самое близкое</span></label>
+          <div class="card-select" id="profession">
+            <div class="card-select-item" data-value="student">Школьник / студент</div>
+            <div class="card-select-item" data-value="office">Офис / менеджмент</div>
+            <div class="card-select-item" data-value="dev">Разработчик / IT</div>
+            <div class="card-select-item" data-value="creative">Дизайн / видео / фото / креатив</div>
+            <div class="card-select-item" data-value="entrepreneur">Предприниматель / управление</div>
+            <div class="card-select-item" data-value="marketing">Маркетинг / контент</div>
+            <div class="card-select-item" data-value="finance">Финансы / аналитика</div>
+            <div class="card-select-item" data-value="science">Наука / инженерия</div>
+            <div class="card-select-item" data-value="other">Другое</div>
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label">Сколько часов в день живёшь у экрана? <span class="hint">честно, мы не осуждаем</span></label>
+          <div class="segmented-control" id="screenHours">
+            <div class="seg-item" data-value="0-2">0–2</div>
+            <div class="seg-item" data-value="3-4">3–4</div>
+            <div class="seg-item" data-value="5-6">5–6</div>
+            <div class="seg-item active" data-value="7-8">7–8</div>
+            <div class="seg-item" data-value="9-10">9–10</div>
+            <div class="seg-item" data-value="11+">11+</div>
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label">Что у тебя есть из Apple? <span class="hint">выбери всё, что есть — это важно</span></label>
+          <div class="card-select multi" id="appleDevices">
+            <div class="card-select-item" data-value="iphone">iPhone</div>
+            <div class="card-select-item" data-value="ipad">iPad</div>
+            <div class="card-select-item" data-value="airpods">AirPods</div>
+            <div class="card-select-item" data-value="watch">Apple Watch</div>
+            <div class="card-select-item" data-value="tvos">Apple TV</div>
+            <div class="card-select-item" data-value="mac">Mac (уже есть)</div>
+            <div class="card-select-item" data-value="none">Ничего из этого</div>
+          </div>
+        </div>
+      </div>
+      <div id="advancedFields" class="advanced-fields">
+        <div class="advanced-divider">
+          <span class="advanced-label">Хочешь глубже?</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label class="form-label">Сколько готов потратить на технику? <span class="hint">без стеснения</span></label>
+            <div class="card-select" id="budget">
+              <div class="card-select-item" data-value="minimal">Хочу сэкономить</div>
+              <div class="card-select-item active" data-value="moderate">Разумный бюджет</div>
+              <div class="card-select-item" data-value="invest">Готов вложиться</div>
+              <div class="card-select-item" data-value="unlimited">Особо не ограничен</div>
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label class="form-label">Для чего в основном используешь компьютер? <span class="hint">выбери главный сценарий</span></label>
+            <div class="card-select" id="scenario">
+              <div class="card-select-item" data-value="browser">Браузер / фильмы / переписка</div>
+              <div class="card-select-item" data-value="documents">Документы / обычная работа</div>
+              <div class="card-select-item" data-value="study">Учёба / повседневное</div>
+              <div class="card-select-item" data-value="code">Код / разработка</div>
+              <div class="card-select-item" data-value="creative-pro">Дизайн / монтаж / креатив</div>
+              <div class="card-select-item" data-value="business">Бизнес / созвоны / поездки</div>
+              <div class="card-select-item" data-value="mixed">Всё понемногу</div>
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label class="form-label">Ноутбук больше живёт дома или катается с тобой? <span class="hint">определяем мобильность</span></label>
+            <div class="segmented-control" id="mobility">
+              <div class="seg-item" data-value="stationary">Живёт на столе</div>
+              <div class="seg-item" data-value="occasional">Иногда беру с собой</div>
+              <div class="seg-item active" data-value="frequent">Часто ношу с собой</div>
+              <div class="seg-item" data-value="always">Всегда в рюкзаке</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Насколько важны статусные покупки? <span class="hint">от «лишь бы полезно» до «хочется, чтобы ещё и красиво»</span></label>
+            <div class="slider-group">
+              <input type="range" id="statusImportance" min="1" max="5" value="2" class="form-slider">
+              <div class="slider-value"><span id="statusImportanceVal">2</span>/5</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Терпимость к настройке и компромиссам? <span class="hint">от «только бы работало» до «люблю покопаться»</span></label>
+            <div class="slider-group">
+              <input type="range" id="techTolerance" min="1" max="5" value="3" class="form-slider">
+              <div class="slider-value"><span id="techToleranceVal">3</span>/5</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" data-action="back-mode">Назад</button>
+        <button type="submit" class="btn-primary" id="analyzeBtn">Запустить анализ</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section id="prelaunch" class="screen">
+  <div class="screen-header">
+    <span class="step-indicator">Подготовка</span>
+  </div>
+  <div class="prelaunch-container">
+    <div class="prelaunch-ring">
+      <svg class="prelaunch-svg" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="2"/>
+        <circle cx="60" cy="60" r="52" fill="none" stroke="var(--gold-0)" stroke-width="2" stroke-dasharray="326.7" stroke-dashoffset="0" opacity="0.3"/>
+      </svg>
+      <div class="prelaunch-icon">⟳</div>
+    </div>
+    <h2 class="prelaunch-title">Всё готово к анализу</h2>
+    <p class="prelaunch-desc">Все модули загружены. Нажми кнопку — и система начнёт собирать твой персональный профиль.</p>
+    <div class="prelaunch-modules" id="prelaunchModules"></div>
+    <p class="prelaunch-ready">Нажми «Запустить анализ», чтобы начать</p>
+    <button class="btn-primary" id="startAnalysisBtn">Запустить анализ</button>
+  </div>
+</section>
+
+<section id="analysis" class="screen">
+  <div class="analysis-container">
+    <div class="analysis-main">
+      <div class="analysis-progress-ring">
+        <svg class="progress-svg" viewBox="0 0 160 160">
+          <circle cx="80" cy="80" r="68" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="3"/>
+          <circle cx="80" cy="80" r="68" fill="none" stroke="var(--gold-0)" stroke-width="3" stroke-linecap="round" stroke-dasharray="427.3" stroke-dashoffset="427.3" id="progressCircle"/>
+        </svg>
+        <div class="analysis-progress-text">
+          <span id="analysisPercent">0</span><span class="pct">%</span>
+        </div>
+      </div>
+      <div class="analysis-info">
+        <h3 class="analysis-stage" id="analysisStage">Нормализация персональных параметров</h3>
+        <p class="analysis-sub" id="analysisSub">Обработка входных данных</p>
+        <div class="analysis-timeline" id="analysisTimeline"></div>
+      </div>
+    </div>
+    <div class="analysis-log" id="analysisLog"></div>
+    <div class="analysis-chips" id="analysisChips"></div>
+  </div>
+</section>
+
+<section id="verdict" class="screen">
+  <div class="verdict-container">
+    <div class="verdict-hero">
+      <div class="verdict-badge">Твой результат</div>
+      <h2 class="verdict-title" id="verdictTitle">MacBook тебе действительно нужен</h2>
+      <p class="verdict-sub" id="verdictSub">В твоём профиле это выглядит как рабочий инструмент, а не как декоративная мечта.</p>
+      <div class="verdict-score-ring">
+        <svg viewBox="0 0 180 180">
+          <circle cx="90" cy="90" r="78" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="4"/>
+          <circle cx="90" cy="90" r="78" fill="none" stroke="var(--gold-0)" stroke-width="4" stroke-linecap="round" stroke-dasharray="490.1" stroke-dashoffset="490.1" id="verdictScoreRing"/>
+        </svg>
+        <div class="verdict-score-text">
+          <span class="verdict-score-num" id="verdictScoreNum">0</span>
+          <span class="verdict-score-label">Индекс совместимости</span>
+        </div>
+      </div>
+      <p class="verdict-executive" id="verdictExecutive">Твоя нагрузка, сценарии и конфигурация потребностей — всё складывается в осмысленную картину.</p>
+    </div>
+    <button class="btn-primary" data-action="show-report">Посмотреть досье</button>
+  </div>
+</section>
+
+<section id="report" class="screen">
+  <div class="report-container">
+    <div class="screen-header">
+      <span class="step-indicator">Личное досье совместимости</span>
+      <div class="report-actions-top">
+        <button class="btn-icon" data-action="export-txt" title="Текст">TXT</button>
+        <button class="btn-icon" data-action="export-json" title="Данные">JSON</button>
+        <button class="btn-icon" data-action="print" title="Печать">⎙</button>
+      </div>
+    </div>
+
+    <div class="report-hero">
+      <h2 class="report-hero-title" id="reportVerdictTitle">MacBook тебе действительно нужен</h2>
+      <p class="report-hero-sub" id="reportVerdictSub">В твоём профиле это выглядит как рабочий инструмент, а не как декоративная мечта.</p>
+      <div class="report-hero-score">
+        <span class="report-score-num" id="reportScoreNum">0</span>
+        <span class="report-score-label">Индекс совместимости</span>
+      </div>
+    </div>
+
+    <div class="diagnostics-strip" id="diagnosticsStrip"></div>
+
+    <section class="report-section">
+      <h3 class="report-section-title">Архетипический профиль</h3>
+      <p class="report-section-intro">По рассчитанным индексам система определила твой основной и вспомогательный тип взаимодействия с техникой.</p>
+      <div class="archetype-cards">
+        <div class="archetype-card primary">
+          <span class="archetype-tag">Основной</span>
+          <h4 class="archetype-name" id="archPrimaryName">—</h4>
+          <p class="archetype-desc" id="archPrimaryDesc">—</p>
+        </div>
+        <div class="archetype-card secondary">
+          <span class="archetype-tag">Вторичный</span>
+          <h4 class="archetype-name" id="archSecondaryName">—</h4>
+          <p class="archetype-desc" id="archSecondaryDesc">—</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="report-section">
+      <h3 class="report-section-title">Матрица инсайтов</h3>
+      <p class="report-section-intro">Десятки выводов, сгруппированных по категориям. Каждый — на основе твоих реальных ответов.</p>
+      <div id="insightMatrix"></div>
+    </section>
+
+    <section class="report-section">
+      <h3 class="report-section-title">Аналитический обзор</h3>
+      <p class="report-section-intro">Персонализированный рассказ о твоём профиле: кто ты как пользователь, что для тебя важно и какое решение выглядит разумным.</p>
+      <div id="narrativeReport"></div>
+    </section>
+
+    <section class="report-section">
+      <h3 class="report-section-title">Рекомендация</h3>
+      <p class="report-section-intro">Итоговый вывод и тактика, с которой можно подойти к решению.</p>
+      <div id="recommendationBlock"></div>
+    </section>
+
+    <section class="report-section noprint">
+      <div class="export-block">
+        <h3 class="report-section-title">Сохранить результаты</h3>
+        <p class="export-desc">Сохрани досье в удобном формате или распечатай.</p>
+        <div class="export-buttons">
+          <button class="btn-secondary" data-action="export-txt">Текст (TXT)</button>
+          <button class="btn-secondary" data-action="export-json">Данные (JSON)</button>
+          <button class="btn-secondary" data-action="print">Печать / PDF</button>
+          <button class="btn-secondary" data-action="restart">Пройти заново</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

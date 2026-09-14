@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Хронологический анализ возраста | Chronos Intelligence</title>
+  <meta name="description" content="Проведите точный хронологический анализ с детальной календарной разбивкой.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="ambient-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <header class="header">
+    <div class="header__content">
+      <div class="logo">
+        <svg class="logo__icon" width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="url(#logo-gradient)" stroke-width="2"/>
+          <path d="M12 6V12L16 14" stroke="url(#logo-gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="logo-gradient" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#3B82F6"/>
+              <stop offset="1" stop-color="#10B981"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span class="logo__text">Chronos</span>
+      </div>
+      <span class="header__badge">Chronology Engine v2.0</span>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="hero">
+      <div class="hero__content">
+        <div class="hero-badge">
+          <svg class="hero-badge__icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="#10B981" stroke-width="2"/>
+            <path d="M8 12L11 15L16 9" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="hero-badge__text">Хронологический анализ</span>
+        </div>
+
+        <h1 class="hero__title">Интеллектуальный определитель возраста</h1>
+        <p class="hero__subtitle">Точный хронологический анализ с 24+ уникальными инсайтами. Введите год или полную дату рождения для глубокого анализа.</p>
+
+        <!-- Upsell for year-only mode -->
+        <div class="upsell-panel" id="upsellPanel" style="display: none;">
+          <svg class="upsell-panel__icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="upsell-panel__content">
+            <p class="upsell-panel__text">Добавьте полную дату рождения, чтобы открыть <strong>24+ инсайтов</strong> о вашей хронологии, жизни и символике.</p>
+            <button class="btn btn--text" id="upsellBtn">Использовать полную дату</button>
+          </div>
+        </div>
+
+        <div class="card" id="mainCard">
+          <!-- INPUT STATE -->
+          <div class="card__content card__content--input" id="inputState">
+            <div class="segmented-control" role="tablist" aria-label="Режим ввода">
+              <button class="segmented-control__tab segmented-control__tab--active" role="tab" aria-selected="true" data-mode="year" id="tab-year">
+                <span class="segmented-control__tab-text">Только год</span>
+              </button>
+              <button class="segmented-control__tab" role="tab" aria-selected="false" data-mode="date" id="tab-date">
+                <span class="segmented-control__tab-text">Полная дата</span>
+                <span class="segmented-control__premium-badge">24+ инсайта</span>
+              </button>
+            </div>
+
+            <div class="input-container" id="yearInputContainer">
+              <label class="input-label" for="yearInput">Год рождения</label>
+              <div class="input-wrapper">
+                <input
+                  type="text"
+                  id="yearInput"
+                  class="input-field input-field--year"
+                  placeholder="Например, 1994"
+                  maxlength="4"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  aria-describedby="yearHelper"
+                >
+                <button class="input-clear" id="clearYearBtn" aria-label="Очистить поле">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 3L13 13M13 3L3 13" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+              <p class="input-hint" id="yearHelper">Введите 4 цифры года</p>
+              <p class="input-error" id="yearError" aria-live="polite"></p>
+            </div>
+
+            <div class="input-container input-container--hidden" id="dateInputContainer">
+              <label class="input-label" for="dateInput">Дата рождения</label>
+              <div class="date-inputs">
+                <div class="date-input-group">
+                  <input
+                    type="text"
+                    id="dayInput"
+                    class="date-input"
+                    placeholder="ДД"
+                    maxlength="2"
+                    inputmode="numeric"
+                    autocomplete="off"
+                  >
+                  <span class="date-separator">.</span>
+                </div>
+                <div class="date-input-group">
+                  <input
+                    type="text"
+                    id="monthInput"
+                    class="date-input"
+                    placeholder="ММ"
+                    maxlength="2"
+                    inputmode="numeric"
+                    autocomplete="off"
+                  >
+                  <span class="date-separator">.</span>
+                </div>
+                <div class="date-input-group">
+                  <input
+                    type="text"
+                    id="yearInputFull"
+                    class="date-input date-input--year"
+                    placeholder="ГГГГ"
+                    maxlength="4"
+                    inputmode="numeric"
+                    autocomplete="off"
+                  >
+                </div>
+              </div>
+              <p class="input-hint">Формат: ДД.ММ.ГГГГ</p>
+              <p class="input-error" id="dateError" aria-live="polite"></p>
+            </div>
+
+            <div class="card-actions">
+              <button class="btn btn--primary btn--large" id="analyzeBtn" disabled>
+                <span class="btn__text">Запустить</span>
+                <svg class="btn__icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="quick-fills" id="quickFills">
+              <span class="quick-fills__label">Быстрый ввод:</span>
+              <div class="quick-fills__chips">
+                <button class="chip" data-value="1990">1990</button>
+                <button class="chip" data-value="14.02.1997">14.02.1997</button>
+                <button class="chip" data-value="01.01.2000">01.01.2000</button>
+              </div>
+            </div>
+
+            <p class="card__trust-note">Мы ничего не сохраняем. Только считаем и показываем.</p>
+          </div>
+
+          <!-- PROCESSING STATE -->
+          <div class="card__content card__content--processing card__content--hidden" id="processingState">
+            <div class="processing-badge" aria-live="polite">
+              <svg class="processing-badge__icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="#10B981" stroke-width="2"/>
+                <path d="M8 12L11 15L16 9" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="processing-badge__text">Анализ выполняется</span>
+            </div>
+
+            <div class="processing-status">
+              <div class="processing-progress">
+                <span class="processing-progress__current" id="currentStep">1</span>
+                <span class="processing-progress__total">/ <span id="totalSteps">9</span></span>
+              </div>
+              <h3 class="processing-status__title" id="processingTitle">Инициализация модуля</h3>
+              <p class="processing-status__subtitle" id="processingSubtitle">Поднимаем хронологические данные...</p>
+            </div>
+
+            <div class="progress-container">
+              <div class="progress-track">
+                <div class="progress-fill" id="progressFill">
+                  <div class="progress-shimmer"></div>
+                </div>
+              </div>
+              <div class="progress-percent" id="progressPercent">0%</div>
+            </div>
+
+            <div class="step-list" id="stepList">
+              <!-- Steps will be injected here -->
+            </div>
+
+            <div class="processing-meta" aria-hidden="true">
+              <span class="processing-meta__item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2V22M2 12H22" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span>Этапы</span>
+              </span>
+              <span class="processing-meta__item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="#94A3B8" stroke-width="1.5"/>
+                  <path d="M12 7V12L15 14" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span>Высокая точность</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- RESULT STATE -->
+          <div class="card__content card__content--result card__content--hidden" id="resultState">
+            <div class="result-header">
+              <div class="success-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="#10B981" stroke-width="2"/>
+                  <path d="M8 12L11 15L16 9" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Анализ завершён</span>
+              </div>
+            </div>
+
+            <div class="result-content">
+              <div class="result-kpi">
+                <p class="result-kpi__label">Ваш возраст</p>
+                <div class="result-kpi__value-container">
+                  <span class="result-kpi__value" id="resultAge">--</span>
+                  <span class="result-kpi__unit">лет</span>
+                </div>
+                <p class="result-kpi__summary" id="resultSummary">Хронологический анализ завершён</p>
+              </div>
+
+              <div class="result-digest" id="resultDigest">
+                <p class="result-digest__text" id="resultDigestText"></p>
+              </div>
+
+              <div class="data-visualizations" id="dataVisualizations">
+                <!-- Visualizations will be injected here -->
+              </div>
+
+              <div class="metrics-grid" id="metricsGrid">
+                <!-- Metrics will be injected here -->
+              </div>
+
+              <div class="result-insights" id="resultInsights">
+                <div class="insights-header">
+                  <h4 class="insights-header__title">Расширенные инсайты</h4>
+                  <button class="btn btn--text" id="toggleInsightsBtn">Свернуть все</button>
+                </div>
+                <div class="insights-grid" id="insightsGrid">
+                  <!-- Insights will be injected here -->
+                </div>
+              </div>
+            </div>
+
+            <div class="result-actions">
+              <button class="btn btn--secondary btn--large btn--icon-left" id="copyBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M8 4H16C17.1046 4 18 4.89543 18 6V16C18 17.1046 17.1046 18 16 18H8C6.89543 18 6 17.1046 6 16V6C6 4.89543 6.89543 4 8 4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M6 14H18V20C18 21.1046 17.1046 22 16 22H8C6.89543 22 6 21.1046 6 20V14Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Скопировать результат</span>
+              </button>
+              <button class="btn btn--primary btn--large" id="restartBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M23 4V10H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M1 20V14H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3.51 9A9 9 0 0 1 20.49 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M20.49 15A9 9 0 0 1 3.51 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Рассчитать заново</span>
+              </button>
+            </div>
+
+            <p class="result-footer" id="resultFooter">Да, это был очень солидный способ узнать очевидное.</p>
+          </div>
+        </div>
+
+        <div class="result-info-panel" id="infoPanel" style="display: none;">
+          <h4 class="result-info-panel__title">Что вы получите</h4>
+          <div class="result-info-panel__items">
+            <div class="result-info-panel__item">
+              <span class="result-info-panel__item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="#94A3B8" stroke-width="1.5"/>
+                  <path d="M12 7V12L15 14" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span class="result-info-panel__item-text">24+ уникальных инсайта</span>
+            </div>
+            <div class="result-info-panel__item">
+              <span class="result-info-panel__item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="#94A3B8" stroke-width="1.5"/>
+                  <path d="M8 12H16" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
+                  <path d="M12 8V16" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span class="result-info-panel__item-text">Календарный профиль</span>
+            </div>
+            <div class="result-info-panel__item">
+              <span class="result-info-panel__item-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="9" stroke="#94A3B8" stroke-width="1.5"/>
+                  <path d="M12 7V13L15 16" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span class="result-info-panel__item-text">Life stats</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p class="footer__text">Казалось бы, как? А вот так.</p>
+  </footer>
+
+  <script src="utils.js"></script>
+  <script src="validation.js"></script>
+  <script src="insights.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+:root {
+  font-family: Inter, Segoe UI, Roboto, sans-serif;
+  color: #f4f6ff;
+  background: radial-gradient(circle at 20% 10%, #232b58 0%, #0a0d1f 45%, #05060f 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.top-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+button,
+input,
+select,
+textarea {
+  border-radius: 10px;
+  border: 1px solid #475078;
+  background: #1a2140;
+  color: #ecf0ff;
+  padding: 10px 12px;
+}
+
+button {
+  cursor: pointer;
+}
+
+.presenter-screen,
+.admin-panel {
+  border: 1px solid #384061;
+  background: rgba(9, 12, 28, 0.85);
+  padding: 18px;
+  border-radius: 16px;
+  backdrop-filter: blur(6px);
+}
+
+.mechanic-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.mechanic-tabs button.active {
+  border-color: #7c5cff;
+  box-shadow: 0 0 20px rgba(124, 92, 255, 0.35);
+}
+
+.mechanic-stage {
+  border: 1px solid #3e486f;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.lane {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.wheel-layout {
+  position: relative;
+  height: 320px;
+  display: grid;
+  place-items: center;
+}
+.wheel-disc {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  border: 2px solid #6c76a3;
+  position: relative;
+  transition: transform 0.2s linear;
+}
+.wheel-segment {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  transform-origin: 0 142px;
+  font-size: 12px;
+}
+.wheel-pointer {
+  position: absolute;
+  top: -2px;
+  font-size: 24px;
+}
+
+.plinko-board,.pinball-table,.claw-machine,.slot-machine,.race-track,.cards-grid {
+  min-height: 260px;
+}
+.plinko-board { position: relative; }
+.plinko-pins {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.plinko-pins span,.pinball-bumpers span {
+  width: 8px; height: 8px; border-radius: 50%; background: #7e89bd; display:block;
+}
+.plinko-ball {
+  width: 16px; height: 16px; border-radius: 50%; background: #ffd166; position: absolute; top: 36%; transition: left .1s linear;
+}
+.plinko-slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 6px; margin-top: 56px; }
+.plinko-slots div,.pinball-pockets div { border: 1px solid #4d5888; border-radius: 8px; padding: 6px; text-align:center; }
+
+.pinball-table { position: relative; }
+.pinball-bumpers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 30px; }
+.pinball-ball { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: #ffd166; transition: all .08s linear; }
+.pinball-pockets { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; margin-top: 80px; }
+
+.slot-machine { display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); align-items: center; }
+.slot-reel { border: 1px solid #57618f; border-radius: 12px; padding: 30px 10px; text-align: center; font-size: 20px; font-weight: 700; }
+.slot-result { grid-column: 1 / -1; text-align: center; font-size: 22px; color: #ffd166; }
+
+.race-row { display: grid; grid-template-columns: 140px 1fr; gap: 8px; align-items: center; margin: 8px 0; }
+.race-lane-inner { height: 24px; border: 1px solid #4c5788; border-radius: 999px; position: relative; }
+.race-lane-inner i { position:absolute; top:2px; width: 20px; height: 20px; background:#7c5cff; border-radius: 50%; transition:left .1s linear; }
+
+.claw-machine { position: relative; padding-top: 36px; }
+.claw-head { position: absolute; top: 0; font-size: 26px; transition:left .1s linear; }
+.claw-capsules { display:grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap:8px; }
+.claw-capsules span, .card-door { border: 1px solid #4f5a86; border-radius: 10px; padding: 14px; text-align: center; }
+
+.cards-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; }
+.card-door { min-height: 90px; display:grid; place-items:center; background:#111936; font-size: 20px; }
+.card-door.opened { background: linear-gradient(135deg,#2a2f57,#20264c); }
+
+.team-chip {
+  border: 1px solid;
+  border-radius: 12px;
+  padding: 10px;
+  background: #111835;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.team-chip.scanning {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.18);
+}
+
+.team-chip.winner {
+  background: linear-gradient(90deg, #7c5cff, #00c2ff);
+  border-color: #b8dcff;
+}
+
+.winner {
+  box-shadow: 0 0 20px rgba(255, 209, 102, 0.35);
+  border-color: #ffd166 !important;
+}
+
+.progress-bar {
+  height: 6px;
+  background: #0d1230;
+  border-radius: 999px;
+  margin-top: 14px;
+  overflow: hidden;
+}
+
+.progress-bar > div {
+  height: 100%;
+  background: linear-gradient(90deg, #b26dff, #5de2ff);
+}
+
+.mechanic-wheel .progress-bar > div {
+  background: linear-gradient(90deg, #fdc830, #f37335);
+}
+.mechanic-plinko .progress-bar > div {
+  background: linear-gradient(90deg, #36d1dc, #5b86e5);
+}
+.mechanic-pinball .progress-bar > div {
+  background: linear-gradient(90deg, #f857a6, #ff5858);
+}
+.mechanic-slot .progress-bar > div {
+  background: linear-gradient(90deg, #43cea2, #185a9d);
+}
+.mechanic-race .progress-bar > div {
+  background: linear-gradient(90deg, #c471f5, #fa71cd);
+}
+.mechanic-claw .progress-bar > div {
+  background: linear-gradient(90deg, #00c6ff, #0072ff);
+}
+.mechanic-cards .progress-bar > div {
+  background: linear-gradient(90deg, #f7971e, #ffd200);
+}
+
+.presenter-actions {
+  margin-top: 16px;
+}
+
+.history div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.history span {
+  border: 1px solid #4f5a85;
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.admin-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.admin-team-row,
+.inline-controls {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+  align-items: center;
+}
+
+textarea {
+  width: 100%;
+  min-height: 120px;
+}
+
+.result-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 6, 16, 0.72);
+  display: grid;
+  place-items: center;
+}
+
+.result-card {
+  width: min(560px, 90vw);
+  border: 2px solid;
+  background: linear-gradient(140deg, #161d40, #11162e);
+  border-radius: 18px;
+  padding: 24px;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

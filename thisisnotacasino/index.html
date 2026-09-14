@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Obsidian Reserve — Частная камера совпадения</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08080a;
+  --bg-elevated: #0d0d10;
+  --bg-deep: #040406;
+  --surface: #141417;
+  --surface-soft: #1a1a1e;
+  --surface-elevated: #202024;
+  --panel: rgba(20,20,24,0.92);
+  --panel-deep: rgba(10,10,12,0.96);
+  --glass: rgba(255,255,255,0.035);
+  --glass-border: rgba(200,169,110,0.12);
+  --glass-strong: rgba(255,255,255,0.06);
+  --text: #e8e6e3;
+  --text-muted: #8a8886;
+  --text-soft: #b0aeaa;
+  --line: rgba(200,169,110,0.15);
+  --line-soft: rgba(255,255,255,0.06);
+  --gold: #c8a96e;
+  --gold-soft: #d4bc8a;
+  --gold-light: #e6d4a8;
+  --gold-dark: #a68a5a;
+  --rose-gold: #b8897a;
+  --rose-gold-soft: #d4a89a;
+  --signal-red: #8a3a3a;
+  --signal-red-soft: #6a2a2a;
+  --success: #6a9a6a;
+  --success-soft: #2a3a2a;
+  --danger: #7a3a3a;
+  --danger-soft: #3a1a1a;
+  --shadow-soft: 0 2px 40px rgba(0,0,0,0.5);
+  --shadow-deep: 0 8px 80px rgba(0,0,0,0.7);
+  --shadow-gold: 0 0 60px rgba(200,169,110,0.08);
+  --shadow-inner: inset 0 1px 0 rgba(255,255,255,0.04);
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --ease-luxury: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-expo: cubic-bezier(0.7, 0, 0.84, 0);
+  --duration-slow: 1200ms;
+  --duration-med: 600ms;
+  --duration-fast: 300ms;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-ui: 'Inter', -apple-system, system-ui, sans-serif;
+  --reel-height: 320px;
+  --symbol-size: 88px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{font-family:var(--font-ui);background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden;min-height:100vh}
+::selection{background:rgba(200,169,110,0.25);color:var(--gold-light)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:var(--radius-sm)}
+a{color:var(--gold);text-decoration:none;transition:color var(--duration-fast) var(--ease-luxury)}
+a:hover{color:var(--gold-light)}
+img{max-width:100%;display:block}
+button{cursor:pointer;font-family:var(--font-ui);border:none;background:none;color:inherit}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}
+
+.container{max-width:1200px;margin:0 auto;padding:0 var(--space-lg)}
+
+.fade-in{opacity:0;transform:translateY(20px);animation:fadeIn 1s var(--ease-out-expo) forwards}
+@keyframes fadeIn{to{opacity:1;transform:translateY(0)}}
+.fade-in-delay-1{animation-delay:0.2s}
+.fade-in-delay-2{animation-delay:0.4s}
+.fade-in-delay-3{animation-delay:0.6s}
+.fade-in-delay-4{animation-delay:0.8s}
+
+/* HERO */
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:var(--space-3xl) var(--space-lg);overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 30%, rgba(200,169,110,0.04) 0%, transparent 70%),radial-gradient(ellipse 60% 40% at 70% 60%, rgba(184,137,122,0.03) 0%, transparent 60%);pointer-events:none}
+.hero-bg-pattern{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,0.015) 1px, transparent 1px);background-size:40px 40px;pointer-events:none}
+.hero-glow{position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle, rgba(200,169,110,0.05) 0%, transparent 70%);top:15%;left:50%;transform:translateX(-50%);pointer-events:none;animation:heroGlow 6s ease-in-out infinite alternate}
+@keyframes heroGlow{0%{opacity:0.5;transform:translateX(-50%) scale(1)}100%{opacity:1;transform:translateX(-50%) scale(1.15)}}
+.hero-logo{position:relative;margin-bottom:var(--space-xl);width:80px;height:80px}
+.hero-logo svg{width:100%;height:100%}
+.hero-title{font-family:var(--font-display);font-size:clamp(2.8rem,7vw,5.5rem);font-weight:700;letter-spacing:-0.02em;line-height:1.05;margin-bottom:var(--space-lg);background:linear-gradient(180deg,var(--text) 0%,var(--gold-soft) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-subtitle{font-family:var(--font-display);font-size:clamp(1rem,2vw,1.4rem);font-weight:400;font-style:italic;color:var(--text-muted);margin-bottom:var(--space-xl);letter-spacing:0.05em}
+.hero-desc{font-size:clamp(0.9rem,1.2vw,1.05rem);color:var(--text-soft);max-width:520px;margin-bottom:var(--space-2xl);line-height:1.7;font-weight:300}
+.hero-cta{display:inline-flex;align-items:center;gap:var(--space-md);padding:var(--space-md) var(--space-2xl);border:1px solid var(--glass-border);background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:var(--radius-lg);color:var(--gold-soft);font-size:0.95rem;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;transition:all var(--duration-med) var(--ease-luxury);position:relative;overflow:hidden}
+.hero-cta::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 0%,rgba(200,169,110,0.06) 50%,transparent 100%);opacity:0;transition:opacity var(--duration-med) var(--ease-luxury)}
+.hero-cta:hover{background:rgba(200,169,110,0.08);border-color:rgba(200,169,110,0.3);transform:translateY(-2px);box-shadow:var(--shadow-gold)}
+.hero-cta:hover::before{opacity:1}
+.hero-cta:active{transform:translateY(0);transition-duration:100ms}
+.hero-cta-arrow{width:18px;height:18px;stroke:var(--gold-soft);stroke-width:1.5;fill:none;transition:transform var(--duration-fast) var(--ease-luxury)}
+.hero-cta:hover .hero-cta-arrow{transform:translateX(4px)}
+.hero-badge{position:relative;display:inline-flex;align-items:center;gap:var(--space-sm);padding:var(--space-xs) var(--space-md);border:1px solid var(--line-soft);border-radius:100px;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:var(--space-xl)}
+.hero-badge-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);opacity:0.6;animation:badgePulse 2s ease-in-out infinite}
+@keyframes badgePulse{0%,100%{opacity:0.3}50%{opacity:0.8}}
+.hero-scroll{position:absolute;bottom:var(--space-xl);left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:var(--space-sm);color:var(--text-muted);font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;opacity:0.4;animation:fadeIn 1s var(--ease-out-expo) 1.5s both}
+.hero-scroll-line{width:1px;height:30px;background:linear-gradient(180deg,var(--text-muted),transparent);animation:scrollLine 2s ease-in-out infinite}
+@keyframes scrollLine{0%{opacity:0.3;transform:scaleY(0.5)}50%{opacity:0.8;transform:scaleY(1)}100%{opacity:0.3;transform:scaleY(0.5)}}
+
+/* CHAMBER SECTION */
+.chamber-section{position:relative;padding:var(--space-3xl) 0;scroll-margin-top:var(--space-xl)}
+.chamber-section::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:80%;max-width:400px;height:1px;background:linear-gradient(90deg,transparent,var(--glass-border),transparent)}
+
+.chamber-header{text-align:center;margin-bottom:var(--space-2xl)}
+.chamber-label{font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:var(--space-md)}
+.chamber-title{font-family:var(--font-display);font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:600;color:var(--text);letter-spacing:-0.01em}
+
+/* MACHINE */
+.machine{position:relative;max-width:780px;margin:0 auto;padding:var(--space-xl);background:linear-gradient(180deg,var(--surface) 0%,var(--bg-elevated) 100%);border:1px solid var(--glass-border);border-radius:var(--radius-xl);box-shadow:var(--shadow-deep),var(--shadow-gold),var(--shadow-inner);overflow:hidden}
+.machine::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 0%, rgba(200,169,110,0.03) 0%, transparent 70%);pointer-events:none}
+.machine-glow{position:absolute;width:300px;height:200px;background:radial-gradient(ellipse, rgba(200,169,110,0.04) 0%, transparent 70%);top:-60px;left:50%;transform:translateX(-50%);pointer-events:none;animation:machineGlow 5s ease-in-out infinite alternate}
+@keyframes machineGlow{0%{opacity:0.4;transform:translateX(-50%) scale(1)}100%{opacity:0.8;transform:translateX(-50%) scale(1.2)}}
+.machine-reflection{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0.02) 0%,transparent 30%,transparent 70%,rgba(255,255,255,0.01) 100%);pointer-events:none;border-radius:var(--radius-xl)}
+
+.machine-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-lg);position:relative}
+
+.balance-block{display:flex;flex-direction:column;gap:var(--space-xs)}
+.balance-label{font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)}
+.balance-value{font-size:1.4rem;font-weight:500;color:var(--gold-soft);letter-spacing:-0.01em;font-variant-numeric:tabular-nums;transition:color var(--duration-fast) var(--ease-luxury)}
+.balance-value.win-flash{color:var(--gold-light);text-shadow:0 0 30px rgba(200,169,110,0.3)}
+.balance-value.lose-flash{color:var(--text-muted)}
+
+.aura-block{display:flex;flex-direction:column;align-items:flex-end;gap:var(--space-xs)}
+.aura-label{font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)}
+.aura-bar-wrapper{width:80px;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.aura-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--rose-gold),var(--gold));border-radius:2px;transition:width var(--duration-med) var(--ease-out-expo)}
+.aura-value{font-size:0.75rem;color:var(--rose-gold-soft);font-variant-numeric:tabular-nums}
+.aura-block.high .aura-bar{background:linear-gradient(90deg,var(--rose-gold),var(--gold),var(--gold-light))}
+.aura-block.high .aura-value{color:var(--gold-light)}
+
+.title-block{text-align:center;margin-bottom:var(--space-lg)}
+.title-label{font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);margin-bottom:var(--space-xs)}
+.title-value{font-family:var(--font-display);font-size:1rem;color:var(--text-soft);font-style:italic}
+
+/* TARGET SYMBOL */
+.target-block{display:flex;align-items:center;justify-content:center;gap:var(--space-md);margin-bottom:var(--space-lg);padding:var(--space-sm) var(--space-md);background:rgba(255,255,255,0.02);border:1px solid var(--line-soft);border-radius:var(--radius-sm)}
+.target-label{font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)}
+.target-symbol-display{width:36px;height:36px;display:flex;align-items:center;justify-content:center}
+.target-symbol-display svg{width:100%;height:100%}
+.target-name{font-size:0.8rem;color:var(--gold-soft);font-weight:500;letter-spacing:0.03em}
+
+/* REELS */
+.reels-container{position:relative;margin-bottom:var(--space-xl);padding:var(--space-lg);background:var(--bg-deep);border-radius:var(--radius-lg);border:1px solid rgba(255,255,255,0.04);overflow:hidden}
+.reels-container::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%, rgba(200,169,110,0.02) 0%, transparent 60%);pointer-events:none}
+
+.reel-window{position:relative;display:flex;gap:var(--space-sm);justify-content:center;align-items:center;min-height:var(--reel-height)}
+
+.reel{flex:1;max-width:140px;height:var(--reel-height);overflow:hidden;position:relative;border-radius:var(--radius-md);background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.03)}
+.reel-inner{display:flex;flex-direction:column;transition:transform var(--ease-out-expo);will-change:transform}
+.reel-cell{width:100%;height:calc(var(--reel-height)/3);display:flex;align-items:center;justify-content:center;padding:var(--space-sm)}
+.reel-cell svg{width:var(--symbol-size);height:var(--symbol-size);transition:transform var(--duration-fast) var(--ease-luxury)}
+
+.line-indicator{position:absolute;left:0;right:0;top:50%;height:calc(var(--reel-height)/3);transform:translateY(-50%);border-top:1px solid var(--glass-border);border-bottom:1px solid var(--glass-border);pointer-events:none;background:rgba(200,169,110,0.03);transition:background var(--duration-med) var(--ease-luxury)}
+.line-indicator.active{background:rgba(200,169,110,0.06);border-color:var(--gold);box-shadow:0 0 30px rgba(200,169,110,0.08)}
+.line-indicator-glow{position:absolute;inset:-2px;border-radius:var(--radius-md);pointer-events:none;transition:opacity var(--duration-med) var(--ease-luxury);opacity:0}
+.line-indicator.active .line-indicator-glow{opacity:1;box-shadow:0 0 40px rgba(200,169,110,0.06),inset 0 0 40px rgba(200,169,110,0.03)}
+.line-label{position:absolute;right:var(--space-sm);top:50%;transform:translateY(-50%);font-size:0.5rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(200,169,110,0.25);writing-mode:vertical-rl;pointer-events:none}
+
+/* BET CONTROLS */
+.controls-row{display:flex;flex-wrap:wrap;gap:var(--space-md);align-items:center;justify-content:center;margin-bottom:var(--space-lg)}
+.bet-group{display:flex;gap:var(--space-xs);align-items:center}
+.bet-label{font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);margin-right:var(--space-sm)}
+.bet-option{padding:var(--space-sm) var(--space-md);border:1px solid var(--line-soft);border-radius:var(--radius-sm);background:transparent;color:var(--text-muted);font-size:0.8rem;font-weight:500;transition:all var(--duration-fast) var(--ease-luxury);min-height:44px;min-width:44px}
+.bet-option:hover{border-color:rgba(200,169,110,0.3);color:var(--text-soft)}
+.bet-option.active{border-color:var(--gold);color:var(--gold-soft);background:rgba(200,169,110,0.06)}
+.bet-option:disabled{opacity:0.25;cursor:not-allowed}
+
+/* ACTION */
+.action-group{display:flex;align-items:center;gap:var(--space-lg);justify-content:center}
+
+.spin-btn{position:relative;padding:var(--space-md) var(--space-2xl);border:1px solid var(--glass-border);background:linear-gradient(135deg,var(--glass) 0%,rgba(200,169,110,0.04) 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:var(--radius-lg);color:var(--gold-soft);font-size:0.85rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;transition:all var(--duration-med) var(--ease-luxury);overflow:hidden;min-height:56px;min-width:160px}
+.spin-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 0%,rgba(200,169,110,0.06) 50%,transparent 100%);opacity:0;transition:opacity var(--duration-med) var(--ease-luxury)}
+.spin-btn:hover:not(:disabled){border-color:rgba(200,169,110,0.3);transform:translateY(-2px);box-shadow:var(--shadow-gold)}
+.spin-btn:hover:not(:disabled)::before{opacity:1}
+.spin-btn:active:not(:disabled){transform:translateY(0);transition-duration:80ms}
+.spin-btn:disabled{opacity:0.25;cursor:not-allowed;transform:none}
+.spin-btn-text{position:relative;z-index:1}
+
+/* LEVER */
+.lever-wrapper{position:relative;width:44px;height:160px;display:flex;flex-direction:column;align-items:center;cursor:pointer;touch-action:none}
+.lever-base{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 40% 35%,var(--surface-elevated),var(--surface));border:1px solid var(--glass-border);box-shadow:var(--shadow-inner);z-index:2;flex-shrink:0}
+.lever-rod{width:3px;flex:1;background:linear-gradient(180deg,var(--surface-elevated) 0%,var(--surface) 100%);border-left:1px solid rgba(255,255,255,0.05);border-right:1px solid rgba(0,0,0,0.3);position:relative;margin:-2px 0}
+.lever-rod::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:6px;height:6px;border-radius:50%;background:var(--gold-dark)}
+.lever-handle{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 40% 30%,var(--surface-elevated),var(--bg-elevated));border:1px solid var(--glass-border);box-shadow:var(--shadow-inner),0 2px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform var(--duration-med) var(--ease-luxury),box-shadow var(--duration-med) var(--ease-luxury);z-index:3;flex-shrink:0;position:relative}
+.lever-handle::after{content:'';width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 40% 35%,var(--gold-soft),var(--gold-dark));opacity:0.6}
+.lever-handle:hover{transform:scale(1.05);box-shadow:var(--shadow-gold),var(--shadow-inner),0 2px 12px rgba(0,0,0,0.3)}
+.lever-wrapper.pulled .lever-handle{transform:translateY(40px) rotate(10deg);transition:transform 0.3s var(--ease-out-expo)}
+.lever-wrapper:not(.pulled) .lever-handle{transition:transform 0.6s var(--ease-elastic)}
+
+/* RESULT */
+.result-display{text-align:center;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-top:var(--space-md)}
+.result-text{font-family:var(--font-display);font-size:1.2rem;color:var(--text-soft);transition:all var(--duration-med) var(--ease-luxury)}
+.result-text.win{color:var(--gold-light);text-shadow:0 0 40px rgba(200,169,110,0.2)}
+.result-text.lose{color:var(--text-muted)}
+.result-detail{font-size:0.75rem;color:var(--text-muted);margin-top:var(--space-xs);font-weight:300;letter-spacing:0.03em}
+
+/* HISTORY */
+.history-block{margin-top:var(--space-lg);padding-top:var(--space-lg);border-top:1px solid var(--line-soft)}
+.history-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-md)}
+.history-label{font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted)}
+.history-list{display:flex;gap:var(--space-sm);flex-wrap:wrap}
+.history-item{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.55rem;border:1px solid var(--line-soft);transition:all var(--duration-fast) var(--ease-luxury)}
+.history-item.win{border-color:var(--gold);background:rgba(200,169,110,0.08);color:var(--gold-soft)}
+.history-item.lose{border-color:rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:var(--text-muted)}
+
+/* EXHAUSTION */
+.exhaustion-overlay{position:absolute;inset:0;background:var(--panel-deep);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:var(--radius-xl);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-lg);padding:var(--space-2xl);z-index:10;opacity:0;pointer-events:none;transition:opacity var(--duration-med) var(--ease-luxury)}
+.exhaustion-overlay.visible{opacity:1;pointer-events:auto}
+.exhaustion-icon{width:48px;height:48px;opacity:0.4}
+.exhaustion-icon svg{width:100%;height:100%}
+.exhaustion-title{font-family:var(--font-display);font-size:1.4rem;color:var(--text-soft);text-align:center}
+.exhaustion-desc{font-size:0.85rem;color:var(--text-muted);text-align:center;max-width:360px;line-height:1.6}
+.reset-btn{padding:var(--space-md) var(--space-2xl);border:1px solid var(--glass-border);background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:var(--radius-lg);color:var(--gold-soft);font-size:0.85rem;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;transition:all var(--duration-med) var(--ease-luxury)}
+.reset-btn:hover{border-color:rgba(200,169,110,0.3);background:rgba(200,169,110,0.06);transform:translateY(-2px);box-shadow:var(--shadow-gold)}
+.reset-btn:active{transform:translateY(0)}
+
+/* SYMBOLS SECTION */
+.symbols-section{position:relative;padding:var(--space-3xl) 0;scroll-margin-top:var(--space-xl)}
+
+.symbols-header{margin-bottom:var(--space-2xl)}
+.symbols-label{font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:var(--space-md)}
+.symbols-title{font-family:var(--font-display);font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:600;color:var(--text);letter-spacing:-0.01em;margin-bottom:var(--space-lg)}
+.symbols-desc{font-size:0.95rem;color:var(--text-soft);max-width:600px;line-height:1.7;font-weight:300}
+
+.symbols-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-lg);margin-bottom:var(--space-2xl)}
+@media(max-width:768px){.symbols-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.symbols-grid{grid-template-columns:1fr}}
+
+.symbol-card{padding:var(--space-xl);background:var(--surface);border:1px solid var(--line-soft);border-radius:var(--radius-lg);transition:all var(--duration-med) var(--ease-luxury)}
+.symbol-card:hover{border-color:var(--glass-border);background:var(--surface-soft);transform:translateY(-4px);box-shadow:var(--shadow-gold)}
+.symbol-card-icon{width:72px;height:72px;margin-bottom:var(--space-md)}
+.symbol-card-icon svg{width:100%;height:100%}
+.symbol-card-name{font-family:var(--font-display);font-size:1rem;color:var(--text);margin-bottom:var(--space-xs)}
+.symbol-card-desc{font-size:0.8rem;color:var(--text-muted);line-height:1.5;font-weight:300}
+
+/* LOGIC BLOCKS */
+.logic-layout{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);margin-bottom:var(--space-2xl)}
+@media(max-width:768px){.logic-layout{grid-template-columns:1fr}}
+
+.logic-block{padding:var(--space-xl);border-radius:var(--radius-lg);border:1px solid var(--line-soft)}
+.logic-block.primary{background:linear-gradient(135deg,rgba(200,169,110,0.03) 0%,transparent 100%);border-color:var(--glass-border)}
+.logic-block-title{font-family:var(--font-display);font-size:1.1rem;color:var(--text);margin-bottom:var(--space-md)}
+.logic-block-text{font-size:0.85rem;color:var(--text-muted);line-height:1.7;font-weight:300}
+.logic-block-item{display:flex;align-items:flex-start;gap:var(--space-md);margin-bottom:var(--space-md);padding:var(--space-md);background:rgba(255,255,255,0.015);border-radius:var(--radius-sm)}
+.logic-block-item:last-child{margin-bottom:0}
+.logic-item-icon{width:24px;height:24px;flex-shrink:0;margin-top:2px}
+.logic-item-icon svg{width:100%;height:100%}
+.logic-item-title{font-size:0.85rem;color:var(--text-soft);margin-bottom:var(--space-xs);font-weight:500}
+.logic-item-desc{font-size:0.78rem;color:var(--text-muted);line-height:1.5;font-weight:300}
+
+/* FOOTER */
+.footer{position:relative;padding:var(--space-2xl) 0 var(--space-xl);text-align:center}
+.footer::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:60%;max-width:300px;height:1px;background:linear-gradient(90deg,transparent,var(--glass-border),transparent)}
+.footer-text{font-size:0.75rem;color:var(--text-muted);max-width:480px;margin:0 auto;line-height:1.7;font-weight:300}
+.footer-brand{margin-top:var(--space-lg);font-family:var(--font-display);font-size:0.85rem;color:rgba(200,169,110,0.3);font-style:italic}
+
+/* WIN CELEBRATION */
+.celebration{position:fixed;inset:0;pointer-events:none;z-index:100}
+.celebration-particle{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--gold);opacity:0;animation:particleFloat 2s var(--ease-out-expo) forwards}
+@keyframes particleFloat{0%{opacity:0;transform:translateY(0) scale(0)}20%{opacity:0.8;transform:translateY(-20px) scale(1)}100%{opacity:0;transform:translateY(-200px) scale(0)}}
+
+.gold-bloom{position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(circle at 50% 50%,rgba(200,169,110,0.08) 0%,transparent 60%);opacity:0;animation:goldBloom 0.8s var(--ease-out-expo) forwards}
+@keyframes goldBloom{0%{opacity:0;transform:scale(0.8)}30%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.2)}}
+
+/* GOLD FLASH OVERLAY */
+.flash-overlay{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:0;transition:opacity 0.1s}
+.flash-overlay.win{background:radial-gradient(circle at 50% 50%,rgba(200,169,110,0.12) 0%,transparent 60%);opacity:1;animation:flashFade 0.8s var(--ease-out-expo) forwards}
+@keyframes flashFade{0%{opacity:1}100%{opacity:0}}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .machine{padding:var(--space-md);margin:0 var(--space-sm)}
+  .reels-container{padding:var(--space-md)}
+  .reel{max-width:100%;flex:1}
+  .reel-cell svg{width:64px;height:64px}
+  :root{--reel-height:240px;--symbol-size:64px}
+  .controls-row{flex-direction:column;gap:var(--space-md)}
+  .action-group{flex-direction:column;gap:var(--space-md)}
+  .bet-group{flex-wrap:wrap;justify-content:center}
+  .hero-title{font-size:clamp(2rem,8vw,3rem)}
+  .chamber-title{font-size:clamp(1.4rem,4vw,2rem)}
+  .symbols-grid{grid-template-columns:repeat(2,1fr)}
+  .logic-layout{grid-template-columns:1fr}
+  .target-block{flex-wrap:wrap}
+}
+@media(max-width:480px){
+  .symbols-grid{grid-template-columns:1fr}
+  .reel-cell svg{width:48px;height:48px}
+  :root{--reel-height:180px;--symbol-size:48px}
+  .spin-btn{width:100%;min-width:0}
+}
+@media(min-width:769px){
+  .lever-wrapper{cursor:grab}
+  .lever-wrapper:active{cursor:grabbing}
+}
+
+/* NO-SPIN state for reduced motion */
+@media(prefers-reduced-motion:reduce){
+  .reel-inner{transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero" id="hero" aria-label="Вход в Obsidian Reserve">
+  <div class="hero-bg-pattern"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-badge fade-in">
+    <span class="hero-badge-dot"></span>
+    <span>Частная камера совпадения</span>
+  </div>
+  <div class="hero-logo fade-in fade-in-delay-1" aria-hidden="true">
+    <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="4" y="4" width="72" height="72" rx="16" stroke="url(#heroLogoGrad)" stroke-width="1.5" fill="none"/>
+      <rect x="16" y="16" width="48" height="48" rx="10" stroke="url(#heroLogoGrad)" stroke-width="0.8" fill="none" opacity="0.5"/>
+      <path d="M40 24 L48 32 L40 52 L32 32 Z" fill="url(#heroLogoGrad)" opacity="0.6"/>
+      <circle cx="40" cy="34" r="4" fill="url(#heroLogoGrad)" opacity="0.3"/>
+      <defs>
+        <linearGradient id="heroLogoGrad" x1="0" y1="0" x2="80" y2="80">
+          <stop offset="0%" stop-color="#c8a96e"/>
+          <stop offset="50%" stop-color="#d4bc8a"/>
+          <stop offset="100%" stop-color="#a68a5a"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+  <h1 class="hero-title fade-in fade-in-delay-2">Obsidian<br>Reserve</h1>
+  <p class="hero-subtitle fade-in fade-in-delay-3">Частная камера совпадения для токенов Claude Opus 4.8</p>
+  <p class="hero-desc fade-in fade-in-delay-3">Запуск, который ощущается как ритуал.<br>Когда линия совпадает — резерв удваивается.</p>
+  <button class="hero-cta fade-in fade-in-delay-4" onclick="document.getElementById('chamber').scrollIntoView({behavior:'smooth'})" aria-label="Открыть камеру">
+    <span>Открыть камеру</span>
+    <svg class="hero-cta-arrow" viewBox="0 0 18 18"><path d="M2 9h14M9 2l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div class="hero-scroll" aria-hidden="true">
+    <span>Листать</span>
+    <div class="hero-scroll-line"></div>
+  </div>
+</section>
+
+<!-- CHAMBER -->
+<section class="chamber-section" id="chamber" aria-label="Камера запуска">
+  <div class="container">
+    <div class="chamber-header fade-in">
+      <p class="chamber-label">Камера Obsidian Reserve</p>
+      <h2 class="chamber-title">Контур резонанса</h2>
+    </div>
+    <div class="machine fade-in fade-in-delay-1" role="application" aria-label="Контур запуска">
+      <div class="machine-glow"></div>
+      <div class="machine-reflection"></div>
+
+      <!-- TOP BAR -->
+      <div class="machine-top">
+        <div class="balance-block">
+          <span class="balance-label" id="balanceLabel">Текущий резерв</span>
+          <span class="balance-value" id="balanceDisplay">1 000</span>
+        </div>
+        <div class="title-block" style="margin-bottom:0;text-align:center">
+          <span class="title-label">Титул сессии</span>
+          <span class="title-value" id="titleDisplay">Гость зала</span>
+        </div>
+        <div class="aura-block" id="auraBlock">
+          <span class="aura-label">Индекс ауры</span>
+          <div class="aura-bar-wrapper" aria-hidden="true"><div class="aura-bar" id="auraBar"></div></div>
+          <span class="aura-value" id="auraDisplay">0%</span>
+        </div>
+      </div>
+
+      <!-- TARGET -->
+      <div class="target-block" role="status" aria-live="polite">
+        <span class="target-label">Целевой символ</span>
+        <div class="target-symbol-display" id="targetSymbolDisplay"></div>
+        <span class="target-name" id="targetSymbolName">Герб Opus</span>
+      </div>
+
+      <!-- REELS -->
+      <div class="reels-container" id="reelsContainer">
+        <div class="reel-window" id="reelWindow" role="img" aria-label="Барабаны контура">
+          <div class="reel" id="reel0"><div class="reel-inner" id="reelInner0"></div></div>
+          <div class="reel" id="reel1"><div class="reel-inner" id="reelInner1"></div></div>
+          <div class="reel" id="reel2"><div class="reel-inner" id="reelInner2"></div></div>
+        </div>
+        <div class="line-indicator" id="lineIndicator">
+          <div class="line-indicator-glow"></div>
+          <span class="line-label">Линия совпадения</span>
+        </div>
+      </div>
+
+      <!-- CONTROLS -->
+      <div class="controls-row">
+        <div class="bet-group">
+          <span class="bet-label">Объем запуска</span>
+          <button class="bet-option active" data-bet="25" aria-label="25 токенов">25</button>
+          <button class="bet-option" data-bet="50" aria-label="50 токенов">50</button>
+          <button class="bet-option" data-bet="100" aria-label="100 токенов">100</button>
+          <button class="bet-option" data-bet="200" aria-label="200 токенов">200</button>
+        </div>
+      </div>
+
+      <div class="action-group">
+        <button class="spin-btn" id="spinButton" aria-label="Запустить контур">
+          <span class="spin-btn-text">Запустить контур</span>
+        </button>
+        <div class="lever-wrapper" id="leverWrapper" role="button" tabindex="0" aria-label="Ручной запуск">
+          <div class="lever-base"></div>
+          <div class="lever-rod"></div>
+          <div class="lever-handle" id="leverHandle"></div>
+        </div>
+      </div>
+
+      <!-- RESULT -->
+      <div class="result-display" id="resultDisplay" role="status" aria-live="polite">
+        <p class="result-text" id="resultText">Линия готова</p>
+        <p class="result-detail" id="resultDetail"></p>
+      </div>
+
+      <!-- HISTORY -->
+      <div class="history-block">
+        <div class="history-header">
+          <span class="history-label">Последние запуски</span>
+        </div>
+        <div class="history-list" id="historyList" role="list" aria-label="История запусков"></div>
+      </div>
+
+      <!-- EXHAUSTION -->
+      <div class="exhaustion-overlay" id="exhaustionOverlay">
+        <div class="exhaustion-icon" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="20" stroke="#8a8886" stroke-width="1"/><path d="M24 16v8M24 28v2" stroke="#8a8886" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <p class="exhaustion-title">Сессия завершена</p>
+        <p class="exhaustion-desc">Резерв исчерпан. Вы можете восстановить тестовый резерв и продолжить.</p>
+        <button class="reset-btn" id="resetButton" aria-label="Восстановить тестовый резерв">Восстановить резерв</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SYMBOLS -->
+<section class="symbols-section" id="symbols" aria-label="Символы и логика">
+  <div class="container">
+    <div class="symbols-header fade-in">
+      <p class="symbols-label">Архитектура сигнала</p>
+      <h2 class="symbols-title">Символы резонанса</h2>
+      <p class="symbols-desc">Каждый запуск контура определяется целевым символом. Совпадение двух и более символов на линии — ключ к удвоению резерва.</p>
+    </div>
+
+    <div class="symbols-grid fade-in fade-in-delay-1" id="symbolsGrid"></div>
+
+    <div class="logic-layout fade-in fade-in-delay-2">
+      <div class="logic-block primary">
+        <h3 class="logic-block-title">Принцип совпадения</h3>
+        <p class="logic-block-text">Перед каждым запуском система выбирает целевой символ. Три контура приводятся в движение. Когда вращение завершается, линия совпадения фиксирует результат. Если целевой символ выпадает минимум дважды из трёх — контур замыкается, и резерв удваивается.</p>
+      </div>
+      <div class="logic-block">
+        <h3 class="logic-block-title">Система титулов</h3>
+        <div class="logic-block-item">
+          <div class="logic-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#c8a96e" stroke-width="0.8"/><path d="M12 6v12M6 12h12" stroke="#c8a96e" stroke-width="0.8" opacity="0.5"/></svg></div>
+          <div><p class="logic-item-title">Гость зала</p><p class="logic-item-desc">Начальный уровень доступа. Резерв активен, контур открыт.</p></div>
+        </div>
+        <div class="logic-block-item">
+          <div class="logic-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#c8a96e" stroke-width="0.8"/><circle cx="12" cy="12" r="6" stroke="#c8a96e" stroke-width="0.8" opacity="0.5"/></svg></div>
+          <div><p class="logic-item-title">Внутренний круг</p><p class="logic-item-desc">Резерв превышает порог. Доступ расширен, аура стабильна.</p></div>
+        </div>
+        <div class="logic-block-item">
+          <div class="logic-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#c8a96e" stroke-width="0.8"/><path d="M12 4a8 8 0 0 1 8 8" stroke="#c8a96e" stroke-width="0.8" opacity="0.5"/></svg></div>
+          <div><p class="logic-item-title">Золотой контур</p><p class="logic-item-desc">Высокий резерв. Полный спектр возможностей камеры.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="logic-layout fade-in fade-in-delay-3" style="margin-bottom:0">
+      <div class="logic-block">
+        <h3 class="logic-block-title">Индекс ауры</h3>
+        <p class="logic-block-text">Аура отражает накопленное состояние поля. С каждым незамкнутым контуром аура усиливается, создавая напряжение. При совпадении поле разряжается, и аура возвращается к начальному уровню. Это не механика удачи — это часть атмосферы сессии.</p>
+      </div>
+      <div class="logic-block">
+        <h3 class="logic-block-title">Удвоение резерва</h3>
+        <p class="logic-block-text">Совпадение целевого символа на линии запускает удвоение выбранного объёма. Резерв увеличивается плавно, с золотой анимацией. Максимальный объём запуска — 200 токенов. Минимальный — 25. Вы выбираете уровень входа в каждый запуск.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer" role="contentinfo">
+  <div class="container">
+    <p class="footer-text">Obsidian Reserve — это экспериментальный front-end концепт, демонстрирующий возможности премиального UI/UX дизайна и интерактивного взаимодействия. Все токены внутри страницы являются условными и не имеют реальной ценности. Никаких транзакций, кошельков или внешних подключений не используется. Состояние сессии не сохраняется после перезагрузки.</p>
+    <p class="footer-brand">Obsidian Reserve &mdash; частная камера совпадения</p>
+  </div>
+</footer>
+
+<!-- FLASH OVERLAY -->
+<div class="flash-overlay" id="flashOverlay"></div>
+<div class="celebration" id="celebration"></div>
+
+<script>
+(function(){
+'use strict';
+
+// ─── STATE ───
+const state = {
+  balance: 1000,
+  bet: 25,
+  aura: 0,
+  spinning: false,
+  currentTarget: null,
+  history: [],
+  title: 'Гость зала',
+  session: 0,
+  wins: 0,
+  losses: 0,
+  reducedMotion: false
+};
+
+const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+state.reducedMotion = mediaQuery.matches;
+mediaQuery.addEventListener('change', function(e){ state.reducedMotion = e.matches });
+
+// ─── SYMBOLS ───
+const SYMBOLS = [
+  {
+    id: 'crest',
+    name: 'Герб Opus',
+    desc: 'Знак частного доступа. Классическая эмблема резерва.',
+    svg: '<svg viewBox="0 0 80 80" fill="none"><path d="M40 8L60 18v20c0 14-20 26-20 26S20 52 20 38V18l20-10z" stroke="#c8a96e" stroke-width="1.2" fill="rgba(200,169,110,0.06)"/><path d="M40 20l8 8-8 16-8-16 8-8z" stroke="#c8a96e" stroke-width="0.8" fill="rgba(200,169,110,0.08)"/><circle cx="40" cy="32" r="3" fill="#c8a96e" opacity="0.3"/></svg>'
+  },
+  {
+    id: 'diamond',
+    name: 'Чёрный бриллиант',
+    desc: 'Редкий минерал. Символ прочности и чистоты сигнала.',
+    svg: '<svg viewBox="0 0 80 80" fill="none"><path d="M40 10L60 30L40 66L20 30L40 10Z" stroke="#c8a96e" stroke-width="1.2" fill="rgba(200,169,110,0.04)"/><path d="M40 18L52 30L40 56L28 30L40 18Z" stroke="#c8a96e" stroke-width="0.8" fill="rgba(200,169,110,0.06)"/><path d="M40 26l6 6-6 14-6-6 6-14z" fill="#c8a96e" opacity="0.15"/></svg>'
+  },
+  {
+    id: 'key',
+    name: 'Золотой ключ',
+    desc: 'Инструмент активации. Отмыкает контур совпадения.',
+    svg: '<svg viewBox="0 0 80 80" fill="none"><circle cx="30" cy="44" r="14" stroke="#c8a96e" stroke-width="1.2" fill="rgba(200,169,110,0.04)"/><circle cx="30" cy="44" r="6" stroke="#c8a96e" stroke-width="0.8" fill="rgba(200,169,110,0.06)"/><path d="M40 44l22-22" stroke="#c8a96e" stroke-width="1.5" stroke-linecap="round"/><path d="M52 32l6 6" stroke="#c8a96e" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>'
+  },
+  {
+    id: 'ring',
+    name: 'Коронное кольцо',
+    desc: 'Символ непрерывности цикла. Замкнутая линия силы.',
+    svg: '<svg viewBox="0 0 80 80" fill="none"><circle cx="40" cy="42" r="20" stroke="#c8a96e" stroke-width="1.2" fill="rgba(200,169,110,0.04)"/><circle cx="40" cy="42" r="8" stroke="#c8a96e" stroke-width="0.8" fill="rgba(200,169,110,0.06)"/><path d="M40 18v6M40 60v6M18 42h6M56 42h6" stroke="#c8a96e" stroke-width="0.8" opacity="0.3"/><path d="M26 28l4 4M50 48l4 4" stroke="#c8a96e" stroke-width="0.6" opacity="0.2"/></svg>'
+  },
+  {
+    id: 'star',
+    name: 'Двойная звезда',
+    desc: 'Редкая конфигурация. Два сигнала в одном контуре.',
+    svg: '<svg viewBox="0 0 80 80" fill="none"><path d="M40 14l6 12 13 2-9 9 2 13-12-6-12 6 2-13-9-9 13-2 6-12z" stroke="#c8a96e" stroke-width="1" fill="rgba(200,169,110,0.05)"/><path d="M40 26l3 7 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1 3-7z" stroke="#c8a96e" stroke-width="0.6" fill="rgba(200,169,110,0.06)"/><circle cx="40" cy="38" r="2" fill="#c8a96e" opacity="0.2"/></svg>'
+  },
+  {
+    id: 'sigil',
+    name: 'Сигил Claude Opus 4.8',
+    desc: 'Цифровой знак модели. Архитектура высшего порядка.',
+    svg: '<svg viewBox="0 0 80 80" fill="none"><rect x="12" y="12" width="56" height="56" rx="12" stroke="#c8a96e" stroke-width="1" fill="rgba(200,169,110,0.03)"/><path d="M28 30h24v20H28z" stroke="#c8a96e" stroke-width="0.8" fill="rgba(200,169,110,0.04)"/><path d="M34 38l6-4 6 4-6 4-6-4z" stroke="#c8a96e" stroke-width="0.6" fill="rgba(200,169,110,0.08)"/><circle cx="40" cy="38" r="2" fill="#c8a96e" opacity="0.2"/><path d="M28 30l12 8 12-8" stroke="#c8a96e" stroke-width="0.6" opacity="0.3"/></svg>'
+  }
+];
+
+// ─── TITLES ───
+const TITLES = [
+  { min: 0, name: 'Гость зала' },
+  { min: 400, name: 'Внутренний круг' },
+  { min: 800, name: 'Черный резерв' },
+  { min: 1400, name: 'Золотой контур' },
+  { min: 2000, name: 'Высокий допуск' },
+  { min: 3000, name: 'Опорная частота' }
+];
+
+function getTitle(balance) {
+  let t = TITLES[0];
+  for (const title of TITLES) {
+    if (balance >= title.min) t = title;
+  }
+  return t.name;
+}
+
+// ─── DOM REFS ───
+const DOM = {
+  balanceDisplay: document.getElementById('balanceDisplay'),
+  titleDisplay: document.getElementById('titleDisplay'),
+  auraBlock: document.getElementById('auraBlock'),
+  auraBar: document.getElementById('auraBar'),
+  auraDisplay: document.getElementById('auraDisplay'),
+  targetSymbolDisplay: document.getElementById('targetSymbolDisplay'),
+  targetSymbolName: document.getElementById('targetSymbolName'),
+  reelInners: [document.getElementById('reelInner0'), document.getElementById('reelInner1'), document.getElementById('reelInner2')],
+  lineIndicator: document.getElementById('lineIndicator'),
+  spinButton: document.getElementById('spinButton'),
+  leverWrapper: document.getElementById('leverWrapper'),
+  leverHandle: document.getElementById('leverHandle'),
+  resultText: document.getElementById('resultText'),
+  resultDetail: document.getElementById('resultDetail'),
+  resultDisplay: document.getElementById('resultDisplay'),
+  historyList: document.getElementById('historyList'),
+  exhaustionOverlay: document.getElementById('exhaustionOverlay'),
+  resetButton: document.getElementById('resetButton'),
+  symbolsGrid: document.getElementById('symbolsGrid'),
+  flashOverlay: document.getElementById('flashOverlay'),
+  celebration: document.getElementById('celebration'),
+  reelsContainer: document.getElementById('reelsContainer'),
+  betOptions: document.querySelectorAll('.bet-option')
+};
+
+// ─── REEL GENERATION ───
+const REEL_SLOT_COUNT = 3;
+
+function createReelStrip(length) {
+  const strip = [];
+  for (let i = 0; i < length; i++) {
+    strip.push(SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]);
+  }
+  return strip;
+}
+
+function renderSymbolSVG(symbol) {
+  return symbol.svg;
+}
+
+function renderReel(reelEl, symbols, centerSymbol) {
+  let html = '';
+  const syms = symbols.slice(0, REEL_SLOT_COUNT);
+  if (centerSymbol) syms[1] = centerSymbol;
+  for (const s of syms) {
+    html += '<div class="reel-cell">' + s.svg + '</div>';
+  }
+  reelEl.innerHTML = html;
+}
+
+// ─── SPIN ENGINE ───
+function getRandomSymbol() {
+  return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+}
+
+function pickTarget() {
+  return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+}
+
+function calculateResults(targetId, isWin) {
+  const results = [];
+  let matchCount = 0;
+  for (let i = 0; i < 3; i++) {
+    if (isWin && (i === 0 || matchCount < 2)) {
+      if (matchCount < 2) {
+        results.push(targetId);
+        matchCount++;
+      } else {
+        results.push(getRandomSymbol().id);
+      }
+    } else if (!isWin) {
+      const limit = i === 2 ? 1 : 0;
+      if (matchCount < limit) {
+        results.push(targetId);
+        matchCount++;
+      } else {
+        let sym;
+        do {
+          sym = getRandomSymbol().id;
+        } while (sym === targetId);
+        results.push(sym);
+      }
+    } else {
+      results.push(getRandomSymbol().id);
+    }
+  }
+  return results;
+}
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+function spinReel(reelIndex, targetSymbolId, duration, stagger, onComplete) {
+  const inner = DOM.reelInners[reelIndex];
+  const startTime = performance.now() + stagger;
+  const spinDuration = duration;
+  const totalSteps = state.reducedMotion ? 3 : 60;
+
+  function getSymbolById(id) {
+    return SYMBOLS.find(s => s.id === id) || SYMBOLS[0];
+  }
+
+  const finalSymbol = getSymbolById(targetSymbolId);
+
+  function animate(now) {
+    const elapsed = now - startTime;
+    if (elapsed < 0) {
+      requestAnimationFrame(animate);
+      return;
+    }
+
+    const progress = Math.min(elapsed / spinDuration, 1);
+
+    if (progress < 1) {
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const currentStep = Math.floor(ease * totalSteps);
+      const showSymbol = getRandomSymbol();
+      const otherSymbol = getRandomSymbol();
+      const html =
+        '<div class="reel-cell">' + showSymbol.svg + '</div>' +
+        '<div class="reel-cell">' + showSymbol.svg + '</div>' +
+        '<div class="reel-cell">' + otherSymbol.svg + '</div>';
+      inner.innerHTML = html;
+      requestAnimationFrame(animate);
+    } else {
+      const topSym = getRandomSymbol();
+      const bottomSym = getRandomSymbol();
+      const html =
+        '<div class="reel-cell">' + topSym.svg + '</div>' +
+        '<div class="reel-cell">' + finalSymbol.svg + '</div>' +
+        '<div class="reel-cell">' + bottomSym.svg + '</div>';
+      inner.innerHTML = html;
+      if (onComplete) onComplete();
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+function evaluateSpin(results, targetId) {
+  const matchCount = results.filter(r => r === targetId).length;
+  return matchCount >= 2;
+}
+
+function performSpin() {
+  if (state.spinning) return;
+  if (state.balance < state.bet) {
+    DOM.resultText.textContent = 'Недостаточно токенов';
+    DOM.resultText.className = 'result-text lose';
+    DOM.resultDetail.textContent = 'Снизьте объём запуска или восстановите резерв';
+    return;
+  }
+  if (state.balance <= 0) {
+    showExhaustion();
+    return;
+  }
+
+  state.spinning = true;
+  DOM.spinButton.disabled = true;
+  DOM.lineIndicator.classList.remove('active');
+  DOM.resultText.textContent = 'Контур запущен…';
+  DOM.resultText.className = 'result-text';
+
+  const target = state.currentTarget || pickTarget();
+  state.currentTarget = target;
+
+  const winChance = 0.35 + (state.aura * 0.001);
+  const isWin = Math.random() < Math.min(winChance, 0.6);
+  const results = calculateResults(target.id, isWin);
+
+  const spinDuration = state.reducedMotion ? 100 : 1000;
+  const staggers = state.reducedMotion ? [0, 50, 100] : [0, 250, 500];
+
+  let completed = 0;
+  const totalReels = 3;
+
+  function onReelComplete() {
+    completed++;
+    if (completed >= totalReels) {
+      finishSpin(results, target);
+    }
+  }
+
+  for (let i = 0; i < totalReels; i++) {
+    spinReel(i, results[i], spinDuration, staggers[i], onReelComplete);
+  }
+}
+
+function finishSpin(results, target) {
+  const isWin = evaluateSpin(results, target.id);
+  const oldBalance = state.balance;
+  let newBalance;
+
+  if (isWin) {
+    newBalance = oldBalance + state.bet;
+    state.balance = newBalance;
+    state.wins++;
+    state.aura = Math.max(0, state.aura - 15);
+    DOM.resultText.textContent = 'Совпадение подтверждено';
+    DOM.resultText.className = 'result-text win';
+    DOM.resultDetail.textContent = '+' + state.bet + ' токенов — контур замкнут';
+    DOM.lineIndicator.classList.add('active');
+    triggerWinEffect();
+  } else {
+    newBalance = Math.max(0, oldBalance - state.bet);
+    state.balance = newBalance;
+    state.losses++;
+    state.aura = Math.min(100, state.aura + 8);
+    DOM.resultText.textContent = 'Контур не замкнулся';
+    DOM.resultText.className = 'result-text lose';
+    DOM.resultDetail.textContent = '—' + state.bet + ' токенов. Аура усиливается';
+    DOM.lineIndicator.classList.remove('active');
+    triggerLoseEffect();
+  }
+
+  animateBalance(oldBalance, state.balance, null);
+
+  state.session++;
+  state.history.unshift(isWin ? 'win' : 'lose');
+  if (state.history.length > 10) state.history.pop();
+
+  state.title = getTitle(state.balance);
+  state.currentTarget = pickTarget();
+
+  updateUI();
+
+  if (state.balance <= 0) {
+    showExhaustion();
+  }
+
+  state.spinning = false;
+  DOM.spinButton.disabled = false;
+}
+
+// ─── BALANCE ANIMATION ───
+function updateBalanceDisplay(value) {
+  DOM.balanceDisplay.textContent = formatNumber(value);
+}
+
+function animateBalance(from, to, onComplete) {
+  updateBalanceDisplay(from);
+  if (state.reducedMotion) {
+    updateBalanceDisplay(to);
+    if (onComplete) onComplete();
+    return;
+  }
+  const duration = 800;
+  const start = performance.now();
+  function tick(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    const current = Math.round(lerp(from, to, ease));
+    updateBalanceDisplay(current);
+    if (t < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      updateBalanceDisplay(to);
+      if (onComplete) onComplete();
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+// ─── EFFECTS ───
+function triggerWinEffect() {
+  DOM.balanceDisplay.classList.add('win-flash');
+
+  if (!state.reducedMotion) {
+    DOM.flashOverlay.className = 'flash-overlay win';
+    setTimeout(function(){ DOM.flashOverlay.className = 'flash-overlay' }, 800);
+
+    const bloom = document.createElement('div');
+    bloom.className = 'gold-bloom';
+    DOM.reelsContainer.appendChild(bloom);
+    setTimeout(function(){ if (bloom.parentNode) bloom.parentNode.removeChild(bloom) }, 800);
+
+    const celebration = DOM.celebration;
+    for (let i = 0; i < 20; i++) {
+      const p = document.createElement('div');
+      p.className = 'celebration-particle';
+      p.style.left = (20 + Math.random() * 60) + '%';
+      p.style.top = (30 + Math.random() * 40) + '%';
+      p.style.animationDelay = (Math.random() * 0.6) + 's';
+      p.style.background = ['#c8a96e','#d4bc8a','#e6d4a8','#b8897a'][Math.floor(Math.random()*4)];
+      celebration.appendChild(p);
+      setTimeout(function(){ if (p.parentNode) p.parentNode.removeChild(p) }, 2600);
+    }
+  }
+
+  setTimeout(function(){ DOM.balanceDisplay.classList.remove('win-flash') }, 1200);
+}
+
+function triggerLoseEffect() {
+  DOM.balanceDisplay.classList.add('lose-flash');
+  setTimeout(function(){ DOM.balanceDisplay.classList.remove('lose-flash') }, 600);
+}
+
+// ─── UI UPDATE ───
+function formatNumber(n) {
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
+function updateUI() {
+  DOM.titleDisplay.textContent = state.title;
+  DOM.auraBar.style.width = state.aura + '%';
+  DOM.auraDisplay.textContent = Math.round(state.aura) + '%';
+  DOM.auraBlock.className = 'aura-block' + (state.aura > 60 ? ' high' : '');
+
+  if (state.currentTarget) {
+    DOM.targetSymbolDisplay.innerHTML = state.currentTarget.svg;
+    DOM.targetSymbolName.textContent = state.currentTarget.name;
+  }
+
+  updateHistory();
+  updateBetStates();
+  updateTitleDisplay();
+}
+
+function updateHistory() {
+  DOM.historyList.innerHTML = '';
+  for (const h of state.history) {
+    const item = document.createElement('div');
+    item.className = 'history-item ' + h;
+    item.setAttribute('role', 'listitem');
+    item.textContent = h === 'win' ? '+' : '–';
+    DOM.historyList.appendChild(item);
+  }
+}
+
+function updateBetStates() {
+  DOM.betOptions.forEach(function(opt) {
+    const val = parseInt(opt.dataset.bet, 10);
+    opt.disabled = val > state.balance && !state.spinning;
+    opt.classList.toggle('active', val === state.bet);
+  });
+}
+
+function updateTitleDisplay() {
+  DOM.titleDisplay.style.opacity = '0';
+  setTimeout(function(){ DOM.titleDisplay.textContent = state.title; DOM.titleDisplay.style.opacity = '1' }, 200);
+}
+
+function showExhaustion() {
+  DOM.exhaustionOverlay.classList.add('visible');
+}
+
+function hideExhaustion() {
+  DOM.exhaustionOverlay.classList.remove('visible');
+}
+
+// ─── SYMBOLS GRID RENDER ───
+function renderSymbolsGrid() {
+  DOM.symbolsGrid.innerHTML = '';
+  for (const sym of SYMBOLS) {
+    const card = document.createElement('div');
+    card.className = 'symbol-card';
+    card.innerHTML =
+      '<div class="symbol-card-icon">' + sym.svg + '</div>' +
+      '<p class="symbol-card-name">' + sym.name + '</p>' +
+      '<p class="symbol-card-desc">' + sym.desc + '</p>';
+    DOM.symbolsGrid.appendChild(card);
+  }
+}
+
+// ─── RESET ───
+function resetSession() {
+  hideExhaustion();
+  state.balance = 1000;
+  state.aura = 0;
+  state.session = 0;
+  state.wins = 0;
+  state.losses = 0;
+  state.history = [];
+  state.title = getTitle(1000);
+  state.currentTarget = pickTarget();
+  state.spinning = false;
+  DOM.spinButton.disabled = false;
+  DOM.lineIndicator.classList.remove('active');
+  DOM.resultText.textContent = 'Резерв восстановлен';
+  DOM.resultText.className = 'result-text win';
+  DOM.resultDetail.textContent = '1 000 токенов — доступ возвращен';
+  updateBalanceDisplay(state.balance);
+  updateUI();
+  setTimeout(function(){
+    DOM.resultText.textContent = 'Линия готова';
+    DOM.resultText.className = 'result-text';
+    DOM.resultDetail.textContent = '';
+  }, 2000);
+}
+
+// ─── LEVER ───
+function onLeverStart(e) {
+  if (state.spinning || state.balance < state.bet) return;
+  e.preventDefault();
+  DOM.leverWrapper.classList.add('pulled');
+}
+
+function onLeverEnd(e) {
+  if (DOM.leverWrapper.classList.contains('pulled')) {
+    DOM.leverWrapper.classList.remove('pulled');
+    performSpin();
+  }
+}
+
+// ─── KEYBOARD ───
+function onLeverKeyDown(e) {
+  if ((e.key === 'Enter' || e.key === ' ') && !state.spinning) {
+    e.preventDefault();
+    DOM.leverWrapper.classList.add('pulled');
+    setTimeout(function(){
+      DOM.leverWrapper.classList.remove('pulled');
+      performSpin();
+    }, 300);
+  }
+}
+
+// ─── INIT ───
+function init() {
+  state.currentTarget = pickTarget();
+  state.title = getTitle(state.balance);
+
+  renderSymbolsGrid();
+
+  for (let i = 0; i < 3; i++) {
+    const symbols = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
+    renderReel(DOM.reelInners[i], symbols, state.currentTarget);
+  }
+
+  updateBalanceDisplay(state.balance);
+  updateUI();
+  DOM.resultText.textContent = 'Линия готова';
+
+  // Bet options
+  DOM.betOptions.forEach(function(opt) {
+    opt.addEventListener('click', function() {
+      if (state.spinning) return;
+      const val = parseInt(opt.dataset.bet, 10);
+      if (val <= state.balance) {
+        state.bet = val;
+        updateBetStates();
+      }
+    });
+  });
+
+  // Spin button
+  DOM.spinButton.addEventListener('click', performSpin);
+
+  // Lever
+  DOM.leverWrapper.addEventListener('pointerdown', onLeverStart);
+  DOM.leverWrapper.addEventListener('pointerup', onLeverEnd);
+  DOM.leverWrapper.addEventListener('pointerleave', onLeverEnd);
+  DOM.leverWrapper.addEventListener('keydown', onLeverKeyDown);
+
+  // Reset
+  DOM.resetButton.addEventListener('click', resetSession);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>

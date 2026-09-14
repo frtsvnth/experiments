@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Retro Pseudo-3D Flight — Wireframe Terrain</title>
+<style>
+:root{
+  --bg:#050613;
+  --panel: rgba(6,10,20,0.7);
+  --accent:#33ffdd;
+  --muted:#9aa7c9;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial}
+canvas{display:block;width:100vw;height:100vh}
+.ui{
+  position:fixed;right:16px;top:16px;width:320px;padding:12px;border-radius:12px;background:linear-gradient(180deg,rgba(8,12,22,0.88),rgba(2,4,8,0.7));color:var(--muted);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.04);box-shadow:0 8px 30px rgba(0,0,0,0.6)
+}
+.ui h3{margin:0 0 10px 0;color:var(--accent);font-size:16px}
+.row{display:flex;align-items:center;gap:8px;margin:8px 0}
+.row label{flex:1;font-size:13px}
+.row input[type=range]{flex:2}
+.row input[type=color]{width:44px;height:30px;border-radius:6px;border:1px solid rgba(255,255,255,0.06)}
+.controls{display:flex;gap:8px;margin-top:8px}
+.controls button{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--muted);cursor:pointer}
+.checkbox{display:flex;align-items:center;gap:8px}
+.small{font-size:12px;color:#6f7ba6}
+@media (max-width:420px){.ui{left:6px;right:6px;width:auto}}
+</style>
+</head>
+<body>
+<canvas id="cnv"></canvas>
+<div class="ui" id="ui">
+  <h3>Retro Flight — настройки (псевдо‑3D)</h3>
+  <div class="row"><label>Скорость полёта</label><input id="speed" type="range" min="0" max="3" step="0.01" value="1"></div>
+  <div class="row"><label>Высота рельефа</label><input id="amplitude" type="range" min="5" max="220" step="1" value="70"></div>
+  <div class="row"><label>Частота шума</label><input id="freq" type="range" min="0.2" max="6" step="0.01" value="1.2"></div>
+  <div class="row"><label>Угол камеры (deg)</label><input id="pitch" type="range" min="5" max="40" step="0.5" value="18"></div>
+  <div class="row"><label>Отдалённость (fov)</label><input id="fov" type="range" min="200" max="1800" step="10" value="900"></div>
+  <div class="row"><label>Сегменты (гориз.)</label><input id="segments" type="range" min="24" max="200" step="1" value="120"></div>
+  <div class="row"><label>Глубина (рядов)</label><input id="depth" type="range" min="12" max="160" step="1" value="90"></div>
+  <div class="row"><label>Ширина линий</label><input id="lineWidth" type="range" min="0.2" max="3.5" step="0.1" value="1"></div>
+  <div class="row"><label>Цвет линий</label><input id="color" type="color" value="#33ffdd"></div>
+  <div class="row checkbox"><input id="showGrid" type="checkbox"><label for="showGrid">Показать сетку (grid)</label></div>
+  <div class="row checkbox"><input id="shipWobble" type="checkbox" checked><label for="shipWobble">Корабль качается</label></div>
+
+  <div class="controls">
+    <button id="pause">Пауза</button>
+    <button id="reset">Сброс</button>
+    <button id="download">Сохранить .html</button>
+  </div>
+  <div class="small">Перспектива наклонена немного вниз. Поверхность — процедурный шум (value-noise). По умолчанию показаны контуры; включи сетку для классического wireframe.</div>
+</div>
+
+<script>
+// ----------------------------- Helpers: noise (2D value noise) -----------------------------
+function hash(ix, iy){
+  // 32-bit integer hash
+  let h = ix*374761393 + iy*668265263; h = (h ^ (h >> 13)) * 1274126177; h = (h ^ (h >> 16));
+  return (h >>> 0) / 4294967295;
+}
+function smoothstep(t){ return t * t * (3 - 2 * t); }
+function valueNoise2D(x, y){
+  const xi = Math.floor(x), yi = Math.floor(y);
+  const xf = x - xi, yf = y - yi;
+  const a = hash(xi, yi);
+  const b = hash(xi+1, yi);
+  const c = hash(xi, yi+1);
+  const d = hash(xi+1, yi+1);
+  const u = smoothstep(xf);
+  const v = smoothstep(yf);
+  const lerp = (A,B,t)=> A + (B-A)*t;
+  const ab = lerp(a,b,u);
+  const cd = lerp(c,d,u);
+  return lerp(ab, cd, v);
+}
+
+// Fractal noise (fbm)
+function fbm(x,y,octaves, lacunarity, gain){
+  let sum=0, amp=1, freq=1, max=0;
+  for(let i=0;i<octaves;i++){
+    sum += valueNoise2D(x*freq, y*freq) * amp;
+    max += amp; amp *= gain; freq *= lacunarity;
+  }
+  return sum / max;
+}
+
+// ----------------------------- Canvas & state -----------------------------
+const canvas = document.getElementById('cnv');
+const ctx = canvas.getContext('2d');
+let W = 0, H = 0;
+function resize(){
+  const dpr = window.devicePixelRatio || 1;
+  W = canvas.width = Math.floor(innerWidth * dpr);
+  H = canvas.height = Math.floor(innerHeight * dpr);
+  canvas.style.width = innerWidth + 'px';
+  canvas.style.height = innerHeight + 'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener('resize', resize);
+resize();
+
+// Settings
+const UI = {
+  speed:1,
+  amplitude:70,
+  freq:1.2,
+  pitch:18, // degrees
+  fov:900,
+  segments:120,
+  depth:90,
+  lineWidth:1,
+  color:'#33ffdd',
+  showGrid:false,
+  shipWobble:true
+};
+
+// bind UI controls
+function $(id){ return document.getElementById(id); }
+['speed','amplitude','freq','pitch','fov','segments','depth','lineWidth','color'].forEach(id=>{
+  const el = $(id);
+  el.addEventListener('input', ()=>{
+    const v = el.type === 'range' ? parseFloat(el.value) : el.value;
+    UI[id] = v;
+    if(id==='segments' || id==='depth') rebuildGrid();
+  });
+});
+$('showGrid').addEventListener('change', e=> UI.showGrid = e.target.checked);
+$('shipWobble').addEventListener('change', e=> UI.shipWobble = e.target.checked);
+let paused=false; $('pause').addEventListener('click', ()=>{ paused = !paused; $('pause').textContent = paused ? 'Возобновить' : 'Пауза'; });
+$('reset').addEventListener('click', ()=>{ rebuildGrid(true); });
+$('download').addEventListener('click', ()=>{
+  const blob = new Blob([document.documentElement.outerHTML],{type:'text/html'});
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'retro-pseudo3d.html'; a.click(); URL.revokeObjectURL(url);
+});
+
+// Terrain grid parameters
+let segments = Math.max(24, Math.floor(UI.segments));
+let depthSteps = Math.max(12, Math.floor(UI.depth));
+let grid = []; // grid[depthIndex][segIndex] = {x,y,z}
+let timeOffset = 0;
+
+function rebuildGrid(forceRandom=false){
+  segments = Math.max(24, Math.floor(UI.segments));
+  depthSteps = Math.max(12, Math.floor(UI.depth));
+  grid = [];
+  for(let d=0; d<depthSteps; d++){
+    const row = [];
+    for(let s=0; s<=segments; s++){
+      row.push({x:0,y:0,z:0});
+    }
+    grid.push(row);
+  }
+}
+rebuildGrid();
+
+// projection: transform point (x_world, y_world, z_world) to screen
+function projectPoint(px, py, pz, camera){
+  // camera: {x,y,z, pitchRad, fov}
+  // translate to camera space (camera at origin looking along +z)
+  const x = px - camera.x;
+  const y = py - camera.y;
+  const z = pz - camera.z;
+  // rotate around x (pitch)
+  const sinp = Math.sin(camera.pitch), cosp = Math.cos(camera.pitch);
+  const z2 = z * cosp - y * sinp;
+  const y2 = z * sinp + y * cosp;
+  // only draw points in front of camera
+  if(z2 <= 1) return null;
+  const scale = camera.fov / z2;
+  const sx = camera.cx + x * scale;
+  const sy = camera.cy - y2 * scale;
+  return {sx, sy, scale};
+}
+
+// main draw loop
+let lastT = 0;
+function draw(t){
+  if(!lastT) lastT = t;
+  const dt = Math.min(50, t - lastT) / 1000; lastT = t;
+  if(!paused) timeOffset += dt * UI.speed * 1.0;
+
+  // clear
+  ctx.clearRect(0,0,innerWidth,innerHeight);
+  // background gradient
+  const g = ctx.createLinearGradient(0,0,0,innerHeight);
+  g.addColorStop(0,'#020418'); g.addColorStop(1,'#000006');
+  ctx.fillStyle = g; ctx.fillRect(0,0,innerWidth,innerHeight);
+
+  // camera
+  const camera = {
+    x: 0,
+    y: 40, // camera height above terrain (can be tuned)
+    z: -50, // camera back a bit so near points aren't immediate
+    pitch: UI.pitch * Math.PI/180, // radians downward
+    fov: UI.fov,
+    cx: innerWidth/2,
+    cy: innerHeight * 0.45 // horizon approx
+  };
+
+  // generate terrain heights procedurally for each grid point
+  const widthWorld = 1200; // world width in world units
+  for(let d=0; d<depthSteps; d++){
+    const z = d / (depthSteps-1) * 1200; // map depth index to world z
+    for(let s=0; s<=segments; s++){
+      const x = (s / segments - 0.5) * widthWorld;
+      const nx = x * (UI.freq * 0.002);
+      const nz = (z * 0.002) + timeOffset * UI.speed * 0.1;
+      // fbm noise: octaves, lacunarity, gain
+      const h = fbm(nx, nz, 5, 2.0, 0.5);
+      const y = (h - 0.5) * UI.amplitude * 2.0; // center around 0
+      grid[d][s].x = x; grid[d][s].y = y; grid[d][s].z = z;
+    }
+  }
+
+  // drawing lines: far to near
+  ctx.lineWidth = UI.lineWidth;
+  ctx.strokeStyle = UI.color;
+  ctx.globalAlpha = 1.0;
+
+  // contours (rows)
+  for(let d=depthSteps-1; d>=0; d--){
+    ctx.beginPath();
+    let firstValid = false;
+    for(let s=0; s<=segments; s++){
+      const p = grid[d][s];
+      const proj = projectPoint(p.x, p.y, p.z, camera);
+      if(!proj) continue;
+      if(!firstValid){ ctx.moveTo(proj.sx, proj.sy); firstValid = true; }
+      else ctx.lineTo(proj.sx, proj.sy);
+    }
+    ctx.stroke();
+  }
+
+  // optional vertical grid lines (columns)
+  if(UI.showGrid){
+    for(let s=0; s<=segments; s+=Math.max(1,Math.floor(segments/48))){
+      ctx.beginPath();
+      let first=false;
+      for(let d=0; d<depthSteps; d++){
+        const p = grid[d][s];
+        const proj = projectPoint(p.x, p.y, p.z, camera);
+        if(!proj) continue;
+        if(!first){ ctx.moveTo(proj.sx, proj.sy); first=true; }
+        else ctx.lineTo(proj.sx, proj.sy);
+      }
+      ctx.stroke();
+    }
+  }
+
+  // draw ship (wireframe) — in screen space, centered lower
+  const shipBaseX = innerWidth/2;
+  const shipBaseY = innerHeight * 0.76;
+  const wobble = UI.shipWobble ? Math.sin(t*0.0025 * UI.speed) * 8 : 0;
+  const bob = UI.shipWobble ? Math.sin(t*0.004 * UI.speed) * 6 : 0;
+  ctx.save();
+  ctx.translate(shipBaseX, shipBaseY + bob);
+  ctx.rotate(wobble * Math.PI/180);
+  ctx.lineWidth = UI.lineWidth + 0.4;
+  ctx.strokeStyle = UI.color;
+  ctx.beginPath();
+  // simple retro wireframe ship
+  ctx.moveTo(-28, 0);
+  ctx.lineTo(0, -10);
+  ctx.lineTo(28, 0);
+  ctx.moveTo(-20, 0);
+  ctx.lineTo(-8, 8);
+  ctx.moveTo(20, 0);
+  ctx.lineTo(8, 8);
+  ctx.moveTo(-6, -2);
+  ctx.lineTo(6, -2);
+  ctx.stroke();
+  ctx.restore();
+
+  // HUD horizon line subtle
+  ctx.globalAlpha = 0.06;
+  ctx.beginPath(); ctx.moveTo(0, camera.cy); ctx.lineTo(innerWidth, camera.cy); ctx.stroke(); ctx.globalAlpha = 1.0;
+
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+
+// initial sync UI values
+function syncUI(){
+  $('speed').value = UI.speed;
+  $('amplitude').value = UI.amplitude;
+  $('freq').value = UI.freq;
+  $('pitch').value = UI.pitch;
+  $('fov').value = UI.fov;
+  $('segments').value = UI.segments;
+  $('depth').value = UI.depth;
+  $('lineWidth').value = UI.lineWidth;
+  $('color').value = UI.color;
+  $('showGrid').checked = UI.showGrid;
+  $('shipWobble').checked = UI.shipWobble;
+}
+syncUI();
+
+// keep canvas resized properly
+setInterval(()=>{ resize(); }, 500);
+
+</script>
+</body>
+</html>

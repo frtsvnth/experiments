@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Змейка: Матрица с танками</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #000;
+            color: #0F0;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+            transition: background-color 2s, color 2s;
+        }
+        
+        body.day-mode {
+            background-color: #87CEEB;
+            color: #006400;
+        }
+        
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin: 20px 0;
+            text-shadow: 0 0 10px #0F0;
+            letter-spacing: 3px;
+            transition: text-shadow 2s, color 2s;
+        }
+        
+        body.day-mode h1 {
+            text-shadow: 0 0 10px #006400;
+            color: #006400;
+        }
+        
+        .game-container {
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        canvas {
+            border: 2px solid #0F0;
+            box-shadow: 0 0 20px #0F0;
+            background-color: rgba(0, 10, 0, 0.7);
+            transition: border 2s, box-shadow 2s, background-color 2s;
+        }
+        
+        body.day-mode canvas {
+            border: 2px solid #006400;
+            box-shadow: 0 0 20px #006400;
+            background-color: rgba(135, 206, 235, 0.3);
+        }
+        
+        .info {
+            display: flex;
+            justify-content: space-between;
+            width: 800px;
+            margin-top: 15px;
+            font-size: 1.2rem;
+            transition: color 2s;
+        }
+        
+        body.day-mode .info {
+            color: #006400;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1rem;
+            transition: color 2s;
+        }
+        
+        body.day-mode .controls {
+            color: #006400;
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border: 2px solid #0F0;
+            text-align: center;
+            display: none;
+            z-index: 10;
+            box-shadow: 0 0 30px #0F0;
+            transition: border 2s, box-shadow 2s, background-color 2s;
+            width: 80%;
+            max-width: 500px;
+        }
+        
+        body.day-mode .game-over {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 2px solid #006400;
+            box-shadow: 0 0 30px #006400;
+            color: #006400;
+        }
+        
+        button {
+            background-color: #000;
+            color: #0F0;
+            border: 1px solid #0F0;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+        
+        body.day-mode button {
+            background-color: #fff;
+            color: #006400;
+            border: 1px solid #006400;
+        }
+        
+        button:hover {
+            background-color: #0F0;
+            color: #000;
+            box-shadow: 0 0 15px #0F0;
+        }
+        
+        body.day-mode button:hover {
+            background-color: #006400;
+            color: #fff;
+            box-shadow: 0 0 15px #006400;
+        }
+        
+        .time-indicator {
+            margin-top: 10px;
+            font-size: 1.2rem;
+            transition: color 2s;
+        }
+        
+        body.day-mode .time-indicator {
+            color: #006400;
+        }
+        
+        .yakubovich-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.95);
+            padding: 30px;
+            border: 3px solid #0F0;
+            text-align: center;
+            display: none;
+            z-index: 20;
+            box-shadow: 0 0 40px #0F0;
+            width: 90%;
+            max-width: 600px;
+        }
+        
+        .yakubovich-head {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            background: linear-gradient(45deg, #8B4513, #D2691E);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid #0F0;
+        }
+        
+        .yakubovich-eyes {
+            position: absolute;
+            top: 60px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+        }
+        
+        .yakubovich-eye {
+            width: 30px;
+            height: 40px;
+            background-color: white;
+            border-radius: 50%;
+            position: relative;
+        }
+        
+        .yakubovich-pupil {
+            width: 15px;
+            height: 15px;
+            background-color: black;
+            border-radius: 50%;
+            position: absolute;
+            top: 12px;
+            left: 7px;
+        }
+        
+        .yakubovich-glasses {
+            position: absolute;
+            top: 55px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+        }
+        
+        .yakubovich-glass {
+            width: 50px;
+            height: 40px;
+            border: 3px solid #0F0;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .yakubovich-nose {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 30px;
+            background-color: #D2691E;
+            border-radius: 50%;
+        }
+        
+        .yakubovich-mouth {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 30px;
+            background-color: #8B0000;
+            border-radius: 0 0 50px 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+        
+        .yakubovich-question {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            color: #0F0;
+            text-shadow: 0 0 10px #0F0;
+            animation: blink 2s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .death-reason {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #FF0000;
+            text-shadow: 0 0 10px #FF0000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-bg"></canvas>
+    
+    <h1>ЗМЕЙКА: МАТРИЦА С ТАНКАМИ</h1>
+    
+    <div class="game-container">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <div id="gameOver" class="game-over">
+            <h2>ИГРА ОКОНЧЕНА</h2>
+            <div id="deathReason" class="death-reason"></div>
+            <p id="finalScore">Счет: 0</p>
+            <button id="restartButton">ИГРАТЬ СНОВА</button>
+        </div>
+        
+        <div id="yakubovichModal" class="yakubovich-modal">
+            <div class="yakubovich-head">
+                <div class="yakubovich-glasses">
+                    <div class="yakubovich-glass"></div>
+                    <div class="yakubovich-glass"></div>
+                </div>
+                <div class="yakubovich-eyes">
+                    <div class="yakubovich-eye">
+                        <div class="yakubovich-pupil"></div>
+                    </div>
+                    <div class="yakubovich-eye">
+                        <div class="yakubovich-pupil"></div>
+                    </div>
+                </div>
+                <div class="yakubovich-nose"></div>
+                <div class="yakubovich-mouth">ПОЛЕ ЧУДЕС</div>
+            </div>
+            <div class="yakubovich-question">Хотите аааааааавтомобииииль???</div>
+            <button id="continueButton">Продолжить игру</button>
+        </div>
+    </div>
+    
+    <div class="info">
+        <div>Счет: <span id="score">0</span></div>
+        <div>Уровень: <span id="level">1</span></div>
+        <div>Длина: <span id="length">3</span></div>
+        <div>Танки: <span id="tankCount">2</span></div>
+    </div>
+    
+    <div class="time-indicator">
+        Время суток: <span id="timeOfDay">НОЧЬ</span>
+    </div>
+    
+    <div class="controls">
+        Управление: Стрелки ← ↑ → ↓
+    </div>
+
+    <script>
+        // Инициализация элементов
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const matrixCanvas = document.getElementById('matrix-bg');
+        const matrixCtx = matrixCanvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const levelElement = document.getElementById('level');
+        const lengthElement = document.getElementById('length');
+        const tankCountElement = document.getElementById('tankCount');
+        const timeOfDayElement = document.getElementById('timeOfDay');
+        const gameOverElement = document.getElementById('gameOver');
+        const deathReasonElement = document.getElementById('deathReason');
+        const finalScoreElement = document.getElementById('finalScore');
+        const restartButton = document.getElementById('restartButton');
+        const yakubovichModal = document.getElementById('yakubovichModal');
+        const continueButton = document.getElementById('continueButton');
+
+        // Настройка размеров canvas для матричного фона
+        matrixCanvas.width = window.innerWidth;
+        matrixCanvas.height = window.innerHeight;
+
+        // Константы игры
+        const GRID_SIZE = 20;
+        const GAME_SPEED = 100; // миллисекунды
+
+        // Переменные игры
+        let snake = [];
+        let food = {};
+        let direction = 'right';
+        let nextDirection = 'right';
+        let score = 0;
+        let level = 1;
+        let gameInterval;
+        let gameRunning = false;
+        let isDay = false;
+        let tanks = [];
+        let bullets = [];
+        let deathReason = "";
+        let lastScoreForTank = 0;
+        let gamePaused = false;
+
+        // Настройка матричного фона
+        const matrixChars = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const fontSize = 14;
+        const columns = matrixCanvas.width / fontSize;
+        const drops = [];
+        
+        // Инициализация капель для матричного фона
+        for (let i = 0; i < columns; i++) {
+            drops[i] = 1;
+        }
+
+        // Функция отрисовки матричного фона
+        function drawMatrix() {
+            matrixCtx.fillStyle = isDay ? 'rgba(135, 206, 235, 0.04)' : 'rgba(0, 0, 0, 0.04)';
+            matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+            
+            matrixCtx.fillStyle = isDay ? '#006400' : '#0F0';
+            matrixCtx.font = fontSize + 'px monospace';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
+                matrixCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                
+                drops[i]++;
+            }
+        }
+
+        // Класс для танков
+        class Tank {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.width = GRID_SIZE * 1.5;
+                this.height = GRID_SIZE * 1.5;
+                this.direction = Math.random() > 0.5 ? 'horizontal' : 'vertical';
+                this.speed = 0.5;
+                this.color = color;
+                this.shotCooldown = 0;
+                this.directionChangeCooldown = 0;
+                this.turretDirection = Math.random() * Math.PI * 2; // Направление башни в радианах
+            }
+            
+            update() {
+                // Движение танка
+                if (this.direction === 'horizontal') {
+                    this.x += this.speed;
+                    if (this.x <= 0 || this.x >= canvas.width / GRID_SIZE - 1.5) {
+                        this.speed *= -1;
+                        this.directionChangeCooldown = 30;
+                    }
+                } else {
+                    this.y += this.speed;
+                    if (this.y <= 0 || this.y >= canvas.height / GRID_SIZE - 1.5) {
+                        this.speed *= -1;
+                        this.directionChangeCooldown = 30;
+                    }
+                }
+                
+                // Случайная смена направления
+                this.directionChangeCooldown--;
+                if (this.directionChangeCooldown <= 0 && Math.random() < 0.01) {
+                    this.direction = this.direction === 'horizontal' ? 'vertical' : 'horizontal';
+                    this.directionChangeCooldown = 30;
+                }
+                
+                // Поворот башни в сторону змейки
+                const head = snake[0];
+                const dx = head.x - (this.x + 0.75);
+                const dy = head.y - (this.y + 0.75);
+                this.turretDirection = Math.atan2(dy, dx);
+                
+                // Стрельба
+                this.shotCooldown--;
+                if (this.shotCooldown <= 0 && Math.random() < 0.03) {
+                    this.shoot();
+                    this.shotCooldown = 50;
+                }
+            }
+            
+            shoot() {
+                // Вычисляем координаты дула танка
+                const barrelX = this.x + 0.75 + Math.cos(this.turretDirection) * 1.2;
+                const barrelY = this.y + 0.75 + Math.sin(this.turretDirection) * 1.2;
+                
+                bullets.push({
+                    x: barrelX,
+                    y: barrelY,
+                    vx: Math.cos(this.turretDirection) * 2,
+                    vy: Math.sin(this.turretDirection) * 2,
+                    color: this.color
+                });
+            }
+            
+            draw() {
+                // Корпус танка
+                ctx.fillStyle = this.color;
+                ctx.fillRect(
+                    this.x * GRID_SIZE, 
+                    this.y * GRID_SIZE, 
+                    this.width, 
+                    this.height
+                );
+                
+                // Башня танка
+                ctx.fillStyle = isDay ? '#333' : '#0A0';
+                ctx.save();
+                ctx.translate(
+                    (this.x + 0.75) * GRID_SIZE, 
+                    (this.y + 0.75) * GRID_SIZE
+                );
+                ctx.rotate(this.turretDirection);
+                ctx.fillRect(-GRID_SIZE * 0.4, -GRID_SIZE * 0.2, GRID_SIZE * 0.8, GRID_SIZE * 0.4);
+                
+                // Дуло
+                ctx.fillStyle = isDay ? '#555' : '#080';
+                ctx.fillRect(GRID_SIZE * 0.4, -GRID_SIZE * 0.1, GRID_SIZE * 0.5, GRID_SIZE * 0.2);
+                ctx.restore();
+                
+                // Гусеницы
+                ctx.fillStyle = isDay ? '#222' : '#050';
+                ctx.fillRect(this.x * GRID_SIZE, this.y * GRID_SIZE, this.width, GRID_SIZE * 0.3);
+                ctx.fillRect(this.x * GRID_SIZE, (this.y + 1.2) * GRID_SIZE, this.width, GRID_SIZE * 0.3);
+            }
+        }
+
+        // Инициализация игры
+        function initGame() {
+            // Создание начальной змейки
+            snake = [
+                {x: 10, y: 10},
+                {x: 9, y: 10},
+                {x: 8, y: 10}
+            ];
+            
+            // Создание первой еды
+            createFood();
+            
+            // Создание танков
+            tanks = [];
+            bullets = [];
+            
+            // Добавляем два танка в разных углах поля
+            tanks.push(new Tank(2, 2, isDay ? '#8B4513' : '#0A0'));
+            tanks.push(new Tank(canvas.width / GRID_SIZE - 4, canvas.height / GRID_SIZE - 4, isDay ? '#8B4513' : '#0A0'));
+            
+            // Сброс состояния игры
+            score = 0;
+            level = 1;
+            direction = 'right';
+            nextDirection = 'right';
+            isDay = false;
+            lastScoreForTank = 0;
+            gamePaused = false;
+            document.body.classList.remove('day-mode');
+            timeOfDayElement.textContent = 'НОЧЬ';
+            
+            // Обновление интерфейса
+            scoreElement.textContent = score;
+            levelElement.textContent = level;
+            lengthElement.textContent = snake.length;
+            tankCountElement.textContent = tanks.length;
+            
+            // Скрытие экрана окончания игры и модального окна
+            gameOverElement.style.display = 'none';
+            yakubovichModal.style.display = 'none';
+            
+            // Запуск игрового цикла
+            if (gameInterval) clearInterval(gameInterval);
+            gameRunning = true;
+            gameInterval = setInterval(gameLoop, GAME_SPEED);
+        }
+
+        // Создание еды в случайном месте
+        function createFood() {
+            food = {
+                x: Math.floor(Math.random() * (canvas.width / GRID_SIZE)),
+                y: Math.floor(Math.random() * (canvas.height / GRID_SIZE))
+            };
+            
+            // Проверка, чтобы еда не появилась на змейке
+            for (let segment of snake) {
+                if (segment.x === food.x && segment.y === food.y) {
+                    return createFood();
+                }
+            }
+            
+            // Проверка, чтобы еда не появилась на танках
+            for (let tank of tanks) {
+                if (food.x >= tank.x && food.x <= tank.x + 1.5 &&
+                    food.y >= tank.y && food.y <= tank.y + 1.5) {
+                    return createFood();
+                }
+            }
+        }
+
+        // Основной игровой цикл
+        function gameLoop() {
+            if (gamePaused) return;
+            
+            update();
+            draw();
+        }
+
+        // Обновление состояния игры
+        function update() {
+            // Обновление направления движения
+            direction = nextDirection;
+            
+            // Создание новой головы змейки
+            const head = {...snake[0]};
+            
+            // Перемещение головы в соответствии с направлением
+            switch (direction) {
+                case 'up':
+                    head.y -= 1;
+                    break;
+                case 'down':
+                    head.y += 1;
+                    break;
+                case 'left':
+                    head.x -= 1;
+                    break;
+                case 'right':
+                    head.x += 1;
+                    break;
+            }
+            
+            // Проверка столкновения со стенами
+            if (head.x < 0 || head.x >= canvas.width / GRID_SIZE || 
+                head.y < 0 || head.y >= canvas.height / GRID_SIZE) {
+                deathReason = "Вы врезались в стену";
+                gameOver();
+                return;
+            }
+            
+            // Проверка столкновения с собой
+            for (let segment of snake) {
+                if (head.x === segment.x && head.y === segment.y) {
+                    deathReason = "Вы съели сами себя";
+                    gameOver();
+                    return;
+                }
+            }
+            
+            // Проверка столкновения с танками
+            for (let tank of tanks) {
+                if (head.x >= tank.x && head.x <= tank.x + 1.5 &&
+                    head.y >= tank.y && head.y <= tank.y + 1.5) {
+                    deathReason = "Вы встретились с танком";
+                    gameOver();
+                    return;
+                }
+            }
+            
+            // Проверка столкновения с пулями
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const bullet = bullets[i];
+                if (head.x >= bullet.x - 0.3 && head.x <= bullet.x + 0.3 &&
+                    head.y >= bullet.y - 0.3 && head.y <= bullet.y + 0.3) {
+                    deathReason = "Вас подстрелил танк";
+                    gameOver();
+                    return;
+                }
+                
+                // Обновление позиции пули
+                bullet.x += bullet.vx;
+                bullet.y += bullet.vy;
+                
+                // Удаление пуль, вышедших за границы
+                if (bullet.x < 0 || bullet.x > canvas.width / GRID_SIZE ||
+                    bullet.y < 0 || bullet.y > canvas.height / GRID_SIZE) {
+                    bullets.splice(i, 1);
+                }
+            }
+            
+            // Добавление новой головы
+            snake.unshift(head);
+            
+            // Проверка, съела ли змейка еду
+            if (head.x === food.x && head.y === food.y) {
+                // Увеличение счета
+                score += 10;
+                scoreElement.textContent = score;
+                lengthElement.textContent = snake.length;
+                
+                // Смена дня и ночи каждые 15 очков
+                if (score % 15 === 0) {
+                    isDay = !isDay;
+                    if (isDay) {
+                        document.body.classList.add('day-mode');
+                        timeOfDayElement.textContent = 'ДЕНЬ';
+                    } else {
+                        document.body.classList.remove('day-mode');
+                        timeOfDayElement.textContent = 'НОЧЬ';
+                    }
+                }
+                
+                // Добавление нового танка каждые 30 очков
+                if (score - lastScoreForTank >= 30) {
+                    addNewTank();
+                    lastScoreForTank = score;
+                    tankCountElement.textContent = tanks.length;
+                }
+                
+                // Пауза и показ Якубовича при 100 очках
+                if (score === 100) {
+                    gamePaused = true;
+                    yakubovichModal.style.display = 'block';
+                }
+                
+                // Создание новой еды
+                createFood();
+                
+                // Проверка уровня
+                if (score % 50 === 0) {
+                    level++;
+                    levelElement.textContent = level;
+                }
+            } else {
+                // Удаление хвоста, если еда не съедена
+                snake.pop();
+            }
+            
+            // Обновление танков
+            for (let tank of tanks) {
+                tank.update();
+            }
+        }
+
+        // Добавление нового танка
+        function addNewTank() {
+            let newX, newY;
+            let validPosition = false;
+            
+            // Поиск валидной позиции для нового танка
+            while (!validPosition) {
+                newX = Math.floor(Math.random() * (canvas.width / GRID_SIZE - 2));
+                newY = Math.floor(Math.random() * (canvas.height / GRID_SIZE - 2));
+                
+                validPosition = true;
+                
+                // Проверка, чтобы танк не появился на змейке
+                for (let segment of snake) {
+                    if (newX <= segment.x && segment.x <= newX + 1.5 &&
+                        newY <= segment.y && segment.y <= newY + 1.5) {
+                        validPosition = false;
+                        break;
+                    }
+                }
+                
+                // Проверка, чтобы танк не появился на другом танке
+                if (validPosition) {
+                    for (let tank of tanks) {
+                        if (newX <= tank.x + 1.5 && tank.x <= newX + 1.5 &&
+                            newY <= tank.y + 1.5 && tank.y <= newY + 1.5) {
+                            validPosition = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            tanks.push(new Tank(newX, newY, isDay ? '#8B4513' : '#0A0'));
+        }
+
+        // Отрисовка игры
+        function draw() {
+            // Очистка холста
+            ctx.fillStyle = isDay ? 'rgba(135, 206, 235, 0.3)' : 'rgba(0, 10, 0, 0.7)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Отрисовка сетки
+            ctx.strokeStyle = isDay ? 'rgba(0, 100, 0, 0.1)' : 'rgba(0, 255, 0, 0.1)';
+            ctx.lineWidth = 1;
+            
+            for (let x = 0; x < canvas.width; x += GRID_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let y = 0; y < canvas.height; y += GRID_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Отрисовка змейки
+            for (let i = 0; i < snake.length; i++) {
+                const segment = snake[i];
+                
+                if (i === 0) {
+                    // Отрисовка головы
+                    drawSnakeHead(segment);
+                } else {
+                    // Отрисовка тела
+                    ctx.fillStyle = isDay ? '#006400' : '#0F0';
+                    ctx.fillRect(
+                        segment.x * GRID_SIZE, 
+                        segment.y * GRID_SIZE, 
+                        GRID_SIZE, 
+                        GRID_SIZE
+                    );
+                    
+                    // Добавление эффекта свечения для тела
+                    if (i % 2 === 0) {
+                        ctx.shadowColor = isDay ? '#006400' : '#0F0';
+                        ctx.shadowBlur = 5;
+                        ctx.fillRect(
+                            segment.x * GRID_SIZE, 
+                            segment.y * GRID_SIZE, 
+                            GRID_SIZE, 
+                            GRID_SIZE
+                        );
+                        ctx.shadowBlur = 0;
+                    }
+                }
+            }
+            
+            // Отрисовка еды
+            ctx.fillStyle = isDay ? '#FF4500' : '#0F0';
+            ctx.beginPath();
+            ctx.arc(
+                food.x * GRID_SIZE + GRID_SIZE / 2,
+                food.y * GRID_SIZE + GRID_SIZE / 2,
+                GRID_SIZE / 2,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+            
+            // Эффект свечения для еды
+            ctx.shadowColor = isDay ? '#FF4500' : '#0F0';
+            ctx.shadowBlur = 15;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            // Отрисовка танков
+            for (let tank of tanks) {
+                tank.draw();
+            }
+            
+            // Отрисовка пуль
+            for (let bullet of bullets) {
+                ctx.fillStyle = bullet.color;
+                ctx.beginPath();
+                ctx.arc(
+                    bullet.x * GRID_SIZE,
+                    bullet.y * GRID_SIZE,
+                    GRID_SIZE / 4,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
+                
+                // Эффект свечения для пуль
+                ctx.shadowColor = bullet.color;
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        // Отрисовка головы змейки
+        function drawSnakeHead(head) {
+            const headX = head.x * GRID_SIZE;
+            const headY = head.y * GRID_SIZE;
+            
+            // Основная часть головы
+            ctx.fillStyle = isDay ? '#006400' : '#0F0';
+            ctx.fillRect(headX, headY, GRID_SIZE, GRID_SIZE);
+            
+            // Эффект свечения для головы
+            ctx.shadowColor = isDay ? '#006400' : '#0F0';
+            ctx.shadowBlur = 15;
+            ctx.fillRect(headX, headY, GRID_SIZE, GRID_SIZE);
+            ctx.shadowBlur = 0;
+            
+            // Глаза змейки
+            ctx.fillStyle = isDay ? '#FFF' : '#000';
+            const eyeSize = GRID_SIZE / 5;
+            
+            // Расположение глаз в зависимости от направления
+            switch(direction) {
+                case 'right':
+                    ctx.fillRect(headX + GRID_SIZE - eyeSize*2, headY + eyeSize, eyeSize, eyeSize);
+                    ctx.fillRect(headX + GRID_SIZE - eyeSize*2, headY + GRID_SIZE - eyeSize*2, eyeSize, eyeSize);
+                    break;
+                case 'left':
+                    ctx.fillRect(headX + eyeSize, headY + eyeSize, eyeSize, eyeSize);
+                    ctx.fillRect(headX + eyeSize, headY + GRID_SIZE - eyeSize*2, eyeSize, eyeSize);
+                    break;
+                case 'up':
+                    ctx.fillRect(headX + eyeSize, headY + eyeSize, eyeSize, eyeSize);
+                    ctx.fillRect(headX + GRID_SIZE - eyeSize*2, headY + eyeSize, eyeSize, eyeSize);
+                    break;
+                case 'down':
+                    ctx.fillRect(headX + eyeSize, headY + GRID_SIZE - eyeSize*2, eyeSize, eyeSize);
+                    ctx.fillRect(headX + GRID_SIZE - eyeSize*2, headY + GRID_SIZE - eyeSize*2, eyeSize, eyeSize);
+                    break;
+            }
+        }
+
+        // Обработка окончания игры
+        function gameOver() {
+            gameRunning = false;
+            clearInterval(gameInterval);
+            
+            // Показ экрана окончания игры
+            deathReasonElement.textContent = deathReason;
+            finalScoreElement.textContent = `Счет: ${score}`;
+            gameOverElement.style.display = 'block';
+        }
+
+        // Обработка нажатий клавиш
+        document.addEventListener('keydown', (event) => {
+            if (!gameRunning || gamePaused) return;
+            
+            switch (event.key) {
+                case 'ArrowUp':
+                    if (direction !== 'down') nextDirection = 'up';
+                    break;
+                case 'ArrowDown':
+                    if (direction !== 'up') nextDirection = 'down';
+                    break;
+                case 'ArrowLeft':
+                    if (direction !== 'right') nextDirection = 'left';
+                    break;
+                case 'ArrowRight':
+                    if (direction !== 'left') nextDirection = 'right';
+                    break;
+            }
+        });
+
+        // Обработка кнопки перезапуска
+        restartButton.addEventListener('click', initGame);
+
+        // Обработка кнопки продолжения игры после паузы с Якубовичем
+        continueButton.addEventListener('click', function() {
+            gamePaused = false;
+            yakubovichModal.style.display = 'none';
+        });
+
+        // Анимация матричного фона
+        function animateMatrix() {
+            drawMatrix();
+            requestAnimationFrame(animateMatrix);
+        }
+
+        // Запуск игры и анимации при загрузке страницы
+        window.onload = function() {
+            initGame();
+            animateMatrix();
+        };
+
+        // Обновление размеров матричного фона при изменении размера окна
+        window.addEventListener('resize', function() {
+            matrixCanvas.width = window.innerWidth;
+            matrixCanvas.height = window.innerHeight;
+            
+            // Переинициализация капель
+            drops.length = 0;
+            const newColumns = matrixCanvas.width / fontSize;
+            for (let i = 0; i < newColumns; i++) {
+                drops[i] = 1;
+            }
+        });
+    </script>
+</body>
+</html>

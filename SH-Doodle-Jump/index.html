@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Прыгай как можно выше! Казуальная игра в стиле Doodle Jump.">
+    
+    <!-- iOS мета-теги -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Doodle Jump">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#FF6B6B">
+    
+    <title>Doodle Jump Clone</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <!-- Контейнер игры -->
+    <div id="game-container">
+        <!-- Canvas для отрисовки игры -->
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Экран меню -->
+        <div id="menu-screen" class="screen">
+            <h1>Shashkin Doodle Jump</h1>
+            <p class="subtitle">Прыгай как можно выше!</p>
+            <button id="start-btn" class="btn">Начать игру</button>
+            <div class="high-score">
+                <p>Рекорд: <span id="menu-high-score">0</span></p>
+            </div>
+            <div class="controls-info">
+                <p>🖥️ Управление: Стрелки ← →</p>
+                <p>📱 Управление: Касание экрана</p>
+            </div>
+        </div>
+        
+        <!-- Экран Game Over -->
+        <div id="gameover-screen" class="screen hidden">
+            <h1>Game Over</h1>
+            <div class="score-container">
+                <p class="final-score">Счёт: <span id="final-score">0</span></p>
+                <p class="high-score-text">Рекорд: <span id="high-score">0</span></p>
+            </div>
+            <button id="restart-btn" class="btn">Играть снова</button>
+            <button id="menu-btn" class="btn btn-secondary">В меню</button>
+        </div>
+        
+        <!-- Счёт во время игры -->
+        <div id="score-display" class="hidden">
+            <p>Счёт: <span id="current-score">0</span></p>
+        </div>
+    </div>
+
+    <script src="./script.js"></script>
+    <script>
+        // Регистрация Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('Service Worker зарегистрирован:', registration);
+                    })
+                    .catch(error => {
+                        console.log('Ошибка регистрации Service Worker:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

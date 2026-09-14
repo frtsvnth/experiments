@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <!-- Небесно-голубой фон -->
+  <rect width="192" height="192" fill="#87CEEB"/>
+  
+  <!-- Платформа внизу -->
+  <rect x="60" y="150" width="70" height="12" rx="6" fill="#808080"/>
+  
+  <!-- Тело персонажа (зеленое) -->
+  <ellipse cx="96" cy="80" rx="35" ry="40" fill="#4CAF50"/>
+  
+  <!-- Левая нога -->
+  <ellipse cx="75" cy="118" rx="12" ry="8" fill="#3D8B40"/>
+  
+  <!-- Правая нога -->
+  <ellipse cx="117" cy="118" rx="12" ry="8" fill="#3D8B40"/>
+  
+  <!-- Белые глаза -->
+  <circle cx="83" cy="70" r="8" fill="white"/>
+  <circle cx="109" cy="70" r="8" fill="white"/>
+  
+  <!-- Зрачки -->
+  <circle cx="85" cy="71" r="4" fill="#333"/>
+  <circle cx="111" cy="71" r="4" fill="#333"/>
+  
+  <!-- Нос/хобот -->
+  <ellipse cx="96" cy="90" rx="6" ry="10" fill="#3D8B40"/>
+  
+  <!-- Рот (улыбка) -->
+  <path d="M 85 95 Q 96 102 107 95" stroke="#3D8B40" stroke-width="2" fill="none" stroke-linecap="round"/>
+  
+  <!-- Блики на глазах -->
+  <circle cx="81" cy="68" r="2" fill="white"/>
+  <circle cx="107" cy="68" r="2" fill="white"/>
+</svg>

@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>47 Beats - Создавай музыку</title>
+	<style>
+		:root {
+			--primary-color: #8a2be2;
+			--secondary-color: #4b0082;
+			--accent-color: #9370db;
+			--dark-color: #1a1a2e;
+			--light-color: #f4f4f9;
+			--success-color: #32cd32;
+		}
+
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		}
+
+		body {
+			background: linear-gradient(135deg, var(--dark-color), #16213e);
+			color: var(--light-color);
+			min-height: 100vh;
+			padding: 20px;
+		}
+
+		.container {
+			max-width: 1200px;
+			margin: 0 auto;
+		}
+
+		header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 20px 0;
+			border-bottom: 1px solid var(--accent-color);
+			margin-bottom: 30px;
+		}
+
+		.logo {
+			display: flex;
+			align-items: center;
+			gap: 15px;
+		}
+
+		.logo-icon {
+			width: 50px;
+			height: 50px;
+			background: var(--primary-color);
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: bold;
+			font-size: 24px;
+			color: white;
+			box-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
+		}
+
+		.logo-text {
+			font-size: 28px;
+			font-weight: 700;
+			background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+			-webkit-background-clip: text;
+			background-clip: text;
+			color: transparent;
+		}
+
+		.controls {
+			display: flex;
+			gap: 10px;
+			margin-bottom: 20px;
+		}
+
+		button {
+			background: var(--primary-color);
+			color: white;
+			border: none;
+			padding: 10px 20px;
+			border-radius: 5px;
+			cursor: pointer;
+			font-weight: 600;
+			transition: all 0.3s;
+		}
+
+		button:hover {
+			background: var(--secondary-color);
+			transform: translateY(-2px);
+		}
+
+		.transport {
+			display: flex;
+			gap: 10px;
+			margin-bottom: 30px;
+			justify-content: center;
+		}
+
+		.play-btn {
+			background: var(--success-color);
+			padding: 12px 30px;
+			font-size: 16px;
+		}
+
+		.stop-btn {
+			background: #ff4757;
+			padding: 12px 30px;
+			font-size: 16px;
+		}
+
+		.bpm-control {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			margin-left: 20px;
+		}
+
+		.bpm-control input {
+			width: 70px;
+			padding: 8px;
+			border-radius: 5px;
+			border: 1px solid var(--accent-color);
+			background: rgba(255, 255, 255, 0.1);
+			color: white;
+		}
+
+		.tracks-container {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 20px;
+		}
+
+		@media (min-width: 768px) {
+			.tracks-container {
+				grid-template-columns: repeat(2, 1fr);
+			}
+		}
+
+		@media (min-width: 1024px) {
+			.tracks-container {
+				grid-template-columns: repeat(3, 1fr);
+			}
+		}
+
+		.track {
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 10px;
+			padding: 15px;
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+		}
+
+		.track-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 15px;
+		}
+
+		.track-title {
+			font-size: 18px;
+			font-weight: 600;
+		}
+
+		.track-controls {
+			display: flex;
+			gap: 10px;
+		}
+
+		.mute-btn,
+		.solo-btn {
+			padding: 5px 10px;
+			font-size: 12px;
+		}
+
+		.sequencer {
+			display: grid;
+			grid-template-columns: repeat(16, 1fr);
+			gap: 5px;
+			margin-bottom: 15px;
+		}
+
+		.step {
+			aspect-ratio: 1;
+			background: rgba(255, 255, 255, 0.1);
+			border-radius: 3px;
+			cursor: pointer;
+			transition: all 0.2s;
+		}
+
+		.step.active {
+			background: var(--primary-color);
+			box-shadow: 0 0 5px var(--primary-color);
+		}
+
+		.step.current {
+			box-shadow: 0 0 10px var(--success-color);
+		}
+
+		.track-settings {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 10px;
+		}
+
+		.setting {
+			display: flex;
+			flex-direction: column;
+			gap: 5px;
+		}
+
+		.setting label {
+			font-size: 12px;
+			opacity: 0.8;
+		}
+
+		.setting input,
+		.setting select {
+			padding: 5px;
+			border-radius: 3px;
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			background: rgba(255, 255, 255, 0.1);
+			color: white;
+		}
+
+		.effects-panel {
+			margin-top: 30px;
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 10px;
+			padding: 20px;
+		}
+
+		.effects-title {
+			font-size: 20px;
+			margin-bottom: 15px;
+			text-align: center;
+		}
+
+		.effects-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+			gap: 15px;
+		}
+
+		.effect {
+			background: rgba(255, 255, 255, 0.05);
+			padding: 15px;
+			border-radius: 8px;
+		}
+
+		.effect h3 {
+			font-size: 16px;
+			margin-bottom: 10px;
+			color: var(--accent-color);
+		}
+
+		.export-section {
+			margin-top: 30px;
+			text-align: center;
+		}
+
+		.export-btn {
+			background: var(--success-color);
+			padding: 15px 30px;
+			font-size: 18px;
+		}
+
+		.current-step-indicator {
+			width: 100%;
+			height: 5px;
+			background: rgba(255, 255, 255, 0.1);
+			border-radius: 5px;
+			margin-top: 10px;
+			overflow: hidden;
+		}
+
+		.step-progress {
+			height: 100%;
+			background: var(--success-color);
+			width: 0%;
+			transition: width 0.1s;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<header>
+			<div class="logo">
+				<div class="logo-icon">47</div>
+				<div class="logo-text">Beats</div>
+			</div>
+			<div class="controls">
+				<button id="new-project">Новый проект</button>
+				<button id="save-project">Сохранить</button>
+				<button id="load-project">Загрузить</button>
+			</div>
+		</header>
+
+		<div class="transport">
+			<button class="play-btn" id="play">▶ Воспроизведение</button>
+			<button class="stop-btn" id="stop">■ Стоп</button>
+			<div class="bpm-control">
+				<label for="bpm">BPM:</label>
+				<input type="number" id="bpm" min="60" max="180" value="120">
+            </div>
+			</div>
+
+			<div class="tracks-container" id="tracks-container">
+				<!-- Треки будут добавлены через JavaScript -->
+			</div>
+
+			<div class="effects-panel">
+				<h2 class="effects-title">Эффекты</h2>
+				<div class="effects-grid" id="effects-grid">
+					<!-- Эффекты будут добавлены через JavaScript -->
+				</div>
+			</div>
+
+			<div class="export-section">
+				<button class="export-btn" id="export">Экспортировать композицию</button>
+			</div>
+		</div>
+
+		<script>
+			// Инициализация аудиоконтекста
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioContext = new AudioContext();
+        
+        // Глобальные переменные
+        let isPlaying = false;
+        let currentStep = 0;
+        let stepInterval;
+        let bpm = 120;
+        
+        // Массив треков
+        const tracks = [
+            {
+                id: 1,
+                name: "Ударные",
+                type: "drum",
+                muted: false,
+                solo: false,
+                steps: Array(16).fill(false),
+                volume: 0.8,
+                soundType: "kick"
+            },
+            {
+                id: 2,
+                name: "Бас",
+                type: "bass",
+                muted: false,
+                solo: false,
+                steps: Array(16).fill(false),
+                volume: 0.7,
+                waveform: "sawtooth",
+                frequency: 110
+            },
+            {
+                id: 3,
+                name: "Аккорды",
+                type: "chord",
+                muted: false,
+                solo: false,
+                steps: Array(16).fill(false),
+                volume: 0.6,
+                waveform: "sine",
+                chordType: "minor"
+            },
+            {
+                id: 4,
+                name: "Мелодия",
+                type: "melody",
+                muted: false,
+                solo: false,
+                steps: Array(16).fill(false),
+                volume: 0.7,
+                waveform: "square",
+                scale: "pentatonic"
+            },
+            {
+                id: 5,
+                name: "Хэты",
+                type: "hihat",
+                muted: false,
+                solo: false,
+                steps: Array(16).fill(false),
+                volume: 0.5,
+                soundType: "closed"
+            },
+            {
+                id: 6,
+                name: "Эффекты",
+                type: "fx",
+                muted: false,
+                solo: false,
+                steps: Array(16).fill(false),
+                volume: 0.8,
+                soundType: "rise"
+            }
+        ];
+        
+        // Эффекты
+        const effects = [
+            {
+                name: "Дисторшн",
+                type: "distortion",
+                enabled: false,
+                amount: 0.5
+            },
+            {
+                name: "Дилей",
+                type: "delay",
+                enabled: false,
+                time: 0.3,
+                feedback: 0.5
+            },
+            {
+                name: "Реверберация",
+                type: "reverb",
+                enabled: false,
+                decay: 2,
+                wet: 0.3
+            },
+            {
+                name: "Фильтр",
+                type: "filter",
+                enabled: false,
+                frequency: 1000,
+                type: "lowpass"
+            }
+        ];
+        
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTracks();
+            renderEffects();
+            setupEventListeners();
+        });
+        
+        // Рендеринг треков
+        function renderTracks() {
+            const tracksContainer = document.getElementById('tracks-container');
+            tracksContainer.innerHTML = '';
+            
+            tracks.forEach(track => {
+                const trackElement = document.createElement('div');
+                trackElement.className = 'track';
+                trackElement.innerHTML = `
+                    <div class="track-header">
+                        <div class="track-title">${track.name}</div>
+                        <div class="track-controls">
+                            <button class="mute-btn" data-id="${track.id}">${track.muted ? 'Вкл' : 'Выкл'}</button>
+                            <button class="solo-btn" data-id="${track.id}">${track.solo ? 'Соло' : 'Соло'}</button>
+                        </div>
+                    </div>
+                    <div class="sequencer" id="sequencer-${track.id}">
+                        ${track.steps.map((step, index) => 
+                            `<div class="step ${step ? 'active' : ''} ${index === currentStep ? 'current' : ''}" 
+                                  data-track="${track.id}" data-step="${index}"></div>`
+                        ).join('')}
+                    </div>
+                    <div class="current-step-indicator">
+                        <div class="step-progress" id="progress-${track.id}"></div>
+                    </div>
+                    <div class="track-settings">
+                        <div class="setting">
+                            <label>Громкость</label>
+                            <input type="range" min="0" max="1" step="0.1" value="${track.volume}" 
+                                   data-track="${track.id}" class="volume-slider">
+                        </div>
+                        ${getTrackSpecificSettings(track)}
+                    </div>
+                `;
+                tracksContainer.appendChild(trackElement);
+            });
+            
+            // Добавляем обработчики событий для шагов
+            document.querySelectorAll('.step').forEach(step => {
+                step.addEventListener('click', function() {
+                    const trackId = parseInt(this.getAttribute('data-track'));
+                    const stepIndex = parseInt(this.getAttribute('data-step'));
+                    toggleStep(trackId, stepIndex);
+                });
+            });
+        }
+        
+        // Получение специфических настроек для каждого типа трека
+        function getTrackSpecificSettings(track) {
+            switch(track.type) {
+                case 'drum':
+                    return `
+                        <div class="setting">
+                            <label>Тип звука</label>
+                            <select data-track="${track.id}" class="sound-type">
+                                <option value="kick" ${track.soundType === 'kick' ? 'selected' : ''}>Кick</option>
+                                <option value="snare" ${track.soundType === 'snare' ? 'selected' : ''}>Snare</option>
+                                <option value="clap" ${track.soundType === 'clap' ? 'selected' : ''}>Clap</option>
+                            </select>
+                        </div>
+                    `;
+                case 'bass':
+                case 'chord':
+                case 'melody':
+                    return `
+                        <div class="setting">
+                            <label>Волна</label>
+                            <select data-track="${track.id}" class="waveform">
+                                <option value="sine" ${track.waveform === 'sine' ? 'selected' : ''}>Sine</option>
+                                <option value="square" ${track.waveform === 'square' ? 'selected' : ''}>Square</option>
+                                <option value="sawtooth" ${track.waveform === 'sawtooth' ? 'selected' : ''}>Sawtooth</option>
+                                <option value="triangle" ${track.waveform === 'triangle' ? 'selected' : ''}>Triangle</option>
+                            </select>
+                        </div>
+                    `;
+                case 'hihat':
+                    return `
+                        <div class="setting">
+                            <label>Тип хэта</label>
+                            <select data-track="${track.id}" class="sound-type">
+                                <option value="closed" ${track.soundType === 'closed' ? 'selected' : ''}>Closed</option>
+                                <option value="open" ${track.soundType === 'open' ? 'selected' : ''}>Open</option>
+                            </select>
+                        </div>
+                    `;
+                case 'fx':
+                    return `
+                        <div class="setting">
+                            <label>Тип эффекта</label>
+                            <select data-track="${track.id}" class="sound-type">
+                                <option value="rise" ${track.soundType === 'rise' ? 'selected' : ''}>Rise</option>
+                                <option value="drop" ${track.soundType === 'drop' ? 'selected' : ''}>Drop</option>
+                                <option value="noise" ${track.soundType === 'noise' ? 'selected' : ''}>Noise</option>
+                            </select>
+                        </div>
+                    `;
+                default:
+                    return '';
+            }
+        }
+        
+        // Рендеринг эффектов
+        function renderEffects() {
+            const effectsGrid = document.getElementById('effects-grid');
+            effectsGrid.innerHTML = '';
+            
+            effects.forEach(effect => {
+                const effectElement = document.createElement('div');
+                effectElement.className = 'effect';
+                
+                let controlsHTML = '';
+                switch(effect.type) {
+                    case 'distortion':
+                        controlsHTML = `
+                            <label>
+                                <input type="checkbox" ${effect.enabled ? 'checked' : ''} data-effect="${effect.type}" class="effect-toggle"> Включить
+                            </label>
+                            <div class="setting">
+                                <label>Уровень: ${effect.amount}</label>
+                                <input type="range" min="0" max="1" step="0.1" value="${effect.amount}" 
+                                       data-effect="${effect.type}" class="effect-param" data-param="amount">
+                            </div>
+                        `;
+                        break;
+                    case 'delay':
+                        controlsHTML = `
+                            <label>
+                                <input type="checkbox" ${effect.enabled ? 'checked' : ''} data-effect="${effect.type}" class="effect-toggle"> Включить
+                            </label>
+                            <div class="setting">
+                                <label>Время: ${effect.time}s</label>
+                                <input type="range" min="0.1" max="1" step="0.1" value="${effect.time}" 
+                                       data-effect="${effect.type}" class="effect-param" data-param="time">
+                            </div>
+                            <div class="setting">
+                                <label>Обратная связь: ${effect.feedback}</label>
+                                <input type="range" min="0" max="0.9" step="0.1" value="${effect.feedback}" 
+                                       data-effect="${effect.type}" class="effect-param" data-param="feedback">
+                            </div>
+                        `;
+                        break;
+                    case 'reverb':
+                        controlsHTML = `
+                            <label>
+                                <input type="checkbox" ${effect.enabled ? 'checked' : ''} data-effect="${effect.type}" class="effect-toggle"> Включить
+                            </label>
+                            <div class="setting">
+                                <label>Затухание: ${effect.decay}s</label>
+                                <input type="range" min="0.1" max="5" step="0.1" value="${effect.decay}" 
+                                       data-effect="${effect.type}" class="effect-param" data-param="decay">
+                            </div>
+                            <div class="setting">
+                                <label>Уровень: ${effect.wet}</label>
+                                <input type="range" min="0" max="1" step="0.1" value="${effect.wet}" 
+                                       data-effect="${effect.type}" class="effect-param" data-param="wet">
+                            </div>
+                        `;
+                        break;
+                    case 'filter':
+                        controlsHTML = `
+                            <label>
+                                <input type="checkbox" ${effect.enabled ? 'checked' : ''} data-effect="${effect.type}" class="effect-toggle"> Включить
+                            </label>
+                            <div class="setting">
+                                <label>Частота: ${effect.frequency}Hz</label>
+                                <input type="range" min="100" max="5000" step="100" value="${effect.frequency}" 
+                                       data-effect="${effect.type}" class="effect-param" data-param="frequency">
+                            </div>
+                            <div class="setting">
+                                <label>Тип:</label>
+                                <select data-effect="${effect.type}" class="effect-param" data-param="type">
+                                    <option value="lowpass" ${effect.type === 'lowpass' ? 'selected' : ''}>Lowpass</option>
+                                    <option value="highpass" ${effect.type === 'highpass' ? 'selected' : ''}>Highpass</option>
+                                    <option value="bandpass" ${effect.type === 'bandpass' ? 'selected' : ''}>Bandpass</option>
+                                </select>
+                            </div>
+                        `;
+                        break;
+                }
+                
+                effectElement.innerHTML = `
+                    <h3>${effect.name}</h3>
+                    ${controlsHTML}
+                `;
+                
+                effectsGrid.appendChild(effectElement);
+            });
+        }
+        
+        // Настройка обработчиков событий
+        function setupEventListeners() {
+            // Кнопки воспроизведения и остановки
+            document.getElementById('play').addEventListener('click', playSequence);
+            document.getElementById('stop').addEventListener('click', stopSequence);
+            
+            // Контроль BPM
+            document.getElementById('bpm').addEventListener('input', function() {
+                bpm = parseInt(this.value);
+                if (isPlaying) {
+                    stopSequence();
+                    playSequence();
+                }
+            });
+            
+            // Кнопки управления проектом
+            document.getElementById('new-project').addEventListener('click', newProject);
+            document.getElementById('save-project').addEventListener('click', saveProject);
+            document.getElementById('load-project').addEventListener('click', loadProject);
+            document.getElementById('export').addEventListener('click', exportComposition);
+            
+            // Обработчики для слайдеров громкости
+            document.addEventListener('input', function(e) {
+                if (e.target.classList.contains('volume-slider')) {
+                    const trackId = parseInt(e.target.getAttribute('data-track'));
+                    const track = tracks.find(t => t.id === trackId);
+                    if (track) {
+                        track.volume = parseFloat(e.target.value);
+                    }
+                }
+            });
+            
+            // Обработчики для переключателей эффектов
+            document.addEventListener('change', function(e) {
+                if (e.target.classList.contains('effect-toggle')) {
+                    const effectType = e.target.getAttribute('data-effect');
+                    const effect = effects.find(ef => ef.type === effectType);
+                    if (effect) {
+                        effect.enabled = e.target.checked;
+                    }
+                }
+                
+                if (e.target.classList.contains('effect-param')) {
+                    const effectType = e.target.getAttribute('data-effect');
+                    const param = e.target.getAttribute('data-param');
+                    const effect = effects.find(ef => ef.type === effectType);
+                    if (effect) {
+                        effect[param] = e.target.type === 'range' ? parseFloat(e.target.value) : e.target.value;
+                    }
+                }
+            });
+            
+            // Обработчики для кнопок mute/solo
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('mute-btn')) {
+                    const trackId = parseInt(e.target.getAttribute('data-id'));
+                    const track = tracks.find(t => t.id === trackId);
+                    if (track) {
+                        track.muted = !track.muted;
+                        e.target.textContent = track.muted ? 'Вкл' : 'Выкл';
+                    }
+                }
+                
+                if (e.target.classList.contains('solo-btn')) {
+                    const trackId = parseInt(e.target.getAttribute('data-id'));
+                    const track = tracks.find(t => t.id === trackId);
+                    if (track) {
+                        track.solo = !track.solo;
+                        e.target.textContent = track.solo ? 'Соло' : 'Соло';
+                        
+                        // Если какой-то трек в режиме solo, остальные должны быть muted
+                        if (track.solo) {
+                            const hasSolo = tracks.some(t => t.solo);
+                            if (hasSolo) {
+                                tracks.forEach(t => {
+                                    if (t.id !== trackId) {
+                                        t.muted = true;
+                                    }
+                                });
+                                updateMuteButtons();
+                            }
+                        } else {
+                            // Если нет треков в solo, снимаем mute со всех
+                            const hasSolo = tracks.some(t => t.solo);
+                            if (!hasSolo) {
+                                tracks.forEach(t => {
+                                    t.muted = false;
+                                });
+                                updateMuteButtons();
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Обновление кнопок mute
+        function updateMuteButtons() {
+            document.querySelectorAll('.mute-btn').forEach(btn => {
+                const trackId = parseInt(btn.getAttribute('data-id'));
+                const track = tracks.find(t => t.id === trackId);
+                if (track) {
+                    btn.textContent = track.muted ? 'Вкл' : 'Выкл';
+                }
+            });
+        }
+        
+        // Переключение шага в секвенсоре
+        function toggleStep(trackId, stepIndex) {
+            const track = tracks.find(t => t.id === trackId);
+            if (track) {
+                track.steps[stepIndex] = !track.steps[stepIndex];
+                renderTracks();
+            }
+        }
+        
+        // Воспроизведение последовательности
+        function playSequence() {
+            if (isPlaying) return;
+            
+            isPlaying = true;
+            document.getElementById('play').textContent = '⏸ Пауза';
+            
+            const stepDuration = 60 / bpm / 4; // Длительность шага в секундах (16-е ноты)
+            
+            stepInterval = setInterval(() => {
+                // Обновляем визуализацию текущего шага
+                document.querySelectorAll('.step').forEach(step => {
+                    step.classList.remove('current');
+                });
+                
+                document.querySelectorAll(`.step[data-step="${currentStep}"]`).forEach(step => {
+                    step.classList.add('current');
+                });
+                
+                // Воспроизводим звуки для активных шагов
+                tracks.forEach(track => {
+                    if (track.steps[currentStep] && !track.muted) {
+                        playSound(track);
+                    }
+                    
+                    // Обновляем индикатор прогресса
+                    const progress = document.getElementById(`progress-${track.id}`);
+                    if (progress) {
+                        progress.style.width = '0%';
+                        setTimeout(() => {
+                            progress.style.width = '100%';
+                        }, 10);
+                    }
+                });
+                
+                // Переходим к следующему шагу
+                currentStep = (currentStep + 1) % 16;
+            }, stepDuration * 1000);
+        }
+        
+        // Остановка воспроизведения
+        function stopSequence() {
+            isPlaying = false;
+            clearInterval(stepInterval);
+            document.getElementById('play').textContent = '▶ Воспроизведение';
+            currentStep = 0;
+            
+            // Сбрасываем визуализацию шагов
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('current');
+            });
+            
+            // Сбрасываем индикаторы прогресса
+            document.querySelectorAll('.step-progress').forEach(progress => {
+                progress.style.width = '0%';
+            });
+        }
+        
+        // Воспроизведение звука для трека
+        function playSound(track) {
+            switch(track.type) {
+                case 'drum':
+                    playDrumSound(track);
+                    break;
+                case 'bass':
+                    playBassSound(track);
+                    break;
+                case 'chord':
+                    playChordSound(track);
+                    break;
+                case 'melody':
+                    playMelodySound(track);
+                    break;
+                case 'hihat':
+                    playHihatSound(track);
+                    break;
+                case 'fx':
+                    playFxSound(track);
+                    break;
+            }
+        }
+        
+        // Воспроизведение ударных
+        function playDrumSound(track) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            let frequency = 100;
+            let decay = 0.1;
+            
+            switch(track.soundType) {
+                case 'kick':
+                    frequency = 60;
+                    decay = 0.5;
+                    break;
+                case 'snare':
+                    frequency = 180;
+                    decay = 0.3;
+                    break;
+                case 'clap':
+                    frequency = 200;
+                    decay = 0.2;
+                    break;
+            }
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(track.volume, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + decay);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + decay);
+        }
+        
+        // Воспроизведение баса
+        function playBassSound(track) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(track.frequency, audioContext.currentTime);
+            oscillator.type = track.waveform;
+            
+            gainNode.gain.setValueAtTime(track.volume, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+        
+        // Воспроизведение аккордов
+        function playChordSound(track) {
+            const frequencies = getChordFrequencies(track.chordType);
+            
+            frequencies.forEach(freq => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+                oscillator.type = track.waveform;
+                
+                gainNode.gain.setValueAtTime(track.volume / 3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.8);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.8);
+            });
+        }
+        
+        // Получение частот для аккорда
+        function getChordFrequencies(chordType) {
+            const baseFreq = 220; // A3
+            let intervals;
+            
+            switch(chordType) {
+                case 'minor':
+                    intervals = [0, 3, 7]; // Минорное трезвучие
+                    break;
+                case 'major':
+                default:
+                    intervals = [0, 4, 7]; // Мажорное трезвучие
+                    break;
+            }
+            
+            return intervals.map(interval => {
+                return baseFreq * Math.pow(2, interval / 12);
+            });
+        }
+        
+        // Воспроизведение мелодии
+        function playMelodySound(track) {
+            const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25]; // C4 - C5
+            const randomNote = notes[Math.floor(Math.random() * notes.length)];
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(randomNote, audioContext.currentTime);
+            oscillator.type = track.waveform;
+            
+            gainNode.gain.setValueAtTime(track.volume, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+        
+        // Воспроизведение хэтов
+        function playHihatSound(track) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Хэты - это белый шум с фильтром
+            const bufferSize = audioContext.sampleRate * 0.1;
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const data = buffer.getChannelData(0);
+            
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            
+            const source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            
+            const filter = audioContext.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.value = track.soundType === 'open' ? 5000 : 8000;
+            
+            source.connect(filter);
+            filter.connect(gainNode);
+            
+            gainNode.gain.setValueAtTime(track.volume, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+            
+            source.start(audioContext.currentTime);
+            source.stop(audioContext.currentTime + 0.1);
+        }
+        
+        // Воспроизведение эффектов
+        function playFxSound(track) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            let startFreq, endFreq, duration;
+            
+            switch(track.soundType) {
+                case 'rise':
+                    startFreq = 100;
+                    endFreq = 1000;
+                    duration = 0.5;
+                    break;
+                case 'drop':
+                    startFreq = 1000;
+                    endFreq = 100;
+                    duration = 0.5;
+                    break;
+                case 'noise':
+                default:
+                    // Шумовой эффект
+                    const bufferSize = audioContext.sampleRate * 0.3;
+                    const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+                    
+                    const source = audioContext.createBufferSource();
+                    source.buffer = buffer;
+                    
+                    source.connect(gainNode);
+                    
+                    gainNode.gain.setValueAtTime(track.volume, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+                    
+                    source.start(audioContext.currentTime);
+                    source.stop(audioContext.currentTime + 0.3);
+                    return;
+            }
+            
+            oscillator.frequency.setValueAtTime(startFreq, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(endFreq, audioContext.currentTime + duration);
+            oscillator.type = 'sawtooth';
+            
+            gainNode.gain.setValueAtTime(track.volume, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+        
+        // Создание нового проекта
+        function newProject() {
+            if (confirm('Вы уверены, что хотите создать новый проект? Все несохраненные изменения будут потеряны.')) {
+                tracks.forEach(track => {
+                    track.steps = Array(16).fill(false);
+                    track.muted = false;
+                    track.solo = false;
+                });
+                
+                effects.forEach(effect => {
+                    effect.enabled = false;
+                });
+                
+                stopSequence();
+                renderTracks();
+                renderEffects();
+            }
+        }
+        
+        // Сохранение проекта
+        function saveProject() {
+            const projectData = {
+                tracks: tracks,
+                effects: effects,
+                bpm: bpm
+            };
+            
+            const dataStr = JSON.stringify(projectData);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const exportFileDefaultName = '47beats_project.json';
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+        
+        // Загрузка проекта
+        function loadProject() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    try {
+                        const projectData = JSON.parse(event.target.result);
+                        
+                        // Обновляем данные приложения
+                        if (projectData.tracks) {
+                            projectData.tracks.forEach((loadedTrack, index) => {
+                                if (tracks[index]) {
+                                    Object.assign(tracks[index], loadedTrack);
+                                }
+                            });
+                        }
+                        
+                        if (projectData.effects) {
+                            projectData.effects.forEach((loadedEffect, index) => {
+                                if (effects[index]) {
+                                    Object.assign(effects[index], loadedEffect);
+                                }
+                            });
+                        }
+                        
+                        if (projectData.bpm) {
+                            bpm = projectData.bpm;
+                            document.getElementById('bpm').value = bpm;
+                        }
+                        
+                        stopSequence();
+                        renderTracks();
+                        renderEffects();
+                        
+                        alert('Проект успешно загружен!');
+                    } catch (error) {
+                        alert('Ошибка при загрузке проекта: ' + error.message);
+                    }
+                };
+                
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+        
+        // Экспорт композиции
+        function exportComposition() {
+            alert('Экспорт композиции в формате WAV. В реальном приложении здесь будет код для записи и экспорта аудио.');
+            // В реальном приложении здесь будет использоваться Web Audio API Recorder
+            // для записи вывода и создания WAV-файла
+        }
+		</script>
+</body>
+
+</html>

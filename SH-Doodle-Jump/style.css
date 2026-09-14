@@ -1,0 +1,273 @@
+/* Полный сброс стилей */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Основные стили для body и html */
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(to bottom, #87CEEB 0%, #E0F7FA 100%);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Контейнер игры */
+#game-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* Canvas */
+#gameCanvas {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    background: linear-gradient(to bottom, #87CEEB 0%, #E0F7FA 100%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+}
+
+/* Экраны (меню и game over) */
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #87CEEB 0%, #4FC3F7 100%);
+    z-index: 10;
+    padding: 20px;
+    transition: opacity 0.3s ease;
+}
+
+.screen.hidden {
+    display: none;
+    opacity: 0;
+}
+
+/* Заголовки */
+h1 {
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+    margin-bottom: 10px;
+    animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: #fff;
+    margin-bottom: 30px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Кнопки */
+.btn {
+    padding: 15px 40px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
+    border: none;
+    border-radius: 50px;
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 10px;
+    outline: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5);
+}
+
+.btn:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #4FC3F7 0%, #29B6F6 100%);
+    box-shadow: 0 6px 20px rgba(79, 195, 247, 0.4);
+}
+
+.btn-secondary:hover {
+    box-shadow: 0 8px 25px rgba(79, 195, 247, 0.5);
+}
+
+/* Счёт */
+.score-container {
+    margin: 30px 0;
+    text-align: center;
+}
+
+.final-score {
+    font-size: 2rem;
+    color: #fff;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.final-score span {
+    color: #FFD700;
+    font-size: 2.5rem;
+}
+
+.high-score-text, .high-score {
+    font-size: 1.3rem;
+    color: #fff;
+    margin: 10px 0;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.high-score span, .high-score-text span {
+    color: #FFD700;
+    font-weight: bold;
+}
+
+/* Счёт во время игры */
+#score-display {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px 25px;
+    border-radius: 25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 5;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+#score-display.hidden {
+    display: none;
+}
+
+#score-display span {
+    color: #FF6B6B;
+}
+
+/* Информация об управлении */
+.controls-info {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.controls-info p {
+    font-size: 1rem;
+    color: #fff;
+    margin: 5px 0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 600px) {
+    h1 {
+        font-size: 2.5rem;
+    }
+    
+    .subtitle {
+        font-size: 1rem;
+    }
+    
+    .btn {
+        padding: 12px 30px;
+        font-size: 1.1rem;
+    }
+    
+    .final-score {
+        font-size: 1.5rem;
+    }
+    
+    .final-score span {
+        font-size: 2rem;
+    }
+    
+    .high-score-text, .high-score {
+        font-size: 1.1rem;
+    }
+    
+    #score-display {
+        font-size: 1.2rem;
+        padding: 8px 20px;
+    }
+    
+    .controls-info p {
+        font-size: 0.9rem;
+    }
+}
+
+/* Ландшафтная ориентация */
+@media (orientation: landscape) and (max-height: 500px) {
+    h1 {
+        font-size: 2rem;
+        margin-bottom: 5px;
+    }
+    
+    .subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+    }
+    
+    .btn {
+        padding: 10px 25px;
+        font-size: 1rem;
+        margin: 5px;
+    }
+    
+    .score-container {
+        margin: 15px 0;
+    }
+    
+    .controls-info {
+        margin-top: 15px;
+    }
+}
+
+/* Анимация появления */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.screen:not(.hidden) {
+    animation: fadeIn 0.3s ease;
+}

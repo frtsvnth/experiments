@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Помоги Стасу нарисовать презентацию!</title>
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		}
+
+		body {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			min-height: 100vh;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			padding: 10px;
+			overflow: hidden;
+		}
+
+		.container {
+			width: 100%;
+			max-width: 1200px;
+			text-align: center;
+			height: 95vh;
+			display: flex;
+			flex-direction: column;
+		}
+
+		h1 {
+			color: white;
+			font-size: clamp(1.8em, 4vw, 2.5em);
+			margin-bottom: 10px;
+			text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+		}
+
+		.subtitle {
+			color: #f0f0f0;
+			font-size: clamp(0.9em, 2.5vw, 1.2em);
+			margin-bottom: 20px;
+			font-style: italic;
+		}
+
+		/* Стартовый экран */
+		#start-screen {
+			background: white;
+			border-radius: 15px; 
+			padding: 50px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+			margin-bottom: 50px;
+			flex: 0;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+		}
+
+		.start-button {
+			background: #4CAF50;
+			color: white;
+			border: none;
+			padding: 15px 40px;
+			font-size: 1.3em;
+			border-radius: 50px;
+			cursor: pointer;
+			margin-top: 20px;
+			transition: all 0.3s ease;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+		}
+
+		.start-button:hover {
+			background: #45a049;
+			transform: translateY(-2px);
+			box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+		}
+		
+		img {
+			  width: 100%; /* takes the 100 % width of its container (.box div)*/
+			  height: 100%; /* takes the 100 % height of its container (.box div)*/
+			}
+		/* Игровая область */
+		#game-screen {
+			display: none;
+			background: white;
+			border-radius: 15px;
+			padding: 15px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+			position: relative;
+			flex: 1;
+			overflow: hidden;
+		}
+
+		.game-area {
+			position: relative;
+			width: 100%;
+			height: 100%;
+			min-height: 500px;
+		}
+
+		.timer {
+			font-size: clamp(1.5em, 4vw, 2.5em);
+			font-weight: bold;
+			color: #333;
+			margin-bottom: 15px;
+			transition: color 0.3s ease;
+		}
+
+		.timer.warning {
+			color: #F44336;
+			animation: pulse 1s infinite;
+		}
+
+		@keyframes pulse {
+			0% {
+				transform: scale(1);
+			}
+
+			50% {
+				transform: scale(1.3);
+			}
+
+			100% {
+				transform: scale(1);
+			}
+		}
+
+		.slide-area {
+			width: 70%;
+			height: 60%;
+			max-width: 700px;
+			max-height: 400px;
+			border: 3px dashed #aaa;
+			border-radius: 10px;
+			margin: 0 auto 15px;
+			background: #f9f9f9;
+			position: relative;
+			transition: border-color 0.3s ease;
+		}
+
+		.slide-area.ready {
+			border-color: #4CAF50;
+			background: #f0f9f0;
+		}
+
+		/* Элементы для перетаскивания */
+		.draggable {
+			position: absolute;
+			cursor: grab;
+			user-select: none;
+			transition: transform 0.2s ease, box-shadow 0.2s ease;
+			max-width: 200px;
+			font-size: clamp(0.8em, 1.5vw, 1em);
+			transform: translate(0, 0);
+			/* Для плавного перемещения */
+		}
+
+		.draggable:active {
+			cursor: grabbing;
+			transform: scale(1.05);
+			box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+			z-index: 100;
+		}
+
+		.draggable.inside-slide {
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+		}
+
+		.title {
+			background: #2196F3;
+			color: white;
+			padding: 8px 12px;
+			border-radius: 5px;
+			font-weight: bold;
+		}
+
+		.list {
+			background: #FF9800;
+			color: white;
+			padding: 10px;
+			border-radius: 5px;
+			text-align: left;
+		}
+
+		.list ul {
+			margin-left: 15px;
+		}
+
+		.image {
+			width: 150px;
+			height: 90px;
+			background: linear-gradient(45deg, #1e3c72, #2a5298);
+			border-radius: 5px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: white;
+			font-weight: bold;
+			font-size: 0.9em;
+			text-align: center;
+			padding: 5px;
+		}
+
+		.chart {
+			width: 140px;
+			height: 80px;
+			background: #4CAF50;
+			border-radius: 5px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: white;
+			font-weight: bold;
+			position: relative;
+			overflow: hidden;
+		}
+
+		.chart::after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 70%;
+			height: 100%;
+			background: #388E3C;
+		}
+
+		.plans {
+			background: #9C27B0;
+			color: white;
+			padding: 8px 12px;
+			border-radius: 5px;
+		}
+
+		.stats {
+			background: #607D8B;
+			color: white;
+			padding: 8px 12px;
+			border-radius: 5px;
+			font-size: 0.9em;
+		}
+
+		.meme {
+			background: #e4e0e1;
+			color: #333;
+			padding: 8px;
+			border-radius: 5px;
+			font-size: 0.8em;
+			border: 2px dashed #443a3d;
+		}
+
+		.icon {
+			width: 50px;
+			height: 50px;
+			background: #FFFFE0;
+			border: 1px dashed #443a3d;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 1.2em;
+		}
+
+		/* Кнопка готово */
+		.done-button {
+			background: #2196F3;
+			color: white;
+			border: none;
+			padding: 10px 25px;
+			font-size: 1em;
+			border-radius: 5px;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			margin-top: 10px;
+		}
+
+		.done-button:hover {
+			background: #0b7dda;
+		}
+
+		.done-button.hidden {
+			opacity: 0.3;
+			cursor: not-allowed;
+		}
+
+		/* Экран результатов */
+		#result-screen {
+			display: none;
+			background: white;
+			border-radius: 15px;
+			padding: 30px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+		}
+
+		.result-message {
+			font-size: clamp(1.5em, 4vw, 2em);
+			margin-bottom: 20px;
+			font-weight: bold;
+		}
+
+		.success {
+			color: #4CAF50;
+		}
+
+		.fail {
+			color: #F44336;
+		}
+
+		.time-display {
+			font-size: clamp(1.2em, 3vw, 1.5em);
+			margin: 20px 0;
+			color: #333;
+		}
+
+		.restart-button {
+			background: #FF9800;
+			color: white;
+			border: none;
+			padding: 12px 30px;
+			font-size: 1.1em;
+			border-radius: 5px;
+			cursor: pointer;
+			transition: all 0.3s ease;
+			margin-top: 20px;
+		}
+
+		.restart-button:hover {
+			background: #F57C00;
+		}
+
+		/* Адаптивность для мобильных устройств */
+		@media (max-width: 768px) {
+			body {
+				padding: 5px;
+			}
+
+			#start-screen,
+			#game-screen,
+			#result-screen {
+				padding: 20px 15px;
+			}
+
+			.slide-area {
+				width: 90%;
+				height: 50%;
+			}
+
+			.draggable {
+				max-width: 150px;
+			}
+
+			.image,
+			.chart {
+				width: 120px;
+				height: 70px;
+				font-size: 0.8em;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<h1>Помоги Стасу нарисовать презентацию!</h1>
+		<p class="subtitle">Время ревью поджимает! Быстро собери слайд, пока все ждут</p>
+
+		<!-- Стартовый экран -->
+		<div id="start-screen">
+			<p>Стас снова не может найти кнопку "Показать презентацию"!<br>
+            За то время, что он ее ищет, нужно успеть собрать слайд.</p>
+				<p>Перетащи 5 элементов на слайд и нажми "Готово!"</p>
+				<p><strong>Внимание!</strong> Некоторые элементы могут испортить презентацию!</p>
+				<button class="start-button" onclick="startGame()">Начать спринт-ревью!</button>
+		</div>
+
+		<!-- Игровой экран -->
+		<div id="game-screen">
+			<div class="game-area">
+				<div class="timer" id="timer">15.00</div>
+
+				<div class="slide-area" id="slide-area">
+					<!-- Слайд будет здесь -->
+				</div>
+
+				<!-- Элементы для перетаскивания -->
+				<div class="draggable title" id="element1">
+					Спринт 666 • Итоги спринта
+				</div>
+
+				<div class="draggable list" id="element2">
+					Что сделали:
+          <ul>
+            <li>Пофиксили баг с API</li>
+						<li>Доделали фичу поиска</li>
+			      <li>Оптимизировали запросы</li>
+					</ul>
+				</div>
+
+				<div class="draggable image" id="element3">
+					<img src="interface.png" object-fit: contain>
+				</div>
+
+				<div class="draggable chart" id="element4">
+					Прогресс!!!!!!!!!!!!!!
+				</div>
+
+				<div class="draggable plans" id="element5">
+					В следующем спринте: Новые фичи!
+				</div>
+
+				<div class="draggable stats" id="element6">
+					Статистика пилота: +15% пользователей, дефектов нет 
+				</div>
+
+				<div class="draggable meme" id="element7">
+					Фото моей собаки
+					<br>
+					<p><img src="dog-photo.png" object-fit: contain></p>
+				</div>
+
+				<div class="draggable icon" id="element8">
+					💩
+				</div>
+
+				<button class="done-button hidden" id="done-button" onclick="finishGame()">Готово! (Показать презентацию)</button>
+			</div>
+		</div>
+
+		<!-- Экран результатов -->
+		<div id="result-screen" hidden>
+			<div class="result-message" id="result-message"></div>
+			<div class="time-display" id="time-display"></div>
+			<div id="result-text"></div>
+			<button class="restart-button" onclick="restartGame()">Попробовать снова</button>
+		</div>
+	</div>
+
+	<script>
+		// Переменные игры
+        let timeLeft = 15.00;
+        let timerInterval;
+        let draggedElement = null;
+        let gameActive = false;
+		    document.getElementById('result-screen').style.display = 'none';
+        
+        // Основные элементы (id)
+        const goodElements = ['element1', 'element2', 'element3', 'element4', 'element5', 'element6'];
+        const badElements = ['element7', 'element8'];
+        const allElements = [...goodElements, ...badElements];
+        
+        // Начать игру
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            document.getElementById('result-screen').style.display = 'none';
+            
+            // Сброс позиций элементов
+            resetElements();
+            
+            // Запуск таймера
+            timeLeft = 20.00;
+            document.getElementById('timer').textContent = timeLeft.toFixed(2);
+            document.getElementById('timer').classList.remove('warning');
+            gameActive = true;
+            
+            timerInterval = setInterval(updateTimer, 10);
+            
+            // Деактивируем кнопку "Готово" до выполнения условий
+            document.getElementById('done-button').classList.add('hidden');
+        }
+        
+        // Обновление таймера
+        function updateTimer() {
+            if (!gameActive) return;
+            
+            timeLeft -= 0.01;
+            
+            if (timeLeft <= 0) {
+                timeLeft = 0;
+                clearInterval(timerInterval);
+                showTimeUpScreen();
+                return;
+            }
+            
+            document.getElementById('timer').textContent = timeLeft.toFixed(2);
+            
+            // Меняем цвет таймера когда остается 5 секунд
+            if (timeLeft <= 5) {
+                document.getElementById('timer').classList.add('warning');
+            }
+        }
+        
+        // Показать экран "Время вышло"
+        function showTimeUpScreen() {
+            gameActive = false;
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            
+            document.getElementById('result-message').textContent = 'Время вышло!';
+            document.getElementById('result-message').className = 'result-message fail';
+            document.getElementById('time-display').textContent = '';
+            document.getElementById('result-text').textContent = 'Стас не успел подготовить презентацию. Все ушли на кофе-брейк.';
+        }
+        
+        // Сброс позиций элементов
+        function resetElements() {
+            // Получаем размеры игровой области
+            const gameArea = document.querySelector('.game-area');
+            const gameRect = gameArea.getBoundingClientRect();
+            
+            // Располагаем элементы вокруг слайда
+            const positions = [
+                { top: '10%', left: '5%' },     // element1
+                { top: '70%', left: '5%' },     // element2
+                { top: '10%', left: '85%' },    // element3
+                { top: '70%', left: '85%' },    // element4
+                { top: '40%', left: '5%' },     // element5
+                { top: '40%', left: '85%' },    // element6
+                { top: '80%', left: '8%' },    // element7
+                { top: '15%', left: '45%' }     // element8
+            ];
+            
+            allElements.forEach((id, index) => {
+                const element = document.getElementById(id);
+                element.style.top = positions[index].top;
+                element.style.left = positions[index].left;
+                element.classList.remove('inside-slide');
+            });
+        }
+        
+        // Завершить игру
+        function finishGame() {
+            if (!gameActive) return;
+            
+            clearInterval(timerInterval);
+            gameActive = false;
+            
+            // Проверяем условия победы
+            const result = checkGameResult();
+            
+            // Показываем экран результатов
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            
+            document.getElementById('time-display').textContent = `Осталось времени: ${timeLeft.toFixed(2)} секунд`;
+            
+            if (result.success) {
+                document.getElementById('result-message').textContent = 'Успех! Презентация готова!';
+                document.getElementById('result-message').className = 'result-message success';
+                document.getElementById('result-text').textContent = result.message;
+            } else {
+                document.getElementById('result-message').textContent = 'Провал!';
+                document.getElementById('result-message').className = 'result-message fail';
+                document.getElementById('result-text').textContent = result.message;
+            }
+        }
+        
+        // Проверка условий игры
+        function checkGameResult() {
+            const slideRect = document.getElementById('slide-area').getBoundingClientRect();
+            
+            // Проверяем плохие элементы
+            for (const elementId of badElements) {
+                const element = document.getElementById(elementId);
+                const elementRect = element.getBoundingClientRect();
+                
+                if (isElementInsideSlide(elementRect, slideRect)) {
+                    if (elementId === 'element7') {
+                        return {
+                            success: false,
+                            message: 'Вы показали фото собаки вместо скриншота интерфейса! Презентация провалена.'
+                        };
+                    } else if (elementId === 'element8') {
+                        return {
+                            success: false,
+                            message: 'Вы оставили на слайде неподходящее послание! Презентация провалена.'
+                        };
+                    }
+                }
+            }
+            
+            // Считаем общее количество элементов на слайде
+            let elementsOnSlide = 0;
+            for (const elementId of allElements) {
+                const element = document.getElementById(elementId);
+                const elementRect = element.getBoundingClientRect();
+                
+                if (isElementInsideSlide(elementRect, slideRect)) {
+                    elementsOnSlide++;
+                }
+            }
+            
+            // Проверяем условие победы (5 любых элементов)
+            if (elementsOnSlide >= 5) {
+                const successMessages = [
+                    "Стас гордится тобой!",
+                    "Команда впечатлена!",
+                    "Коллеги в восторге!",
+                    "Ты спас выступление!"
+                ];
+                const randomMessage = successMessages[Math.floor(Math.random() * successMessages.length)];
+                
+                return {
+                    success: true,
+                    message: randomMessage
+                };
+            } else {
+                return {
+                    success: false,
+                    message: `На слайде только ${elementsOnSlide} из 5 необходимых элементов. Презентация не готова.`
+                };
+            }
+        }
+        
+        // Проверка, находится ли элемент внутри слайда
+        function isElementInsideSlide(elementRect, slideRect) {
+            return (
+                elementRect.left >= slideRect.left &&
+                elementRect.right <= slideRect.right &&
+                elementRect.top >= slideRect.top &&
+                elementRect.bottom <= slideRect.bottom
+            ); 
+        }
+        
+        // Перезапуск игры
+        function restartGame() {
+            startGame();
+        }
+        
+        // Drag and Drop логика
+        document.addEventListener('DOMContentLoaded', function() {
+            // Добавляем обработчики событий для всех перетаскиваемых элементов
+            allElements.forEach(id => {
+                const element = document.getElementById(id);
+                
+                element.addEventListener('mousedown', function(e) {
+                    if (!gameActive) return; 
+                    
+                    draggedElement = element;
+                    
+                    // Вычисляем смещение относительно центра элемента
+                    const elementRect = element.getBoundingClientRect();
+                    offsetX = e.clientX - elementRect.left;
+                    offsetY = e.clientY - elementRect.top;
+                    
+                    element.style.zIndex = '1000';
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                    
+                    // Предотвращаем выделение текста при перетаскивании
+                    e.preventDefault();
+                });
+                
+                // Для мобильных устройств
+                element.addEventListener('touchstart', function(e) {
+                    if (!gameActive) return;
+                    
+                    e.preventDefault();
+                    draggedElement = element;
+                    const touch = e.touches[0];
+                    
+                    const elementRect = element.getBoundingClientRect();
+                    offsetX = touch.clientX - elementRect.left;
+                    offsetY = touch.clientY - elementRect.top;
+                    
+                    element.style.zIndex = '1000';
+                    document.addEventListener('touchmove', onTouchMove);
+                    document.addEventListener('touchend', onTouchEnd);
+                });
+            });
+            
+            function onMouseMove(e) {
+                if (!draggedElement || !gameActive) return;
+                
+                // Получаем позицию игровой области
+                const gameArea = document.querySelector('.game-area');
+                const gameRect = gameArea.getBoundingClientRect();
+                
+                // Вычисляем новые координаты с учетом смещения
+                const x = e.clientX - gameRect.left - offsetX;
+                const y = e.clientY - gameRect.top - offsetY;
+                
+                // Устанавливаем новые координаты
+                draggedElement.style.left = x + 'px';
+                draggedElement.style.top = y + 'px';
+                
+                updateGameState();
+            }
+            
+            function onTouchMove(e) {
+                if (!draggedElement || !gameActive) return;
+                
+                const touch = e.touches[0];
+                const gameArea = document.querySelector('.game-area');
+                const gameRect = gameArea.getBoundingClientRect();
+                
+                const x = touch.clientX - gameRect.left - offsetX;
+                const y = touch.clientY - gameRect.top - offsetY;
+                
+                draggedElement.style.left = x + 'px';
+                draggedElement.style.top = y + 'px';
+                
+                updateGameState();
+            }
+            
+            function updateGameState() {
+                // Проверяем, находится ли элемент внутри слайда
+                const slideRect = document.getElementById('slide-area').getBoundingClientRect();
+                const elementRect = draggedElement.getBoundingClientRect();
+                
+                if (isElementInsideSlide(elementRect, slideRect)) {
+                    draggedElement.classList.add('inside-slide');
+                } else {
+                    draggedElement.classList.remove('inside-slide');
+                }
+                
+                // Проверяем, можно ли активировать кнопку "Готово"
+                // (активируем когда есть хотя бы 5 элементов на слайде)
+                const slideRectForCheck = document.getElementById('slide-area').getBoundingClientRect();
+                let elementsOnSlide = 0;
+                
+                for (const elementId of allElements) {
+                    const element = document.getElementById(elementId);
+                    const rect = element.getBoundingClientRect();
+                    
+                    if (isElementInsideSlide(rect, slideRectForCheck)) {
+                        elementsOnSlide++;
+                    }
+                }
+                
+                const doneButton = document.getElementById('done-button');
+                
+                if (elementsOnSlide >= 5) {
+                    doneButton.classList.remove('hidden');
+                    document.getElementById('slide-area').classList.add('ready');
+                } else {
+                    doneButton.classList.add('hidden');
+                    document.getElementById('slide-area').classList.remove('ready');
+                }
+            }
+            
+            function onMouseUp() {
+                if (draggedElement) {
+                    draggedElement.style.zIndex = '';
+                    draggedElement = null;
+                }
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+            
+            function onTouchEnd() {
+                if (draggedElement) {
+                    draggedElement.style.zIndex = '';
+                    draggedElement = null;
+                }
+                document.removeEventListener('touchmove', onTouchMove);
+                document.removeEventListener('touchend', onTouchEnd);
+            }
+            
+            // Инициализация начального расположения элементов
+            resetElements();
+        });
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "tap-stack-icon-generator",
+  "version": "1.0.0",
+  "description": "Icon generator for Tap & Stack game",
+  "main": "generate-icons.js",
+  "scripts": {
+    "generate": "node generate-icons.js"
+  },
+  "dependencies": {
+    "canvas": "^2.11.2"
+  }
+}

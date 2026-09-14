@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>HTML → Markdown (только чтение)</title>
+
+	<!-- Подключаем Turndown (HTML→Markdown), marked (Markdown→HTML) и DOMPurify -->
+	<script src="https://cdn.jsdelivr.net/npm/turndown@7.1.1/dist/turndown.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
+
+	<style>
+		:root {
+			--bg: #0f1724;
+			--accent: #7c3aed;
+			--muted: #9aa4b2;
+			--glass: rgba(255, 255, 255, 0.03);
+		}
+
+		* {
+			box-sizing: border-box
+		}
+
+		body {
+			margin: 0;
+			font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto;
+			background: linear-gradient(180deg, #071024 0%, #08111a 100%);
+			color: #e6eef6;
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 28px;
+		}
+
+		.wrap {
+			width: 100%;
+			max-width: 1100px;
+			background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+			border-radius: 12px;
+			padding: 20px;
+			box-shadow: 0 10px 30px rgba(2, 6, 23, 0.7);
+			border: 1px solid rgba(255, 255, 255, 0.03);
+		}
+
+		header {
+			display: flex;
+			gap: 12px;
+			align-items: center;
+			margin-bottom: 14px;
+		}
+
+		h1 {
+			font-size: 18px;
+			margin: 0 8px 0 0
+		}
+
+		p.lead {
+			margin: 0;
+			color: var(--muted);
+			font-size: 13px
+		}
+
+		.controls {
+			display: flex;
+			gap: 8px;
+			margin: 12px 0 14px 0;
+			align-items: center;
+		}
+
+		input[type="url"] {
+			flex: 1;
+			padding: 10px 12px;
+			border-radius: 8px;
+			border: 1px solid rgba(255, 255, 255, 0.04);
+			background: var(--glass);
+			color: inherit;
+			outline: none;
+			font-size: 14px;
+		}
+
+		button {
+			padding: 10px 14px;
+			border-radius: 8px;
+			border: none;
+			background: linear-gradient(90deg, var(--accent), #5b21b6);
+			color: white;
+			cursor: pointer;
+			font-weight: 600;
+			box-shadow: 0 6px 18px rgba(124, 58, 237, 0.14);
+			transition: transform .12s ease;
+		}
+
+		button:active {
+			transform: translateY(1px)
+		}
+
+		.small {
+			padding: 8px 10px;
+			font-size: 13px;
+			background: transparent;
+			border: 1px solid rgba(255, 255, 255, 0.04);
+			color: var(--muted);
+		}
+
+		.cols {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 12px;
+		}
+
+		.panel {
+			background: rgba(255, 255, 255, 0.02);
+			border-radius: 10px;
+			padding: 12px;
+			min-height: 360px;
+			overflow: auto;
+			border: 1px solid rgba(255, 255, 255, 0.02);
+		}
+
+		label.block {
+			display: block;
+			font-size: 12px;
+			color: var(--muted);
+			margin-bottom: 8px
+		}
+
+		textarea.readonly {
+			width: 100%;
+			min-height: 300px;
+			resize: vertical;
+			background: transparent;
+			color: inherit;
+			border: none;
+			outline: none;
+			font-family: ui-monospace, Menlo, Monaco, "Roboto Mono", monospace;
+			font-size: 13px;
+			white-space: pre-wrap;
+		}
+
+		.status {
+			margin-top: 10px;
+			font-size: 13px;
+			color: var(--muted);
+		}
+
+		.hint {
+			font-size: 12px;
+			color: var(--muted);
+			margin-top: 8px;
+		}
+
+		@media(max-width:900px) {
+			.cols {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		.preview h1,
+		.preview h2,
+		.preview h3 {
+			color: #e6eef6;
+		}
+
+		.preview p {
+			color: #d8e6f5;
+			line-height: 1.5
+		}
+
+		.preview pre,
+		.preview code {
+			background: rgba(255, 255, 255, 0.03);
+			padding: 6px;
+			border-radius: 6px;
+			font-family: monospace;
+			font-size: 13px;
+			display: block;
+			overflow: auto;
+			color: #dff;
+		}
+
+		.preview a {
+			color: #9bd0ff;
+			text-decoration: underline;
+		}
+
+		.copy-notice {
+			opacity: 0;
+			transition: opacity .3s ease;
+			position: absolute;
+			top: -26px;
+			right: 12px;
+			font-size: 12px;
+			color: #9effc3;
+		}
+
+		.copy-notice.show {
+			opacity: 1;
+		}
+
+		.copy-wrap {
+			position: relative;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="wrap" role="main">
+		<header>
+			<h1>HTML → Markdown (только чтение)</h1>
+			<p class="lead">Вставьте ссылку, нажмите «Загрузить» — содержимое страницы сконвертируется в markdown.</p>
+		</header>
+
+		<div class="controls">
+			<input id="urlInput" type="url" placeholder="https://example.com/article.html">
+			<button id="fetchBtn">Загрузить</button>
+			<button id="proxyBtn" class="small">Использовать прокси</button>
+			<button id="previewToggle" class="small">Показать превью</button>
+		</div>
+
+		<div class="cols">
+			<div class="panel">
+				<div class="copy-wrap">
+					<label class="block">Markdown (только для чтения)</label>
+					<button id="copyBtn" class="small" style="position:absolute;top:-6px;right:0;">📋 Копировать Markdown</button>
+					<div id="copyNotice" class="copy-notice">Скопировано!</div>
+				</div>
+				<textarea id="mdOutput" class="readonly" readonly placeholder="Здесь появится markdown..."></textarea>
+				<div id="status" class="status">Готов</div>
+				<div class="hint">
+					Если запрос заблокирован CORS — включите «Использовать прокси» и попробуйте снова.
+				</div>
+			</div>
+
+			<div class="panel">
+				<label class="block">Превью (безопасно от XSS)</label>
+				<div id="preview" class="preview" style="min-height:300px">Превью скрыто. Нажмите «Показать превью».
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		(async ()=>{
+  const urlInput = document.getElementById('urlInput');
+  const fetchBtn = document.getElementById('fetchBtn');
+  const proxyBtn = document.getElementById('proxyBtn');
+  const mdOutput = document.getElementById('mdOutput');
+  const status = document.getElementById('status');
+  const preview = document.getElementById('preview');
+  const previewToggle = document.getElementById('previewToggle');
+  const copyBtn = document.getElementById('copyBtn');
+  const copyNotice = document.getElementById('copyNotice');
+
+  const turndownService = new TurndownService({headingStyle:'atx',codeBlockStyle:'fenced'});
+  turndownService.addRule('imgPreserveAlt',{
+    filter:'img',
+    replacement:(content,node)=>{
+      const src=node.getAttribute('src')||'';
+      const alt=node.getAttribute('alt')||'';
+      return `![${alt}](${src})`;
+    }
+  });
+
+  let useProxy=false;
+  let previewVisible=false;
+
+  proxyBtn.addEventListener('click',()=>{
+    useProxy=!useProxy;
+    proxyBtn.style.borderColor=useProxy?'rgba(124,58,237,0.6)':'rgba(255,255,255,0.04)';
+    proxyBtn.style.color=useProxy?'#fff':'var(--muted)';
+    proxyBtn.textContent=useProxy?'Прокси: Вкл':'Использовать прокси';
+  });
+
+  previewToggle.addEventListener('click',()=>{
+    previewVisible=!previewVisible;
+    previewToggle.textContent=previewVisible?'Скрыть превью':'Показать превью';
+    preview.style.display=previewVisible?'block':'none';
+    if(previewVisible) renderPreview();
+  });
+
+  async function fetchHtml(rawUrl){
+    let url;
+    try{ url=new URL(rawUrl); }catch{ url=new URL('http://'+rawUrl); }
+    let finalUrl=url.toString();
+    if(useProxy){
+      finalUrl='https://api.allorigins.win/raw?url='+encodeURIComponent(finalUrl);
+    }
+    const r=await fetch(finalUrl);
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.text();
+  }
+
+  fetchBtn.addEventListener('click',async()=>{
+    const u=urlInput.value.trim();
+    mdOutput.value='';
+    preview.innerHTML='';
+    status.textContent='Загрузка...';
+    try{
+      const html=await fetchHtml(u);
+      const doc=new DOMParser().parseFromString(html,'text/html');
+      let main=doc.querySelector('article, main, #content')||doc.body;
+      const clone=main.cloneNode(true);
+      clone.querySelectorAll('script,style,noscript,iframe,link[rel="import"]').forEach(n=>n.remove());
+      clone.querySelectorAll('nav,footer,header,.nav,.sidebar').forEach(n=>n.remove());
+      const markdown=turndownService.turndown(clone.innerHTML);
+      mdOutput.value=markdown;
+      status.textContent='Готов — markdown сгенерирован';
+      if(previewVisible) renderPreview();
+    }catch(e){
+      console.error(e);
+      status.textContent='Ошибка: '+(e.message||e);
+    }
+  });
+
+  function renderPreview(){
+    try{
+      const unsafe=marked.parse(mdOutput.value);
+      preview.innerHTML=DOMPurify.sanitize(unsafe);
+    }catch{ preview.innerHTML='<pre>Ошибка превью</pre>'; }
+  }
+
+  // 🔹 Кнопка "Копировать"
+  copyBtn.addEventListener('click',async()=>{
+    try{
+      await navigator.clipboard.writeText(mdOutput.value);
+      copyNotice.classList.add('show');
+      setTimeout(()=>copyNotice.classList.remove('show'),1200);
+    }catch(e){
+      alert('Не удалось скопировать: '+e.message);
+    }
+  });
+
+  urlInput.addEventListener('keydown',e=>{
+    if((e.ctrlKey||e.metaKey)&&e.key==='Enter') fetchBtn.click();
+  });
+})();
+	</script>
+</body>
+
+</html>
