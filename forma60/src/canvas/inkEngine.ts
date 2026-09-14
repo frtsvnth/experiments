@@ -12,6 +12,26 @@ export const DEFAULT_INK_THEME: InkTheme = {
   gridStrong: 'rgba(62, 224, 200, 0.18)',
 };
 
+/** Тот же след, но для печати: белая бумага, тёмные чернила. */
+export const PRINT_INK_THEME: InkTheme = {
+  background: '#FFFFFF',
+  grid: 'rgba(31, 41, 51, 0.10)',
+  gridStrong: 'rgba(31, 41, 51, 0.22)',
+};
+
+const PRINT_INK_COLORS: Record<string, string> = {
+  '#D7FBF4': '#1F2933',
+  '#E4C56A': '#8A6D12',
+  '#7B6CFF': '#3B3AA0',
+};
+
+export function toPrintStrokes(strokes: Stroke[]): Stroke[] {
+  return strokes.map((stroke) => ({
+    ...stroke,
+    color: PRINT_INK_COLORS[stroke.color.toUpperCase()] ?? '#1F2933',
+  }));
+}
+
 export function paintGrid(
   ctx: CanvasRenderingContext2D,
   size: number,

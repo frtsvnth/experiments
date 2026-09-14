@@ -132,6 +132,12 @@ describe('interpretation', () => {
       'депресс',
       'тревожн',
       'расстройств',
+      'читается',
+      'почерк',
+      'маска',
+      'контур',
+      'нервная',
+      'метафор',
     ];
     for (const word of forbidden) {
       expect(haystack).not.toContain(word);

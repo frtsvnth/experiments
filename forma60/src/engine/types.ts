@@ -174,6 +174,7 @@ export type DayContext = {
   weekday: number;
   weekdayName: string;
   weekdayGenitive: string;
+  weekdayInPhrase: string;
   isWeekend: boolean;
   location: LocationSnapshot | null;
   weather: WeatherSnapshot | null;
