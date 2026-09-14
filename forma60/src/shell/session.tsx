@@ -127,19 +127,19 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const statusText = useMemo(() => {
     switch (stage) {
       case 'splash':
-        return 'ГОТОВ';
+        return 'ГОТОВО';
       case 'intake':
-        return 'АНКЕТА';
+        return 'ЗНАКОМСТВО';
       case 'briefing':
-        return 'ПОДГОТОВКА';
+        return 'ИНСТРУКЦИЯ';
       case 'draw':
         return `РИСУНОК ${formatDraw(drawElapsedMs)}`;
       case 'processing':
-        return 'СРЕЗ';
+        return 'АНАЛИЗ';
       case 'result':
-        return 'ФОРМА ГОТОВА';
+        return 'РАЗБОР ГОТОВ';
       default:
-        return 'ГОТОВ';
+        return 'ГОТОВО';
     }
   }, [stage, drawElapsedMs]);
 

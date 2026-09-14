@@ -9,7 +9,7 @@ export function TitleBar() {
       resetSession();
       return;
     }
-    const confirmed = window.confirm('Начать сеанс заново? Имя, дата и рисунок будут сброшены.');
+    const confirmed = window.confirm('Начать заново? Имя, дата и рисунок будут удалены.');
     if (confirmed) resetSession();
   };
 
@@ -21,13 +21,13 @@ export function TitleBar() {
         <span className="titlebar-dot-sep" aria-hidden="true">
           ·
         </span>
-        <span className="titlebar-sub">СЕАНС</span>
+        <span className="titlebar-sub">РАЗБОР</span>
         <button
           type="button"
           className="titlebar-about"
           onClick={() => setAboutOpen(true)}
         >
-          О продукте
+          О проекте
         </button>
       </div>
       <div className="titlebar-right">
@@ -39,8 +39,8 @@ export function TitleBar() {
             type="button"
             className="titlebar-dot titlebar-dot-red"
             onClick={handleReset}
-            aria-label="Сбросить сеанс"
-            title="Сбросить сеанс"
+            aria-label="Начать заново"
+            title="Начать заново"
           />
         </div>
       </div>

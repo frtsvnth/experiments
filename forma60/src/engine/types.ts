@@ -14,9 +14,9 @@ export type Stroke = {
 export type InkId = 'phosphor' | 'gold' | 'violet';
 
 export const INKS: { id: InkId; color: string; label: string }[] = [
-  { id: 'phosphor', color: '#D7FBF4', label: 'Фосфор' },
-  { id: 'gold', color: '#E4C56A', label: 'Золото' },
-  { id: 'violet', color: '#7B6CFF', label: 'Фиолет' },
+  { id: 'phosphor', color: '#D7FBF4', label: 'Светлый' },
+  { id: 'gold', color: '#E4C56A', label: 'Золотой' },
+  { id: 'violet', color: '#7B6CFF', label: 'Фиолетовый' },
 ];
 
 export type Zone =

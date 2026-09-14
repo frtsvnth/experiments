@@ -100,7 +100,7 @@ export async function buildFormDocument(input: PdfInput, options: PdfOptions = {
   const dateLine = `${String(day.date.getDate()).padStart(2, '0')}.${String(day.date.getMonth() + 1).padStart(2, '0')}.${day.date.getFullYear()} · ${day.weekdayName}${age !== null ? ` · ${age} лет` : ''}`;
   doc.text(dateLine, x + 22, 33.5);
   setMono(doc, 7.4, C.gold);
-  doc.text('ФОРМА 60 · ЭКСПРЕСС-СРЕЗ ЛИЧНОСТИ НА ДЕНЬ', PAGE.width - PAGE.margin, 33.5, { align: 'right' });
+  doc.text('ФОРМА 60 · РАЗБОР ЛИЧНОСТИ ПО РИСУНКУ', PAGE.width - PAGE.margin, 33.5, { align: 'right' });
   setMono(doc, 7, C.faint);
   doc.text(profile.number, PAGE.width - PAGE.margin, 28, { align: 'right' });
   drawRule(doc, x, 37.5, contentWidth, C.lineStrong);
@@ -114,7 +114,7 @@ export async function buildFormDocument(input: PdfInput, options: PdfOptions = {
     drawingSize,
   );
   setMono(doc, 6, C.faint);
-  doc.text('СЛЕД СЕАНСА · 60 СЕКУНД', x, 42 + drawingSize + 4);
+  doc.text('РИСУНОК · 60 СЕКУНД', x, 42 + drawingSize + 4);
 
   const rightX = x + drawingSize + 7;
   const rightWidth = contentWidth - drawingSize - 7;
@@ -133,7 +133,7 @@ export async function buildFormDocument(input: PdfInput, options: PdfOptions = {
     setBody(doc, 7.6, C.ink);
     const todayLines = doc.splitTextToSize(insight.today, contentWidth - 8) as string[];
     setBody(doc, 6.8, C.gold);
-    const stingLines = doc.splitTextToSize(`Цена, если не заметить: ${insight.sting}`, contentWidth - 8) as string[];
+    const stingLines = doc.splitTextToSize(`Если не заметить: ${insight.sting}`, contentWidth - 8) as string[];
 
     const claimStep = lineHeight(9.4, 1.35);
     const becauseStep = lineHeight(6.8, 1.35);
@@ -160,7 +160,7 @@ export async function buildFormDocument(input: PdfInput, options: PdfOptions = {
     cursor = paragraph(doc, insight.claim, x + 4, cursor, contentWidth - 8, 9.4, C.ink, true, 1.35) + 1.2;
     cursor = paragraph(doc, insight.because, x + 4, cursor, contentWidth - 8, 6.8, C.faint, false, 1.35) + 1.6;
     cursor = paragraph(doc, insight.today, x + 4, cursor, contentWidth - 8, 7.6, C.ink, false, 1.35) + 1.6;
-    paragraph(doc, `Цена, если не заметить: ${insight.sting}`, x + 4, cursor, contentWidth - 8, 6.8, C.gold, false, 1.35);
+    paragraph(doc, `Если не заметить: ${insight.sting}`, x + 4, cursor, contentWidth - 8, 6.8, C.gold, false, 1.35);
 
     y += height + 2.5;
   }
@@ -264,7 +264,7 @@ export async function buildFormDocument(input: PdfInput, options: PdfOptions = {
   doc.text('Как это считается', x, y);
   y += 4;
   const method = [
-    'След превращается в набор точек: где была рука, в какой момент и с каким нажимом.',
+    'Рисунок превращается в набор точек: где была рука, в какой момент и с каким нажимом.',
     'Считаются длина линии, число штрихов, скорость и её перепады, паузы, повороты, занятое место и совпадение с клеткой.',
     'Отдельно считаются ровность, место старта и финиша, число использованных чернил.',
     'Пять показателей выводятся из этих величин по постоянным правилам.',
@@ -298,7 +298,7 @@ export async function buildFormDocument(input: PdfInput, options: PdfOptions = {
   doc.setLineWidth(0.3);
   doc.roundedRect(x - 1, stampY - 4.5, 58, 7, 1.5, 1.5, 'S');
   setDisplay(doc, 11, C.gold);
-  doc.text('Ф60 · локальный срез', x + 2, stampY);
+  doc.text('Ф60 · разбор по рисунку', x + 2, stampY);
   bottoms.push(stampY);
 
   if (options.strict) {

@@ -79,11 +79,11 @@ export function Draw() {
           <span className={`draw-seconds ${strokes.length > 0 ? 'is-recording' : ''}`}>{secondsLeft}</span>
         </div>
         <div className="draw-status">
-          <p className="screen-step">ШАГ 3 ИЗ 3 · РИСУНОК</p>
+          <p className="screen-step">ШАГ 3 ИЗ 3 · ВЫ РИСУЕТЕ</p>
           <p className="draw-hint">
             {strokes.length === 0
-              ? 'Ведите линию или оставьте клетку пустой — оба варианта принимаются.'
-              : `Ходов: ${strokes.length}. Можно завершить, когда след достаточно честный.`}
+              ? 'Рисуйте линию. Если не хочется — оставьте лист пустым, это тоже результат.'
+              : `Штрихов: ${strokes.length}. Можно закончить, когда посчитаете нужным.`}
           </p>
         </div>
       </div>
@@ -100,7 +100,7 @@ export function Draw() {
       </div>
 
       <div className="draw-toolbar">
-        <div className="ink-picker" role="group" aria-label="Чернила">
+        <div className="ink-picker" role="group" aria-label="Цвет линии">
           {INKS.map((entry) => (
             <button
               key={entry.id}
@@ -115,14 +115,20 @@ export function Draw() {
         </div>
         <div className="draw-tools">
           <button type="button" className="btn btn-ghost btn-compact" disabled={!canUndo} onClick={handleUndo}>
-            Отменить ход
+            Отменить
           </button>
-          <button type="button" className="btn btn-ghost btn-compact" disabled={!canClear} onClick={handleClear}>
-            {canClear ? 'Очистить' : 'Очистить (8с)'}
+          <button
+            type="button"
+            className="btn btn-ghost btn-compact"
+            disabled={!canClear}
+            onClick={handleClear}
+            title={canClear ? 'Убрать все линии' : 'Стереть можно только в первые 8 секунд'}
+          >
+            Стереть всё
           </button>
         </div>
         <button type="button" className="btn btn-primary" disabled={!canFinish} onClick={finish}>
-          {canFinish ? 'Завершить и собрать форму' : 'Завершить через 8с'}
+          {canFinish ? 'Закончить и получить разбор' : 'Подождите 8 секунд'}
         </button>
       </div>
     </section>

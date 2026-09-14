@@ -456,6 +456,14 @@ button.titlebar-dot {
   letter-spacing: 0.02em;
 }
 
+.splash-lead {
+  margin: 16px 0 0;
+  max-width: 520px;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
 .splash-slogan {
   margin: 12px 0 0;
   font-family: var(--font-display);
@@ -1576,6 +1584,27 @@ button.titlebar-dot {
 @media (max-width: 720px) {
   .stage {
     padding: 0;
+  }
+  .screen-splash {
+    overflow-y: auto;
+    padding: 22px 18px;
+  }
+  .splash-stamp img {
+    width: 68px;
+    height: 68px;
+  }
+  .splash-title {
+    font-size: clamp(38px, 13vw, 56px);
+  }
+  .splash-lead {
+    font-size: 15px;
+  }
+  .splash-slogan {
+    font-size: 19px;
+  }
+  .splash-note {
+    font-size: 11px;
+    margin-top: 16px;
   }
   .app-window {
     width: 100%;

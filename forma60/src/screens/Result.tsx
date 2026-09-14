@@ -6,7 +6,7 @@ import { localDayContext } from '../engine/dayContext';
 import { buildFormPdf, pdfFileName } from '../pdf/buildFormPdf';
 import { useSession } from '../shell/session';
 
-const SHEETS = ['Срез', 'Личность', 'Почему сегодня'];
+const SHEETS = ['Разбор', 'О вас', 'Почему сегодня'];
 
 export function Result() {
   const { profile, strokes, canvasSize, dayContext, birth, participantName, age, resetSession } =
@@ -48,7 +48,7 @@ export function Result() {
       link.click();
       link.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 4000);
-      setStatus('Бланк сохранён в загрузки.');
+      setStatus('PDF сохранён в загрузки.');
     } catch {
       setStatus('Не удалось собрать PDF. Попробуйте ещё раз.');
     } finally {
@@ -69,9 +69,9 @@ export function Result() {
         await nav.share({
           files: [file],
           title: 'ФОРМА 60',
-          text: 'Мой срез на сегодня. Файл готов вложить в письмо или чат.',
+          text: 'Мой разбор на сегодня.',
         });
-        setStatus('Файл готов вложить в письмо или чат.');
+        setStatus('PDF готов — можно отправить.');
       } else {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -81,11 +81,11 @@ export function Result() {
         link.click();
         link.remove();
         window.setTimeout(() => URL.revokeObjectURL(url), 4000);
-        setStatus('Системный обмен недоступен — бланк сохранён в загрузки.');
+        setStatus('Поделиться не получилось — PDF сохранён в загрузки.');
       }
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
-        setStatus('Не удалось поделиться. Бланк можно скачать отдельно.');
+        setStatus('Поделиться не получилось. Скачайте PDF отдельно.');
       }
     } finally {
       setBusy(null);
@@ -95,7 +95,7 @@ export function Result() {
   return (
     <section className="screen screen-result">
       <div className="result-head">
-        <div className="result-sheets" role="tablist" aria-label="Листы бланка">
+        <div className="result-sheets" role="tablist" aria-label="Разделы разбора">
           {SHEETS.map((label, index) => (
             <button
               key={label}
@@ -130,11 +130,11 @@ export function Result() {
             <div className="sheet-summary-body">
               <figure className="drawing-frame">
                 {drawing ? (
-                  <img src={drawing} alt="След сеанса" />
+                  <img src={drawing} alt="Ваш рисунок" />
                 ) : (
-                  <div className="drawing-empty">След пуст</div>
+                  <div className="drawing-empty">Лист пустой</div>
                 )}
-                <figcaption>След сеанса, 60 секунд</figcaption>
+                <figcaption>Ваш рисунок, 60 секунд</figcaption>
               </figure>
 
               <div className="summary-text">
@@ -144,7 +144,7 @@ export function Result() {
             </div>
 
             <div className="insights">
-              <h3 className="block-title">Четыре попадания</h3>
+              <h3 className="block-title">Что видно по рисунку</h3>
               <ol className="insight-list">
                 {profile.insights.map((insight) => (
                   <li key={insight.id} className="insight">
@@ -153,7 +153,7 @@ export function Result() {
                     <p className="insight-because">{insight.because}</p>
                     <p className="insight-today">{insight.today}</p>
                     <p className="insight-sting">
-                      <span>Цена, если не заметить:</span> {insight.sting}
+                      <span>Если не заметить:</span> {insight.sting}
                     </p>
                   </li>
                 ))}
@@ -164,9 +164,9 @@ export function Result() {
 
         {sheet === 1 && (
           <article className="sheet sheet-profile">
-            <h3 className="block-title">Личность и связка с людьми</h3>
+            <h3 className="block-title">Как вы работаете и общаетесь</h3>
             <p className="role-line">
-              Роль дня: <strong>{profile.roleLabel}</strong>. {profile.roleText}
+              Ваша роль сегодня: <strong>{profile.roleLabel}</strong>. {profile.roleText}
             </p>
 
             <div className="profile-blocks">
@@ -176,7 +176,7 @@ export function Result() {
                 title="Под давлением"
                 text={`${capitalize(profile.shadowLabel)}. ${profile.shadowText} ${profile.pressure}`}
               />
-              <ProfileBlock title="Что вами движет сегодня" text={`${capitalize(profile.motiveLabel)}. ${profile.motiveText}`} />
+              <ProfileBlock title="Что вам сегодня нужно" text={`${capitalize(profile.motiveLabel)}. ${profile.motiveText}`} />
             </div>
 
             <div className="with-you">
@@ -189,7 +189,7 @@ export function Result() {
             </div>
 
             <div className="scales">
-              <h3 className="block-subtitle">Пять шкал дня</h3>
+              <h3 className="block-subtitle">Пять показателей</h3>
               {profile.scales.map((scale) => (
                 <div key={scale.id} className="scale">
                   <div className="scale-head">
@@ -214,7 +214,7 @@ export function Result() {
             <h3 className="block-title">Почему именно сегодня</h3>
 
             <DayBlock title="День недели" text={profile.dayWhy.weekday} />
-            <DayBlock title="Та же линия в другой день" text={profile.dayWhy.counterfactual} />
+            <DayBlock title="Если бы рисовали в другой день" text={profile.dayWhy.counterfactual} />
             {profile.dayWhy.calendar && <DayBlock title="Календарь" text={profile.dayWhy.calendar} />}
             {profile.dayWhy.weather && <DayBlock title="Погода" text={profile.dayWhy.weather} />}
             <DayBlock title="Луна" text={profile.dayWhy.lunar} />
@@ -244,7 +244,7 @@ export function Result() {
             <div className="method">
               <h3 className="block-subtitle">Как это считается</h3>
               <ul>
-                <li>След превращается в набор точек: где была рука, в какой момент и с каким нажимом.</li>
+                <li>Рисунок превращается в набор точек: где была рука, в какой момент и с каким нажимом.</li>
                 <li>
                   По нему считаются длина линии, число штрихов, скорость и её перепады, паузы, повороты,
                   сколько места занято и совпадение с клеткой.
@@ -269,7 +269,7 @@ export function Result() {
             </div>
 
             <p className="disclaimer">Сформирован автоматически, не заменяет консультацию специалиста.</p>
-            <span className="half-stamp">Ф60 · локальный срез</span>
+            <span className="half-stamp">Ф60 · разбор по рисунку</span>
           </article>
         )}
       </div>
@@ -282,9 +282,9 @@ export function Result() {
           Поделиться
         </button>
         <button type="button" className="btn btn-ghost" onClick={resetSession}>
-          Новый бланк
+          Пройти заново
         </button>
-        <span className="result-status">{status ?? 'Файл готов вложить в письмо или чат.'}</span>
+        <span className="result-status">{status ?? 'PDF готов — можно отправить.'}</span>
       </div>
     </section>
   );

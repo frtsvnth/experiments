@@ -38,7 +38,7 @@ export function paintPage(doc: jsPDF, pageNumber: number, pageLabel: string): vo
   doc.line(PAGE.margin, 279, PAGE.width - PAGE.margin, 279);
 
   setMono(doc, 6.6, C.faint);
-  doc.text(`ФОРМА 60 · ЭКСПРЕСС-СРЕЗ · ЛИСТ ${pageNumber} ИЗ 3`, PAGE.margin, 283.5);
+  doc.text(`ФОРМА 60 · РАЗБОР ПО РИСУНКУ · ЛИСТ ${pageNumber} ИЗ 3`, PAGE.margin, 283.5);
   doc.text(pageLabel, PAGE.width - PAGE.margin, 283.5, { align: 'right' });
 }
 
@@ -193,10 +193,10 @@ export function drawDrawing(doc: jsPDF, dataUrl: string, x: number, y: number, s
       doc.addImage(dataUrl, 'PNG', x + 1.5, y + 1.5, size - 3, size - 3);
     } catch {
       setBody(doc, 7.5, C.faint);
-      doc.text('След недоступен', x + size / 2, y + size / 2, { align: 'center' });
+      doc.text('Рисунок недоступен', x + size / 2, y + size / 2, { align: 'center' });
     }
   } else {
     setBody(doc, 7.5, C.faint);
-    doc.text('Пустой след', x + size / 2, y + size / 2, { align: 'center' });
+    doc.text('Лист пустой', x + size / 2, y + size / 2, { align: 'center' });
   }
 }

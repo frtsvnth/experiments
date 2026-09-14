@@ -5,11 +5,11 @@ import { localDayContext } from '../engine/dayContext';
 import { useSession } from '../shell/session';
 
 const STAGES: { text: string; hold: number }[] = [
-  { text: 'Измеряю длину линии', hold: 1200 },
+  { text: 'Измеряю длину и форму линии', hold: 1200 },
   { text: 'Считаю штрихи и паузы', hold: 1150 },
-  { text: 'Оцениваю темп решений', hold: 1350 },
-  { text: 'Собираю день: свет, погода, календарь', hold: 1450 },
-  { text: 'Свожу срез и роли', hold: 1400 },
+  { text: 'Определяю темп решений', hold: 1350 },
+  { text: 'Учитываю день: погоду, календарь, луну', hold: 1450 },
+  { text: 'Собираю разбор', hold: 1400 },
 ];
 
 export function Processing() {
@@ -72,8 +72,8 @@ export function Processing() {
   return (
     <section className="screen screen-processing">
       <div className="processing-body">
-        <p className="screen-step">ОБРАБОТКА СЛЕДА</p>
-        <h2 className="screen-title">{index >= STAGES.length ? 'Собираю форму' : current.text}</h2>
+        <p className="screen-step">АНАЛИЗ РИСУНКА</p>
+        <h2 className="screen-title">{index >= STAGES.length ? 'Собираю разбор' : current.text}</h2>
         <div className="processing-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
           <span style={{ width: `${Math.round(progress * 100)}%` }} />
         </div>
@@ -88,7 +88,7 @@ export function Processing() {
           ))}
         </ul>
         <p className="processing-note">
-          Имя и рисунок остаются в браузере. Для погоды и календаря ушла только дата и город.
+          Имя и рисунок остаются в браузере. В сеть уходит только город и дата — для погоды и календаря.
         </p>
       </div>
     </section>

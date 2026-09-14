@@ -7,9 +7,9 @@ describe('shell', () => {
     const html = renderToString(<App />);
     expect(html).toContain('ФОРМА 60');
     expect(html).toContain('Минута на клетке. Форма на день.');
-    expect(html).toContain('СЕАНС 60с · ЛОКАЛЬНЫЙ СРЕЗ');
-    expect(html).toContain('Открыть бланк');
-    expect(html).toContain('ЭКСПРЕСС-СРЕЗ ЛИЧНОСТИ НА ДЕНЬ');
+    expect(html).toContain('1 МИНУТА · РИСУНОК · РАЗБОР');
+    expect(html).toContain('Получить консультацию');
+    expect(html).toContain('АНАЛИЗ ЛИЧНОСТИ ПО РИСУНКУ');
   });
 
   it('does not leak raw metric names into the interface', () => {
