@@ -16,9 +16,41 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: forma60/package-lock.json
+
+      - name: Install forma60
+        working-directory: forma60
+        run: npm ci
+
+      - name: Build forma60
+        working-directory: forma60
+        run: npm run build
+
+      - name: Typecheck and test forma60
+        working-directory: forma60
+        run: |
+          npm run typecheck
+          npm test
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          rsync -a \
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            --exclude 'forma60' \
+            --exclude '_site' \
+            ./ _site/
+          mkdir -p _site/forma60
+          cp -R forma60/dist/. _site/forma60/
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
+          publish_dir: ./_site
           force_orphan: true

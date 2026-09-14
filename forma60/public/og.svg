@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E4C56A"/>
+      <stop offset="1" stop-color="#C9A227"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="0.2" cy="0.15" r="0.7">
+      <stop offset="0" stop-color="rgba(62,224,200,0.18)"/>
+      <stop offset="1" stop-color="rgba(62,224,200,0)"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="0.85" cy="0.85" r="0.7">
+      <stop offset="0" stop-color="rgba(123,108,255,0.16)"/>
+      <stop offset="1" stop-color="rgba(123,108,255,0)"/>
+    </radialGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="rgba(62,224,200,0.11)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#05060A"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <rect width="1200" height="630" fill="url(#glow1)"/>
+  <rect width="1200" height="630" fill="url(#glow2)"/>
+  <g transform="translate(96,150)">
+    <rect x="0" y="0" width="112" height="112" rx="18" fill="#0B1018" stroke="url(#gold)" stroke-width="3"/>
+    <g stroke="rgba(62,224,200,0.22)" stroke-width="1.4">
+      <line x1="37" y1="8" x2="37" y2="104"/>
+      <line x1="75" y1="8" x2="75" y2="104"/>
+      <line x1="8" y1="37" x2="104" y2="37"/>
+      <line x1="8" y1="75" x2="104" y2="75"/>
+    </g>
+    <text x="56" y="70" text-anchor="middle" font-family="'IBM Plex Mono', ui-monospace, monospace" font-size="34" font-weight="500" fill="#E8EDF5">Ф60</text>
+  </g>
+  <text x="240" y="228" font-family="'Cormorant Garamond', Georgia, serif" font-size="96" font-weight="700" fill="#E8EDF5">ФОРМА 60</text>
+  <text x="242" y="286" font-family="'Manrope', system-ui, sans-serif" font-size="34" font-weight="500" fill="#8B95A8">Экспресс-срез личности на день</text>
+  <path d="M240 356 C 340 316, 400 400, 500 352 S 660 300, 760 350 S 900 392, 1000 344" fill="none" stroke="#3EE0C8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="1000" cy="344" r="10" fill="#C9A227"/>
+  <text x="96" y="556" font-family="'IBM Plex Mono', ui-monospace, monospace" font-size="28" font-weight="500" fill="#C9A227" letter-spacing="2">СЕАНС 60с · ЛОКАЛЬНЫЙ СРЕЗ</text>
+  <text x="96" y="600" font-family="'Manrope', system-ui, sans-serif" font-size="26" font-weight="400" fill="#5C6578">Минута на клетке. Форма на день.</text>
+</svg>

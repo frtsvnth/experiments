@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>ФОРМА 60 — переход</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #05060a;
+        color: #8b95a8;
+        font-family: system-ui, sans-serif;
+        display: grid;
+        place-items: center;
+      }
+      a {
+        color: #c9a227;
+      }
+    </style>
+    <script>
+      (function () {
+        var base = location.pathname.replace(/404\.html$/, '');
+        location.replace(base + '#' + location.hash.replace(/^#/, ''));
+      })();
+    </script>
+  </head>
+  <body>
+    <p>Переходим к бланку. Если ничего не произошло — <a href="./">откройте вручную</a>.</p>
+  </body>
+</html>
